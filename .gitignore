@@ -119,14 +119,20 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# IntelliJ
+# IntelliJ / JetBrains IDEs
 .idea/
+*.iml
+*.iws
+*.ipr
+out/
 
 # VSCode
 .vscode/
 
 # Mac
 .DS_Store
+.AppleDouble
+.LSOverride
 
 # Vercel
 .vercel/
