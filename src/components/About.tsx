@@ -49,7 +49,7 @@ const About = () => {
                 <Phone className="w-8 h-8 text-primary" />
                 <div>
                   <h4 className="font-bold">Call Us</h4>
-                  <p className="text-lg tracking-wide">8279506049</p>
+                  <p className="text-lg tracking-wide">87558 61275</p>
                 </div>
               </div>
             </div>

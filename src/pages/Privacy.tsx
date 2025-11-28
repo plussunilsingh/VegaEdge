@@ -76,8 +76,8 @@ const Privacy = () => {
                   If you have any questions about this Privacy Policy, please contact us at:
                 </p>
                 <p className="font-semibold text-foreground">
-                  Email: contact@alphaedge.team<br />
-                  Phone: 8279506049
+                  Email: contact@vegagreeks.com<br />
+                  Phone: 87558 61275
                 </p>
               </section>
 

@@ -10,15 +10,15 @@ const Subscription = () => {
                 Lifetime Access : Rs. 4999
               </h1>
               <p className="text-muted-foreground mb-6">
-                Please send screenshot of payment and your registered email address to this WhatsApp Number <strong className="text-foreground">8279506049</strong>
+                Please send screenshot of payment and your registered email address to this WhatsApp Number <strong className="text-foreground">87558 61275</strong>
               </p>
               <div className="font-bold text-lg">
-                Sapana Tomar
+                Dinesh Tarkar
               </div>
             </div>
 
             <div className="flex justify-center">
-              <img src="/QR.jpeg" alt="QR Code" style={{ width: '100%', maxWidth: '500px' }} />
+              <img src="/dummy_QR.png" alt="QR Code" style={{ width: '100%', maxWidth: '500px' }} />
             </div>
           </div>
         </div>

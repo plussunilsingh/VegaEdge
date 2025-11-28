@@ -9,7 +9,7 @@ const Footer = () => {
           <div>
             <Link to="/" className="flex items-center mb-4">
               <h1 className="text-white text-xl font-bold flex items-center">
-                <img src="/img/wlogo.png" style={{ width: '20%' }} alt="Logo" className="inline" /> Vega Greeks
+                <img src="/img/logo_red.png" style={{ width: '20%' }} alt="Logo" className="inline" /> Vega Greeks
               </h1>
             </Link>
             <p className="text-gray-400 mb-6">
@@ -54,9 +54,9 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold mb-4">Contact Info</h4>
             <ul className="space-y-3 text-gray-400">
-              <li>contact@alphaedge.team</li>
-              <li>8279506049</li>
-              <li>www.alphaedge.team</li>
+              <li>contact@vegagreeks.com</li>
+              <li>87558 61275</li>
+              <li>www.vegagreeks.com</li>
             </ul>
           </div>
         </div>

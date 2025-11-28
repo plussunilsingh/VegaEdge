@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { endpoints } from "@/config";
 
 const Chart = () => {
   const { user, profileImageUrl } = useAuth();
@@ -15,7 +16,7 @@ const Chart = () => {
 
   const fetchChartData = () => {
     const randomParam = Math.random();
-    fetch(`https://ibzd.com/upstox/data.php?id=${selectedOption}&x=${randomParam}&date=${selectedDate}`)
+    fetch(endpoints.chart.getChartData(selectedOption, randomParam, selectedDate))
       .then(response => response.text())
       .then(data => setChartData(data))
       .catch(err => console.error("Error fetching chart:", err));
@@ -23,7 +24,7 @@ const Chart = () => {
 
   const fetchTableData = () => {
     const randomParam = Math.random();
-    fetch(`https://ibzd.com/upstox/datav1.php?id=${selectedOption}&x=${randomParam}&date=${selectedDate}`)
+    fetch(endpoints.chart.getTableData(selectedOption, randomParam, selectedDate))
       .then(response => response.text())
       .then(data => setTableData(data))
       .catch(err => console.error("Error fetching table:", err));
@@ -31,7 +32,7 @@ const Chart = () => {
 
   const fetchLatestData = () => {
     const randomParam = Math.random();
-    fetch(`https://ibzd.com/upstox/latest.php?id=${selectedOption}&x=${randomParam}&date=${selectedDate}`)
+    fetch(endpoints.chart.getLatestData(selectedOption, randomParam, selectedDate))
       .then(response => response.text())
       .then(data => setLatestData(data))
       .catch(err => console.error("Error fetching latest:", err));

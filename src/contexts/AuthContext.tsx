@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import { endpoints } from "@/config";
 
 interface User {
   id: string;
@@ -87,8 +88,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
-      // Call local Python backend via proxy
-      const response = await fetch('/api/auth/login', {
+      // Call backend
+      const response = await fetch(endpoints.auth.login, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password })
@@ -105,8 +106,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const sessionToken = data.access_token;
         
         // We need to fetch user details separately usually, or decode token.
-        // For now, let's fetch /api/auth/me using the token
-        const userResponse = await fetch('/api/auth/me', {
+        // For now, let's fetch /auth/me using the token
+        const userResponse = await fetch(endpoints.auth.me, {
           headers: { 'Authorization': `Bearer ${sessionToken}` }
         });
         
@@ -142,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const sessionToken = localStorage.getItem('alphaedge_session');
       if (sessionToken) {
-        await fetch('/api/auth/logout', {
+        await fetch(endpoints.auth.logout, {
           method: 'POST',
           headers: { 
             'Authorization': `Bearer ${sessionToken}`,
