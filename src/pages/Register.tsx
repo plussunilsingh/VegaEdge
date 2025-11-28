@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+import { endpoints } from "@/config";
+
 const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -25,7 +27,7 @@ const Register = () => {
     try {
       // Map form data to backend UserCreate schema
       // We use email as username to ensure consistency with login
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(endpoints.auth.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -51,7 +53,7 @@ const Register = () => {
             title: "Registration Successful",
             description: "Welcome to Vega Greeks!",
           });
-          navigate("/openchart");
+          navigate("/my-account");
         }
       } else {
         throw new Error("Invalid response from server");

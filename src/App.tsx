@@ -48,8 +48,8 @@ const App = () => (
               <Route path="/my-account" element={<MyAccount />} />
              {/*   <Route path="/chart" element={<Chart />} />
              <Route path="/openchart" element={<Openchart />} />
-              <Route path="/greeks" element={<GreeksAnalysis />} />
-              <Route path="/change-password" element={<ChangePassword />} />  */}
+              <Route path="/greeks" element={<GreeksAnalysis />} />*/}
+              <Route path="/change-password" element={<ChangePassword />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
