@@ -121,6 +121,7 @@ dist
 
 # IntelliJ / JetBrains IDEs
 .idea/
+/.idea/**
 *.iml
 *.iws
 *.ipr
