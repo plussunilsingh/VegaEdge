@@ -1,13 +1,9 @@
  .idea/
  .vscode/
 /node_modules/
- /dist/
- *.log
- *.env
  .DS_Store
  /coverage/
  .next/
- /.next/
  .nuxt/
  .cache/
  .turbo/
