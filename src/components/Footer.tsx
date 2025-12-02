@@ -55,7 +55,7 @@ const Footer = () => {
             <h4 className="text-lg font-bold mb-4">Contact Info</h4>
             <ul className="space-y-3 text-gray-400">
               <li>contact@vegagreeks.com</li>
-              <li>87558 61275</li>
+              <li>7830175650</li>
               <li>www.vegagreeks.com</li>
             </ul>
           </div>

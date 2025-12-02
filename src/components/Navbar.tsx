@@ -9,9 +9,9 @@ const Navbar = () => {
       <div className="bg-white border-b border-border px-4 lg:px-8 py-2 hidden lg:block">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-6 text-sm">
-            <a href="tel:87558 61275" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+            <a href="tel:7830175650" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
               <Phone className="w-4 h-4 text-primary" />
-              87558 61275
+              7830175650
             </a>
             <a href="mailto:contact@vegagreeks.com" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
               <Mail className="w-4 h-4 text-primary" />

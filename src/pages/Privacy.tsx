@@ -77,7 +77,7 @@ const Privacy = () => {
                 </p>
                 <p className="font-semibold text-foreground">
                   Email: contact@vegagreeks.com<br />
-                  Phone: 87558 61275
+                  Phone: 7830175650
                 </p>
               </section>
 
