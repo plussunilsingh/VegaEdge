@@ -27,7 +27,11 @@ export const endpoints = {
     logout: `${BACKEND_API_BASE_URL}/auth/logout`,
   },
   market: {
-    greeks: (instrumentKey: string, expiryDate: string, token: string) => 
+    greeks: (instrumentKey: string, expiryDate: string, token: string) =>
       `${BACKEND_API_BASE_URL}/market/greeks?instrument_key=${instrumentKey}&expiry_date=${expiryDate}&upstox_access_token=${token}`,
+  },
+  admin: {
+    users: `${BACKEND_API_BASE_URL}/admin/users`,
+    toggleStatus: (userId: string) => `${BACKEND_API_BASE_URL}/admin/users/${userId}/status`,
   }
 };

@@ -128,14 +128,39 @@ const MyAccount = () => {
                       </p>
                     </div>
                   </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${user?.is_subscribed ? 'bg-green-500' : 'bg-red-500'}`}>
+                      <span className="text-white text-sm">✓</span>
+                    </div>
+                    <div>
+                      <p className="text-lg">
+                        <span className="font-semibold">Subscription: </span>
+                        {user?.is_subscribed ? (
+                            <span className="text-green-600 font-bold">Active</span>
+                        ) : (
+                            <span className="text-red-600 font-bold">Inactive</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
-                  <Link to="/chart">
-                    <Button className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 text-lg">
-                      Explore Our Vega Charts
+                  {user?.is_subscribed ? (
+                    <Link to="/chart">
+                        <Button className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 text-lg">
+                        Explore Our Vega Charts
+                        </Button>
+                    </Link>
+                  ) : (
+                    <Button 
+                        disabled 
+                        className="w-full bg-gray-400 cursor-not-allowed rounded-full py-6 text-lg"
+                    >
+                        Chart Access Restricted (Contact Admin)
                     </Button>
-                  </Link>
+                  )}
 
                   <Link to="/change-password">
                     <Button className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 text-lg">

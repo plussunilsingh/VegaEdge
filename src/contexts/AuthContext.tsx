@@ -8,6 +8,8 @@ interface User {
   phone: string;
   profileImage?: string;
   approved?: boolean;
+  role: string;
+  is_subscribed: boolean;
 }
 
 interface AuthContextType {
@@ -119,7 +121,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
              name: userData.username, // or userData.email if name missing
              email: userData.email,
              phone: "", // Backend might not have phone
-             approved: true // Assume approved for now
+             approved: true, // Assume approved for now
+             role: userData.role || "NORMAL_USER",
+             is_subscribed: userData.is_subscribed || false
            };
 
            setUser(mappedUser);

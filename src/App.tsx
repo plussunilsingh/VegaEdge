@@ -20,6 +20,7 @@ const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const Openchart = lazy(() => import("./pages/Openchart"));
 const GreeksAnalysis = lazy(() => import("./pages/GreeksAnalysis"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -46,10 +47,11 @@ const App = () => (
               <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/my-account" element={<MyAccount />} />
-             {/*   <Route path="/chart" element={<Chart />} />
-             <Route path="/openchart" element={<Openchart />} />
-              <Route path="/greeks" element={<GreeksAnalysis />} />*/}
+              <Route path="/chart" element={<Chart />} />
+              <Route path="/openchart" element={<Openchart />} />
+              <Route path="/greeks" element={<GreeksAnalysis />} />
               <Route path="/change-password" element={<ChangePassword />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
