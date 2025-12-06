@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, Clock } from "lucide-react";
+import { Phone, Mail, Clock, Menu, X } from "lucide-react";
 import { useAuth, useSession } from "@/contexts/AuthContext";
+import { useState } from "react";
  
 const AuthenticatedNavbar = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { sessionTimeLeft } = useSession();
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const toggleMenu = () => setIsOpen(!isOpen);
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -15,7 +19,7 @@ const AuthenticatedNavbar = () => {
   return (
     <>
       {/* Topbar */}
-      <div className="bg-white border-b border-border px-4 lg:px-8 py-2 hidden lg:block">
+      <div className="bg-white border-b border-border px-4 lg:px-8 py-2 hidden lg:flex">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-6 text-sm">
             <a href="tel:7830175650" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
@@ -47,7 +51,13 @@ const AuthenticatedNavbar = () => {
               </h1>
             </Link>
 
+            {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8">
+              {user?.role === 'ADMIN_USER' && (
+                <Link to="/admin" className="text-white hover:text-primary transition-colors font-medium">
+                  Admin
+                </Link>
+              )}
               <Link to="/chart" className="text-white hover:text-primary transition-colors font-medium">
                 Chart
               </Link>
@@ -64,8 +74,43 @@ const AuthenticatedNavbar = () => {
                 Contact Us
               </Link>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button onClick={toggleMenu} className="text-white focus:outline-none">
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isOpen && (
+          <div className="md:hidden bg-black border-t border-gray-800">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {user?.role === 'ADMIN_USER' && (
+                <Link to="/admin" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+                  Admin
+                </Link>
+              )}
+              <Link to="/chart" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+                Chart
+              </Link>
+              <Link to="/greeks" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+                Greeks Analysis
+              </Link>
+              <Link to="/my-account" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+                My Account
+              </Link>
+              <button onClick={() => { toggleMenu(); logout(); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+                Logout
+              </button>
+              <Link to="/contact" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+                Contact Us
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
     </>
   );

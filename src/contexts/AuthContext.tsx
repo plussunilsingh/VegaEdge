@@ -78,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const sessionToken = localStorage.getItem('alphaedge_session');
     
     if (storedUser && sessionToken) {
+      // First set from local storage for immediate UI
       const userData = JSON.parse(storedUser);
       setUser(userData);
       
@@ -85,6 +86,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (userData.profileImage) {
         setProfileImageUrl(`upload/${userData.profileImage}`);
       }
+
+      // Then fetch fresh data from backend to ensure role/subscription status is up to date
+      fetch(endpoints.auth.me, {
+        headers: { 'Authorization': `Bearer ${sessionToken}` }
+      })
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to refresh user data');
+      })
+      .then(freshUserData => {
+         const mappedUser: User = {
+           id: freshUserData.id.toString(),
+           name: freshUserData.username,
+           email: freshUserData.email,
+           phone: "",
+           approved: true,
+           role: freshUserData.role || "NORMAL_USER",
+           is_subscribed: freshUserData.is_subscribed || false
+         };
+         setUser(mappedUser);
+         localStorage.setItem('alphaedge_user', JSON.stringify(mappedUser));
+      })
+      .catch(err => {
+        console.error("Error refreshing user data:", err);
+        // If token is invalid, maybe logout? For now, just log error.
+      });
     }
   }, []);
 
