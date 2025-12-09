@@ -134,7 +134,7 @@ const Chart = () => {
             {/* Table Section */}
             <div className="lg:col-span-1">
               <div className="bg-card rounded-2xl shadow-lg overflow-hidden sticky top-24">
-                <div className="max-h-[800px] overflow-y-auto">
+                <div className="max-h-[800px] overflow-y-auto overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 bg-black text-white z-10">
                       <tr>
