@@ -21,6 +21,7 @@ const Openchart = lazy(() => import("./pages/Openchart"));
 const GreeksAnalysis = lazy(() => import("./pages/GreeksAnalysis"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const LiveData = lazy(() => import("./pages/LiveData"));
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/greeks" element={<GreeksAnalysis />} />
               <Route path="/change-password" element={<ChangePassword />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/live-data" element={<LiveData />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

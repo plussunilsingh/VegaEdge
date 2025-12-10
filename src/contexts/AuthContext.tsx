@@ -18,6 +18,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   profileImageUrl: string | null;
+  token: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number>(SESSION_TIMEOUT);
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   // Track user activity
   useEffect(() => {
@@ -77,6 +79,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedUser = localStorage.getItem('alphaedge_user');
     const sessionToken = localStorage.getItem('alphaedge_session');
     
+    if (sessionToken) setToken(sessionToken);
+
     if (storedUser && sessionToken) {
       // First set from local storage for immediate UI
       const userData = JSON.parse(storedUser);
@@ -156,6 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
            setUser(mappedUser);
            localStorage.setItem('alphaedge_user', JSON.stringify(mappedUser));
            localStorage.setItem('alphaedge_session', sessionToken);
+           setToken(sessionToken);
            
            setLastActivity(Date.now());
            setSessionTimeLeft(SESSION_TIMEOUT);
@@ -190,6 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfileImageUrl(null);
       localStorage.removeItem('alphaedge_user');
       localStorage.removeItem('alphaedge_session');
+      setToken(null);
       window.location.replace('/');
     }
   }, []);
@@ -199,8 +205,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     login, 
     logout, 
     isAuthenticated: !!user,
-    profileImageUrl
-  }), [user, login, logout, profileImageUrl]);
+    profileImageUrl,
+    token
+  }), [user, login, logout, profileImageUrl, token]);
 
   return (
     <SessionContext.Provider value={{ sessionTimeLeft }}>

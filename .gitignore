@@ -141,3 +141,5 @@ out/
 # Vite
 dist-ssr
 *.local
+
+/vegaBackendServer/
