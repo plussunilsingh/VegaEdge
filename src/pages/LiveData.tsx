@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 import { Calendar } from "@/components/ui/calendar";
@@ -42,6 +41,7 @@ const LiveData = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [data, setData] = useState<GreeksData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
 
   useEffect(() => {
@@ -52,9 +52,15 @@ const LiveData = () => {
 
   const fetchHistoryData = async (selectedDate: Date) => {
     setIsLoading(true);
+    setError(null);
     try {
+      if (!BACKEND_API_BASE_URL) {
+        throw new Error("Backend URL is not configured");
+      }
+
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      // Use BACKEND_API_BASE_URL
+      console.log(`Fetching history for ${dateStr} from ${BACKEND_API_BASE_URL}`);
+
       const response = await fetch(`${BACKEND_API_BASE_URL}/market/history?date=${dateStr}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -62,21 +68,34 @@ const LiveData = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch data");
+        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
       }
 
       const result = await response.json();
-      // The API returns OptionGreeksLog objects which have a 'data' field containing the JSON payload
-      // We need to map that to our GreeksData interface
-      const mappedData = result.map((item: any) => ({
-        timestamp: item.timestamp,
-        greeks: item.data.greeks
-      }));
-      
+      console.log("Raw History Data:", result);
+
+      if (!Array.isArray(result)) {
+        throw new Error("Invalid data format received from API");
+      }
+
+      // Safe mapping with null checks
+      const mappedData: GreeksData[] = result.map((item: any) => {
+          if (!item || !item.data || !item.data.greeks) {
+              console.warn("Skipping invalid item:", item);
+              return null;
+          }
+          return {
+            timestamp: item.timestamp,
+            greeks: item.data.greeks
+          };
+      }).filter((item): item is GreeksData => item !== null);
+
       setData(mappedData);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load history data");
+    } catch (error: any) {
+      console.error("LiveData Fetch Error:", error);
+      const msg = error?.message || "Failed to load history data";
+      toast.error(msg);
+      setError(msg);
       setData([]);
     } finally {
       setIsLoading(false);
@@ -84,8 +103,34 @@ const LiveData = () => {
   };
 
   const formatTime = (isoString: string) => {
-    return format(new Date(isoString), "HH:mm:ss");
+    try {
+        return format(new Date(isoString), "HH:mm:ss");
+    } catch (e) {
+        return "Invalid Time";
+    }
   };
+
+  // Safe number formatting
+  const fmt = (val: any, digits = 2) => {
+      const num = Number(val);
+      if (isNaN(num)) return "-";
+      return num.toFixed(digits);
+  };
+
+  if (error && !data.length) {
+      return (
+        <div className="min-h-screen bg-background">
+            <AuthenticatedNavbar />
+            <div className="container mx-auto py-8 px-4 text-center">
+                <h1 className="text-xl text-red-500 mb-4">Error Loading Data</h1>
+                <p className="text-muted-foreground">{error}</p>
+                <Button onClick={() => date && fetchHistoryData(date)} className="mt-4">
+                    Retry
+                </Button>
+            </div>
+        </div>
+      );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,7 +138,7 @@ const LiveData = () => {
       <div className="container mx-auto py-8 px-4 max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <h1 className="text-3xl font-bold text-foreground">Market Greeks History</h1>
-          
+
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -146,22 +191,24 @@ const LiveData = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.map((row, index) => (
+                    {data.map((row, index) => {
+                       const g = row.greeks || {};
+                       return (
                       <TableRow key={index}>
                         <TableCell className="font-medium">{formatTime(row.timestamp)}</TableCell>
-                        <TableCell className="text-right font-mono text-green-600">{row.greeks.call_vega.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-mono text-red-600">{row.greeks.put_vega.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-mono font-bold">{row.greeks.diff_vega.toFixed(2)}</TableCell>
-                        
-                        <TableCell className="text-right font-mono text-green-600">{row.greeks.call_delta.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-mono text-red-600">{row.greeks.put_delta.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-mono font-bold">{row.greeks.diff_delta.toFixed(2)}</TableCell>
-                        
-                        <TableCell className="text-right font-mono text-green-600">{row.greeks.call_gamma.toFixed(4)}</TableCell>
-                        <TableCell className="text-right font-mono text-red-600">{row.greeks.put_gamma.toFixed(4)}</TableCell>
-                        <TableCell className="text-right font-mono font-bold">{row.greeks.diff_gamma.toFixed(4)}</TableCell>
+                        <TableCell className="text-right font-mono text-green-600">{fmt(g.call_vega)}</TableCell>
+                        <TableCell className="text-right font-mono text-red-600">{fmt(g.put_vega)}</TableCell>
+                        <TableCell className="text-right font-mono font-bold">{fmt(g.diff_vega)}</TableCell>
+
+                        <TableCell className="text-right font-mono text-green-600">{fmt(g.call_delta)}</TableCell>
+                        <TableCell className="text-right font-mono text-red-600">{fmt(g.put_delta)}</TableCell>
+                        <TableCell className="text-right font-mono font-bold">{fmt(g.diff_delta)}</TableCell>
+
+                        <TableCell className="text-right font-mono text-green-600">{fmt(g.call_gamma, 4)}</TableCell>
+                        <TableCell className="text-right font-mono text-red-600">{fmt(g.put_gamma, 4)}</TableCell>
+                        <TableCell className="text-right font-mono font-bold">{fmt(g.diff_gamma, 4)}</TableCell>
                       </TableRow>
-                    ))}
+                    )})}
                   </TableBody>
                 </Table>
               </div>
