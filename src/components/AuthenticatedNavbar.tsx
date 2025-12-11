@@ -53,6 +53,12 @@ const AuthenticatedNavbar = () => {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8">
+              {user && (
+                  <span className="text-gray-300 font-medium">
+                    Welcome, {user.name}
+                  </span>
+              )}
+
               {user?.role === 'ADMIN_USER' && (
                 <Link to="/admin" className="text-white hover:text-primary transition-colors font-medium">
                   Admin
@@ -91,6 +97,11 @@ const AuthenticatedNavbar = () => {
         {isOpen && (
           <div className="md:hidden bg-black border-t border-gray-800">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {user && (
+                  <div className="px-3 py-2 text-base font-medium text-gray-300 border-b border-gray-700 mb-2">
+                    Welcome, {user.name}
+                  </div>
+              )}
               {user?.role === 'ADMIN_USER' && (
                 <Link to="/admin" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                   Admin

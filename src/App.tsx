@@ -48,8 +48,8 @@ const App = () => (
               <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/my-account" element={<MyAccount />} />
-       {      /*  <Route path="/chart" element={<Chart />} />
-              <Route path="/openchart" element={<Openchart />} />  */ }
+              <Route path="/chart" element={<Chart />} />
+              <Route path="/openchart" element={<Openchart />} />
               <Route path="/greeks" element={<GreeksAnalysis />} />
               <Route path="/change-password" element={<ChangePassword />} />
               <Route path="/admin" element={<AdminDashboard />} />
