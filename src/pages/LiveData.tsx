@@ -72,7 +72,9 @@ interface GreeksData {
 
 const LiveData = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY"); // Index selector
   const [data, setData] = useState<GreeksData[]>([]);
+  const [allData, setAllData] = useState<GreeksData[]>([]); // Store all data
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
@@ -124,7 +126,14 @@ const LiveData = () => {
       }).filter((item) => item !== null) as GreeksData[];
 
       console.log(`Mapped ${mappedData.length} records`); // Debug log
-      setData(mappedData);
+      setAllData(mappedData); // Store all data
+      
+      // Filter by selected index
+      const filteredData = mappedData.filter((item: any) => 
+        item.index_name === selectedIndex
+      );
+      console.log(`Filtered to ${filteredData.length} records for ${selectedIndex}`);
+      setData(filteredData);
       setLastUpdated(new Date());
     } catch (error: any) {
       console.error("Fetch Error:", error);
@@ -153,6 +162,17 @@ const LiveData = () => {
       return () => clearInterval(interval);
     }
   }, [date, token, fetchHistoryData]);
+
+  // Filter data when index changes
+  useEffect(() => {
+    if (allData.length > 0) {
+      const filteredData = allData.filter((item: any) => 
+        item.index_name === selectedIndex
+      );
+      console.log(`Index changed to ${selectedIndex}: ${filteredData.length} records`);
+      setData(filteredData);
+    }
+  }, [selectedIndex, allData]);
 
 
   const formatTime = (isoString: string) => {
@@ -215,23 +235,40 @@ const LiveData = () => {
             </p>
           </div>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant={"outline"} className="w-[200px] justify-start text-left font-normal border-primary/20 hover:border-primary/50 transition-colors">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                initialFocus
-                disabled={(d) => d > new Date() || d < new Date("1900-01-01")}
-              />
-            </PopoverContent>
-          </Popover>
+          <div className="flex gap-3">
+            {/* Index Selector */}
+            <div>
+              <select 
+                value={selectedIndex}
+                onChange={(e) => setSelectedIndex(e.target.value)}
+                className="h-10 px-4 py-2 bg-background border border-primary/20 hover:border-primary/50 rounded-md text-sm transition-colors cursor-pointer"
+              >
+                <option value="NIFTY">NIFTY</option>
+                <option value="BANKNIFTY">BANKNIFTY</option>
+                <option value="FINNIFTY">FINNIFTY</option>
+                <option value="MIDCPNIFTY">MIDCPNIFTY</option>
+              </select>
+            </div>
+
+            {/* Date Picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant={"outline"} className="w-[200px] justify-start text-left font-normal border-primary/20 hover:border-primary/50 transition-colors">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                  disabled={(d) => d > new Date() || d < new Date("1900-01-01")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
         {/* Charts Section - All Greeks (Stacked Full Width) */}

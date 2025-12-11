@@ -88,6 +88,14 @@ const Login = () => {
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
+            
+            {/* Session Timeout Notice */}
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-xs text-center text-blue-700 dark:text-blue-300">
+                🔒 Sessions expire after <strong>10 minutes</strong> of inactivity for security
+              </p>
+            </div>
+            
             <p className="text-center mt-6 text-muted-foreground">
               Don't have an account? <a href="/register" className="text-primary hover:underline">Register here</a>
             </p>
