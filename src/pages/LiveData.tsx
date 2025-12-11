@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -12,12 +12,25 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { format, isToday } from "date-fns";
+import { Calendar as CalendarIcon, Loader2, TrendingUp, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { BACKEND_API_BASE_URL } from "@/config";
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  ReferenceLine
+} from 'recharts';
 
 interface GreeksData {
   timestamp: string;
@@ -35,6 +48,12 @@ interface GreeksData {
     put_theta: number;
     diff_theta: number;
   };
+  velocity?: {
+    diff_vega_change: number;
+    diff_gamma_change: number;
+    call_vega_change: number;
+    put_vega_change: number;
+  };
 }
 
 const LiveData = () => {
@@ -43,15 +62,12 @@ const LiveData = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
+  
+  // Polling Interval Ref
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  useEffect(() => {
-    if (date && token) {
-      fetchHistoryData(date);
-    }
-  }, [date, token]);
-
-  const fetchHistoryData = async (selectedDate: Date) => {
-    setIsLoading(true);
+  const fetchHistoryData = useCallback(async (selectedDate: Date, silent = false) => {
+    if (!silent) setIsLoading(true);
     setError(null);
     try {
       if (!BACKEND_API_BASE_URL) {
@@ -59,95 +75,128 @@ const LiveData = () => {
       }
 
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      console.log(`Fetching history for ${dateStr} from ${BACKEND_API_BASE_URL}`);
+      // console.log(`Fetching history for ${dateStr}`);
 
       const response = await fetch(`${BACKEND_API_BASE_URL}/market/history?date=${dateStr}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // User Auth
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch data: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log("Raw History Data:", result);
-
+      
       if (!Array.isArray(result)) {
-        throw new Error("Invalid data format received from API");
+        throw new Error("Invalid data format received");
       }
 
-      // Safe mapping with null checks
+      // Map Data
       const mappedData: GreeksData[] = result.map((item: any) => {
-          if (!item || !item.data || !item.data.greeks) {
-              console.warn("Skipping invalid item:", item);
-              return null;
-          }
+          if (!item || !item.data || !item.data.greeks) return null;
           return {
-            timestamp: item.timestamp,
-            greeks: item.data.greeks
+            timestamp: item.timestamp, // "YYYY-MM-DD HH:MM"
+            greeks: item.data.greeks,
+            velocity: item.data.velocity
           };
-      }).filter((item): item is GreeksData => item !== null);
+      }).filter((item) => item !== null) as GreeksData[];
 
       setData(mappedData);
+      setLastUpdated(new Date());
     } catch (error: any) {
-      console.error("LiveData Fetch Error:", error);
-      const msg = error?.message || "Failed to load history data";
-      toast.error(msg);
-      setError(msg);
-      setData([]);
+      console.error("Fetch Error:", error);
+      if (!silent) {
+        setError(error?.message || "Failed to load data");
+        toast.error("Failed to refresh market data");
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
-  };
+  }, [token]);
+
+  // Initial Fetch & Polling
+  useEffect(() => {
+    if (date && token) {
+      fetchHistoryData(date);
+      
+      // Setup Polling if "Today" is selected
+      let interval: NodeJS.Timeout;
+      if (isToday(date)) {
+        interval = setInterval(() => {
+          fetchHistoryData(date, true);
+        }, 60000); // Poll every 1 minute
+      }
+      
+      return () => clearInterval(interval);
+    }
+  }, [date, token, fetchHistoryData]);
+
 
   const formatTime = (isoString: string) => {
     try {
-        return format(new Date(isoString), "HH:mm:ss");
+        // Expecting "2025-12-11 10:00" or similar
+        return format(new Date(isoString), "HH:mm");
     } catch (e) {
-        return "Invalid Time";
+        return isoString.split(" ")[1] || isoString;
     }
   };
 
-  // Safe number formatting
   const fmt = (val: any, digits = 2) => {
       const num = Number(val);
       if (isNaN(num)) return "-";
       return num.toFixed(digits);
   };
+  
+  // Chart Custom Tooltip
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background border rounded p-2 shadow-lg text-xs">
+          <p className="font-bold">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.name}: {fmt(entry.value)}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   if (error && !data.length) {
       return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background text-foreground">
             <AuthenticatedNavbar />
-            <div className="container mx-auto py-8 px-4 text-center">
-                <h1 className="text-xl text-red-500 mb-4">Error Loading Data</h1>
-                <p className="text-muted-foreground">{error}</p>
-                <Button onClick={() => date && fetchHistoryData(date)} className="mt-4">
-                    Retry
-                </Button>
+            <div className="container mx-auto py-20 text-center">
+                 <h2 className="text-xl text-red-500">Error Loading Data</h2>
+                 <Button onClick={() => date && fetchHistoryData(date)} className="mt-4">Retry</Button>
             </div>
         </div>
       );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
       <AuthenticatedNavbar />
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-          <h1 className="text-3xl font-bold text-foreground">Market Greeks History</h1>
+      <div className="container mx-auto py-6 px-4 max-w-7xl space-y-6">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              Market Intelligence
+            </h1>
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+               <Activity className="w-4 h-4" /> Live Market Pulse • Last updated: {format(lastUpdated, "HH:mm:ss")}
+            </p>
+          </div>
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-[240px] justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
+              <Button variant={"outline"} className="w-[200px] justify-start text-left font-normal border-primary/20 hover:border-primary/50 transition-colors">
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {date ? format(date, "PPP") : <span>Pick a date</span>}
               </Button>
@@ -158,55 +207,124 @@ const LiveData = () => {
                 selected={date}
                 onSelect={setDate}
                 initialFocus
-                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                disabled={(d) => d > new Date() || d < new Date("1900-01-01")}
               />
             </PopoverContent>
           </Popover>
         </div>
 
-        <Card>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* 1. Vega Trend (Absolute) */}
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        <TrendingUp className="w-4 h-4 text-primary" /> Vega Momentum (Absolute)
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={data}>
+                            <defs>
+                                <linearGradient id="colorVega" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <Area 
+                                type="monotone" 
+                                dataKey="greeks.diff_vega" 
+                                name="Net Vega (Call - Put)" 
+                                stroke="#10b981" 
+                                fillOpacity={1} 
+                                fill="url(#colorVega)" 
+                                strokeWidth={2}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
+            {/* 2. Vega Velocity (Change per Minute) */}
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        <Activity className="w-4 h-4 text-blue-500" /> Vega Velocity (Change / Min)
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={data}>
+                             <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
+                            <YAxis tick={{fontSize: 10}} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                            <Line 
+                                type="monotone" 
+                                dataKey="velocity.diff_vega_change" 
+                                name="Vega Acceleration" 
+                                stroke="#3b82f6" 
+                                strokeWidth={2}
+                                dot={false} 
+                                activeDot={{ r: 4 }}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+        </div>
+
+        {/* Data Table */}
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md">
           <CardHeader>
-            <CardTitle>Option Chain Greeks ({date ? format(date, "yyyy-MM-dd") : ""})</CardTitle>
+            <CardTitle>Detailed Market Logs</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isLoading && !data.length ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : data.length > 0 ? (
-              <div className="rounded-md border overflow-x-auto">
+              <div className="rounded-md border overflow-x-auto max-h-[500px]">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="hover:bg-transparent">
                       <TableHead className="w-[100px]">Time</TableHead>
                       <TableHead className="text-right">Call Vega</TableHead>
                       <TableHead className="text-right">Put Vega</TableHead>
-                      <TableHead className="text-right bg-muted/30">Diff Vega</TableHead>
+                      <TableHead className="text-right text-primary font-bold bg-primary/5">Net Vega</TableHead>
+                      <TableHead className="text-right text-blue-500 font-bold bg-blue-500/5">Velocity</TableHead>
                       <TableHead className="text-right">Call Delta</TableHead>
                       <TableHead className="text-right">Put Delta</TableHead>
-                      <TableHead className="text-right bg-muted/30">Diff Delta</TableHead>
-                      <TableHead className="text-right">Call Gamma</TableHead>
-                      <TableHead className="text-right">Put Gamma</TableHead>
-                      <TableHead className="text-right bg-muted/30">Diff Gamma</TableHead>
+                      <TableHead className="text-right font-bold bg-muted/30">Net Delta</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.map((row, index) => {
+                    {[...data].reverse().map((row, index) => { // Show newest first
                        const g = row.greeks || {};
+                       const v = row.velocity; // Can be undefined
+                       const vegaChange = v?.diff_vega_change || 0;
+                       
                        return (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{formatTime(row.timestamp)}</TableCell>
-                        <TableCell className="text-right font-mono text-green-600">{fmt(g.call_vega)}</TableCell>
-                        <TableCell className="text-right font-mono text-red-600">{fmt(g.put_vega)}</TableCell>
-                        <TableCell className="text-right font-mono font-bold">{fmt(g.diff_vega)}</TableCell>
+                      <TableRow key={index} className="hover:bg-muted/50 transition-colors">
+                        <TableCell className="font-medium font-mono text-xs">{formatTime(row.timestamp)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_vega)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_vega)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs font-bold text-primary bg-primary/5">{fmt(g.diff_vega)}</TableCell>
+                        <TableCell className={`text-right font-mono text-xs font-bold bg-blue-500/5 ${vegaChange > 0 ? 'text-green-500' : vegaChange < 0 ? 'text-red-500' : ''}`}>
+                            {vegaChange > 0 ? '+' : ''}{fmt(vegaChange)}
+                        </TableCell>
 
-                        <TableCell className="text-right font-mono text-green-600">{fmt(g.call_delta)}</TableCell>
-                        <TableCell className="text-right font-mono text-red-600">{fmt(g.put_delta)}</TableCell>
-                        <TableCell className="text-right font-mono font-bold">{fmt(g.diff_delta)}</TableCell>
-
-                        <TableCell className="text-right font-mono text-green-600">{fmt(g.call_gamma, 4)}</TableCell>
-                        <TableCell className="text-right font-mono text-red-600">{fmt(g.put_gamma, 4)}</TableCell>
-                        <TableCell className="text-right font-mono font-bold">{fmt(g.diff_gamma, 4)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmt(g.call_delta)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmt(g.put_delta)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs font-bold text-foreground">{fmt(g.diff_delta)}</TableCell>
                       </TableRow>
                     )})}
                   </TableBody>
