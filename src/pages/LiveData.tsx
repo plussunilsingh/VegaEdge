@@ -54,6 +54,20 @@ interface GreeksData {
     call_vega_change: number;
     put_vega_change: number;
   };
+  baseline_diff?: {
+    call_vega_from_open: number;
+    put_vega_from_open: number;
+    diff_vega_from_open: number;
+    call_gamma_from_open: number;
+    put_gamma_from_open: number;
+    diff_gamma_from_open: number;
+    call_delta_from_open: number;
+    put_delta_from_open: number;
+    diff_delta_from_open: number;
+    call_theta_from_open: number;
+    put_theta_from_open: number;
+    diff_theta_from_open: number;
+  };
 }
 
 const LiveData = () => {
@@ -213,67 +227,182 @@ const LiveData = () => {
           </Popover>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* 1. Vega Trend (Absolute) */}
+        {/* Charts Section - All Greeks (Stacked Full Width) */}
+        <div className="space-y-6">
+            {/* 1. Vega Chart (Call, Put, Net) */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <TrendingUp className="w-4 h-4 text-primary" /> Vega Momentum (Absolute)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data}>
-                            <defs>
-                                <linearGradient id="colorVega" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
-                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
-                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            <Area 
-                                type="monotone" 
-                                dataKey="greeks.diff_vega" 
-                                name="Net Vega (Call - Put)" 
-                                stroke="#10b981" 
-                                fillOpacity={1} 
-                                fill="url(#colorVega)" 
-                                strokeWidth={2}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-
-            {/* 2. Vega Velocity (Change per Minute) */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <Activity className="w-4 h-4 text-blue-500" /> Vega Velocity (Change / Min)
+                        <TrendingUp className="w-4 h-4 text-emerald-500" /> Vega Analysis
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={data}>
-                             <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
                             <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
-                            <YAxis tick={{fontSize: 10}} />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
                             <Line 
                                 type="monotone" 
-                                dataKey="velocity.diff_vega_change" 
-                                name="Vega Acceleration" 
-                                stroke="#3b82f6" 
+                                dataKey="greeks.call_vega" 
+                                name="Call Vega" 
+                                stroke="#10b981" 
                                 strokeWidth={2}
-                                dot={false} 
-                                activeDot={{ r: 4 }}
+                                dot={false}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.put_vega" 
+                                name="Put Vega" 
+                                stroke="#ef4444" 
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.diff_vega" 
+                                name="Net Vega (C-P)" 
+                                stroke="#3b82f6" 
+                                strokeWidth={3}
+                                dot={false}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
+            {/* 2. Gamma Chart (Call, Put, Net) */}
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        <Activity className="w-4 h-4 text-purple-500" /> Gamma Analysis
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={data}>
+                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.call_gamma" 
+                                name="Call Gamma" 
+                                stroke="#10b981" 
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.put_gamma" 
+                                name="Put Gamma" 
+                                stroke="#ef4444" 
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.diff_gamma" 
+                                name="Net Gamma (C-P)" 
+                                stroke="#a855f7" 
+                                strokeWidth={3}
+                                dot={false}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
+            {/* 3. Delta Chart (Call, Put, Net) */}
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        <TrendingUp className="w-4 h-4 text-orange-500" /> Delta Analysis
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={data}>
+                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.call_delta" 
+                                name="Call Delta" 
+                                stroke="#10b981" 
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.put_delta" 
+                                name="Put Delta" 
+                                stroke="#ef4444" 
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.diff_delta" 
+                                name="Net Delta (C-P)" 
+                                stroke="#f97316" 
+                                strokeWidth={3}
+                                dot={false}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
+            {/* 4. Theta Chart (Call, Put, Net) */}
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        <Activity className="w-4 h-4 text-pink-500" /> Theta Analysis
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={data}>
+                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.call_theta" 
+                                name="Call Theta" 
+                                stroke="#10b981" 
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.put_theta" 
+                                name="Put Theta" 
+                                stroke="#ef4444" 
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="greeks.diff_theta" 
+                                name="Net Theta (C-P)" 
+                                stroke="#ec4899" 
+                                strokeWidth={3}
+                                dot={false}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -296,35 +425,48 @@ const LiveData = () => {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="w-[100px]">Time</TableHead>
-                      <TableHead className="text-right">Call Vega</TableHead>
-                      <TableHead className="text-right">Put Vega</TableHead>
-                      <TableHead className="text-right text-primary font-bold bg-primary/5">Net Vega</TableHead>
-                      <TableHead className="text-right text-blue-500 font-bold bg-blue-500/5">Velocity</TableHead>
-                      <TableHead className="text-right">Call Delta</TableHead>
-                      <TableHead className="text-right">Put Delta</TableHead>
-                      <TableHead className="text-right font-bold bg-muted/30">Net Delta</TableHead>
+                      <TableHead className="w-[80px]">Time</TableHead>
+                      <TableHead className="text-right text-xs">Call Vega</TableHead>
+                      <TableHead className="text-right text-xs">Put Vega</TableHead>
+                      <TableHead className="text-right text-xs font-bold bg-emerald-500/5">Net Vega</TableHead>
+                      <TableHead className="text-right text-xs">Call Gamma</TableHead>
+                      <TableHead className="text-right text-xs">Put Gamma</TableHead>
+                      <TableHead className="text-right text-xs font-bold bg-purple-500/5">Net Gamma</TableHead>
+                      <TableHead className="text-right text-xs">Call Delta</TableHead>
+                      <TableHead className="text-right text-xs">Put Delta</TableHead>
+                      <TableHead className="text-right text-xs font-bold bg-orange-500/5">Net Delta</TableHead>
+                      <TableHead className="text-right text-xs">Call Theta</TableHead>
+                      <TableHead className="text-right text-xs">Put Theta</TableHead>
+                      <TableHead className="text-right text-xs font-bold bg-pink-500/5">Net Theta</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {[...data].reverse().map((row, index) => { // Show newest first
                        const g = row.greeks || {};
-                       const v = row.velocity; // Can be undefined
-                       const vegaChange = v?.diff_vega_change || 0;
                        
                        return (
                       <TableRow key={index} className="hover:bg-muted/50 transition-colors">
                         <TableCell className="font-medium font-mono text-xs">{formatTime(row.timestamp)}</TableCell>
+                        
+                        {/* Vega */}
                         <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_vega)}</TableCell>
                         <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_vega)}</TableCell>
-                        <TableCell className="text-right font-mono text-xs font-bold text-primary bg-primary/5">{fmt(g.diff_vega)}</TableCell>
-                        <TableCell className={`text-right font-mono text-xs font-bold bg-blue-500/5 ${vegaChange > 0 ? 'text-green-500' : vegaChange < 0 ? 'text-red-500' : ''}`}>
-                            {vegaChange > 0 ? '+' : ''}{fmt(vegaChange)}
-                        </TableCell>
-
-                        <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmt(g.call_delta)}</TableCell>
-                        <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmt(g.put_delta)}</TableCell>
-                        <TableCell className="text-right font-mono text-xs font-bold text-foreground">{fmt(g.diff_delta)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs font-bold text-emerald-600 bg-emerald-500/5">{fmt(g.diff_vega)}</TableCell>
+                        
+                        {/* Gamma */}
+                        <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_gamma)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_gamma)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs font-bold text-purple-600 bg-purple-500/5">{fmt(g.diff_gamma)}</TableCell>
+                        
+                        {/* Delta */}
+                        <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_delta)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_delta)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs font-bold text-orange-600 bg-orange-500/5">{fmt(g.diff_delta)}</TableCell>
+                        
+                        {/* Theta */}
+                        <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_theta)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_theta)}</TableCell>
+                        <TableCell className="text-right font-mono text-xs font-bold text-pink-600 bg-pink-500/5">{fmt(g.diff_theta)}</TableCell>
                       </TableRow>
                     )})}
                   </TableBody>
