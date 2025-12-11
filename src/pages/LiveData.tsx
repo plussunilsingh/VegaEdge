@@ -107,16 +107,23 @@ const LiveData = () => {
         throw new Error("Invalid data format received");
       }
 
-      // Map Data
+      console.log("API Response sample:", result[0]); // Debug log
+
+      // Map Data - NEW API FORMAT
       const mappedData: GreeksData[] = result.map((item: any) => {
-          if (!item || !item.data || !item.data.greeks) return null;
+          // New API returns: { timestamp, index_name, expiry_date, greeks: {...} }
+          if (!item || !item.greeks) {
+            console.warn("Invalid item:", item);
+            return null;
+          }
           return {
-            timestamp: item.timestamp, // "YYYY-MM-DD HH:MM"
-            greeks: item.data.greeks,
-            velocity: item.data.velocity
+            timestamp: item.timestamp, // ISO format: "2025-12-11T09:16:00"
+            greeks: item.greeks, // All Greeks are here
+            // velocity and baseline_diff not yet implemented in new API
           };
       }).filter((item) => item !== null) as GreeksData[];
 
+      console.log(`Mapped ${mappedData.length} records`); // Debug log
       setData(mappedData);
       setLastUpdated(new Date());
     } catch (error: any) {
@@ -236,30 +243,55 @@ const LiveData = () => {
                         <TrendingUp className="w-4 h-4 text-emerald-500" /> Vega Analysis
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px]">
+                <CardContent className="h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
-                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
-                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.5} />
+                            <XAxis 
+                                dataKey="timestamp" 
+                                tickFormatter={formatTime} 
+                                tick={{fontSize: 11, fill: '#666'}} 
+                                minTickGap={30}
+                                stroke="#999"
+                            />
+                            <YAxis 
+                                domain={['auto', 'auto']} 
+                                tick={{fontSize: 11, fill: '#666'}}
+                                stroke="#999"
+                            />
+                            <Tooltip 
+                                content={<CustomTooltip />}
+                                contentStyle={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '6px',
+                                    padding: '8px'
+                                }}
+                            />
+                            <Legend 
+                                wrapperStyle={{
+                                    paddingTop: '12px',
+                                    fontSize: '12px'
+                                }}
+                            />
+                            <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
                             <Line 
                                 type="monotone" 
                                 dataKey="greeks.call_vega" 
                                 name="Call Vega" 
-                                stroke="#10b981" 
-                                strokeWidth={2}
+                                stroke="#22c55e" 
+                                strokeWidth={2.5}
                                 dot={false}
+                                activeDot={{ r: 5, fill: '#22c55e' }}
                             />
                             <Line 
                                 type="monotone" 
                                 dataKey="greeks.put_vega" 
                                 name="Put Vega" 
                                 stroke="#ef4444" 
-                                strokeWidth={2}
+                                strokeWidth={2.5}
                                 dot={false}
+                                activeDot={{ r: 5, fill: '#ef4444' }}
                             />
                             <Line 
                                 type="monotone" 
@@ -268,6 +300,7 @@ const LiveData = () => {
                                 stroke="#3b82f6" 
                                 strokeWidth={3}
                                 dot={false}
+                                activeDot={{ r: 6, fill: '#3b82f6' }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -281,30 +314,32 @@ const LiveData = () => {
                         <Activity className="w-4 h-4 text-purple-500" /> Gamma Analysis
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px]">
+                <CardContent className="h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
-                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
-                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.5} />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 11, fill: '#666'}} minTickGap={30} stroke="#999" />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 11, fill: '#666'}} stroke="#999" />
+                            <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
+                            <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
+                            <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
                             <Line 
                                 type="monotone" 
                                 dataKey="greeks.call_gamma" 
                                 name="Call Gamma" 
-                                stroke="#10b981" 
-                                strokeWidth={2}
+                                stroke="#22c55e" 
+                                strokeWidth={2.5}
                                 dot={false}
+                                activeDot={{ r: 5, fill: '#22c55e' }}
                             />
                             <Line 
                                 type="monotone" 
                                 dataKey="greeks.put_gamma" 
                                 name="Put Gamma" 
                                 stroke="#ef4444" 
-                                strokeWidth={2}
+                                strokeWidth={2.5}
                                 dot={false}
+                                activeDot={{ r: 5, fill: '#ef4444' }}
                             />
                             <Line 
                                 type="monotone" 
@@ -313,6 +348,7 @@ const LiveData = () => {
                                 stroke="#a855f7" 
                                 strokeWidth={3}
                                 dot={false}
+                                activeDot={{ r: 6, fill: '#a855f7' }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -326,30 +362,32 @@ const LiveData = () => {
                         <TrendingUp className="w-4 h-4 text-orange-500" /> Delta Analysis
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px]">
+                <CardContent className="h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
-                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
-                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.5} />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 11, fill: '#666'}} minTickGap={30} stroke="#999" />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 11, fill: '#666'}} stroke="#999" />
+                            <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
+                            <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
+                            <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
                             <Line 
                                 type="monotone" 
                                 dataKey="greeks.call_delta" 
                                 name="Call Delta" 
-                                stroke="#10b981" 
-                                strokeWidth={2}
+                                stroke="#22c55e" 
+                                strokeWidth={2.5}
                                 dot={false}
+                                activeDot={{ r: 5, fill: '#22c55e' }}
                             />
                             <Line 
                                 type="monotone" 
                                 dataKey="greeks.put_delta" 
                                 name="Put Delta" 
                                 stroke="#ef4444" 
-                                strokeWidth={2}
+                                strokeWidth={2.5}
                                 dot={false}
+                                activeDot={{ r: 5, fill: '#ef4444' }}
                             />
                             <Line 
                                 type="monotone" 
@@ -358,6 +396,7 @@ const LiveData = () => {
                                 stroke="#f97316" 
                                 strokeWidth={3}
                                 dot={false}
+                                activeDot={{ r: 6, fill: '#f97316' }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -371,30 +410,32 @@ const LiveData = () => {
                         <Activity className="w-4 h-4 text-pink-500" /> Theta Analysis
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px]">
+                <CardContent className="h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
-                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} minTickGap={30} />
-                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.5} />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 11, fill: '#666'}} minTickGap={30} stroke="#999" />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 11, fill: '#666'}} stroke="#999" />
+                            <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
+                            <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
+                            <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
                             <Line 
                                 type="monotone" 
                                 dataKey="greeks.call_theta" 
                                 name="Call Theta" 
-                                stroke="#10b981" 
-                                strokeWidth={2}
+                                stroke="#22c55e" 
+                                strokeWidth={2.5}
                                 dot={false}
+                                activeDot={{ r: 5, fill: '#22c55e' }}
                             />
                             <Line 
                                 type="monotone" 
                                 dataKey="greeks.put_theta" 
                                 name="Put Theta" 
                                 stroke="#ef4444" 
-                                strokeWidth={2}
+                                strokeWidth={2.5}
                                 dot={false}
+                                activeDot={{ r: 5, fill: '#ef4444' }}
                             />
                             <Line 
                                 type="monotone" 
@@ -403,6 +444,7 @@ const LiveData = () => {
                                 stroke="#ec4899" 
                                 strokeWidth={3}
                                 dot={false}
+                                activeDot={{ r: 6, fill: '#ec4899' }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
