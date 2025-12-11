@@ -27,7 +27,7 @@ interface SessionContextType { sessionTimeLeft: number; }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-const SESSION_TIMEOUT = 120; // 2 minutes in seconds
+const SESSION_TIMEOUT = 600; // 10 minutes in seconds (matches backend JWT expiration)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);

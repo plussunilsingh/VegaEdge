@@ -74,7 +74,6 @@ const LiveData = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY"); // Index selector
   const [data, setData] = useState<GreeksData[]>([]);
-  const [allData, setAllData] = useState<GreeksData[]>([]); // Store all data
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
@@ -93,7 +92,8 @@ const LiveData = () => {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
       // console.log(`Fetching history for ${dateStr}`);
 
-      const response = await fetch(`${BACKEND_API_BASE_URL}/market/history?date=${dateStr}`, {
+      // Pass index parameter to API
+      const response = await fetch(`${BACKEND_API_BASE_URL}/market/history?date=${dateStr}&index_name=${selectedIndex}`, {
         headers: {
           Authorization: `Bearer ${token}`, // User Auth
         },
@@ -111,7 +111,7 @@ const LiveData = () => {
 
       console.log("API Response sample:", result[0]); // Debug log
 
-      // Map Data - NEW API FORMAT
+      // Map Data - NEW API FORMAT (backend already filtered by index)
       const mappedData: GreeksData[] = result.map((item: any) => {
           // New API returns: { timestamp, index_name, expiry_date, greeks: {...} }
           if (!item || !item.greeks) {
@@ -125,15 +125,8 @@ const LiveData = () => {
           };
       }).filter((item) => item !== null) as GreeksData[];
 
-      console.log(`Mapped ${mappedData.length} records`); // Debug log
-      setAllData(mappedData); // Store all data
-      
-      // Filter by selected index
-      const filteredData = mappedData.filter((item: any) => 
-        item.index_name === selectedIndex
-      );
-      console.log(`Filtered to ${filteredData.length} records for ${selectedIndex}`);
-      setData(filteredData);
+      console.log(`Received ${mappedData.length} records for ${selectedIndex}`); // Debug log
+      setData(mappedData);
       setLastUpdated(new Date());
     } catch (error: any) {
       console.error("Fetch Error:", error);
@@ -161,18 +154,7 @@ const LiveData = () => {
       
       return () => clearInterval(interval);
     }
-  }, [date, token, fetchHistoryData]);
-
-  // Filter data when index changes
-  useEffect(() => {
-    if (allData.length > 0) {
-      const filteredData = allData.filter((item: any) => 
-        item.index_name === selectedIndex
-      );
-      console.log(`Index changed to ${selectedIndex}: ${filteredData.length} records`);
-      setData(filteredData);
-    }
-  }, [selectedIndex, allData]);
+  }, [date, token, selectedIndex, fetchHistoryData]); // Added selectedIndex to dependencies
 
 
   const formatTime = (isoString: string) => {
