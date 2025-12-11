@@ -236,11 +236,11 @@ const LiveData = () => {
 
         {/* Charts Section - All Greeks (Stacked Full Width) */}
         <div className="space-y-6">
-            {/* 1. Vega Chart (Call, Put, Net) */}
+            {/* 1. Vega Chart (Call vs Put) */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <TrendingUp className="w-4 h-4 text-emerald-500" /> Vega Analysis
+                        <TrendingUp className="w-4 h-4 text-emerald-500" /> Vega Analysis (Call vs Put)
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="h-[350px]">
@@ -293,25 +293,16 @@ const LiveData = () => {
                                 dot={false}
                                 activeDot={{ r: 5, fill: '#ef4444' }}
                             />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.diff_vega" 
-                                name="Net Vega (C-P)" 
-                                stroke="#3b82f6" 
-                                strokeWidth={3}
-                                dot={false}
-                                activeDot={{ r: 6, fill: '#3b82f6' }}
-                            />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            {/* 2. Gamma Chart (Call, Put, Net) */}
+            {/* 2. Gamma Chart (Call vs Put) */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <Activity className="w-4 h-4 text-purple-500" /> Gamma Analysis
+                        <Activity className="w-4 h-4 text-purple-500" /> Gamma Analysis (Call vs Put)
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="h-[350px]">
@@ -341,25 +332,16 @@ const LiveData = () => {
                                 dot={false}
                                 activeDot={{ r: 5, fill: '#ef4444' }}
                             />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.diff_gamma" 
-                                name="Net Gamma (C-P)" 
-                                stroke="#a855f7" 
-                                strokeWidth={3}
-                                dot={false}
-                                activeDot={{ r: 6, fill: '#a855f7' }}
-                            />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            {/* 3. Delta Chart (Call, Put, Net) */}
+            {/* 3. Delta Chart (Call vs Put) */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <TrendingUp className="w-4 h-4 text-orange-500" /> Delta Analysis
+                        <TrendingUp className="w-4 h-4 text-orange-500" /> Delta Analysis (Call vs Put)
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="h-[350px]">
@@ -389,25 +371,16 @@ const LiveData = () => {
                                 dot={false}
                                 activeDot={{ r: 5, fill: '#ef4444' }}
                             />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.diff_delta" 
-                                name="Net Delta (C-P)" 
-                                stroke="#f97316" 
-                                strokeWidth={3}
-                                dot={false}
-                                activeDot={{ r: 6, fill: '#f97316' }}
-                            />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            {/* 4. Theta Chart (Call, Put, Net) */}
+            {/* 4. Theta Chart (Call vs Put) */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <Activity className="w-4 h-4 text-pink-500" /> Theta Analysis
+                        <Activity className="w-4 h-4 text-pink-500" /> Theta Analysis (Call vs Put)
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="h-[350px]">
@@ -436,15 +409,6 @@ const LiveData = () => {
                                 strokeWidth={2.5}
                                 dot={false}
                                 activeDot={{ r: 5, fill: '#ef4444' }}
-                            />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.diff_theta" 
-                                name="Net Theta (C-P)" 
-                                stroke="#ec4899" 
-                                strokeWidth={3}
-                                dot={false}
-                                activeDot={{ r: 6, fill: '#ec4899' }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
