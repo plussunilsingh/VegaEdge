@@ -27,8 +27,6 @@ import {
   Tooltip, 
   Legend, 
   ResponsiveContainer,
-  AreaChart,
-  Area,
   ReferenceLine
 } from 'recharts';
 
@@ -47,7 +45,7 @@ interface GreeksData {
     call_theta: number;
     put_theta: number;
     diff_theta: number;
-  };
+  } | null;
   velocity?: {
     diff_vega_change: number;
     diff_gamma_change: number;
@@ -67,19 +65,33 @@ interface GreeksData {
     call_theta_from_open: number;
     put_theta_from_open: number;
     diff_theta_from_open: number;
-  };
+  } | null;
 }
 
 const LiveData = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY"); // Index selector
+  const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [data, setData] = useState<GreeksData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
-  
-  // Polling Interval Ref
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+  // Helper to generate full day time slots (09:15 to 15:30)
+  const generateTimeSlots = (baseDate: Date) => {
+      const slots = [];
+      const start = new Date(baseDate);
+      start.setHours(9, 15, 0, 0);
+      const end = new Date(baseDate);
+      end.setHours(15, 30, 0, 0);
+
+      let current = start;
+      while (current <= end) {
+          slots.push(new Date(current));
+          current = new Date(current.getTime() + 60000); // Add 1 minute
+      }
+      return slots;
+  };
 
   const fetchHistoryData = useCallback(async (selectedDate: Date, silent = false) => {
     if (!silent) setIsLoading(true);
@@ -90,12 +102,10 @@ const LiveData = () => {
       }
 
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      // console.log(`Fetching history for ${dateStr}`);
-
-      // Pass index parameter to API
+      
       const response = await fetch(`${BACKEND_API_BASE_URL}/market/history?date=${dateStr}&index_name=${selectedIndex}`, {
         headers: {
-          Authorization: `Bearer ${token}`, // User Auth
+          Authorization: `Bearer ${token}`, 
         },
       });
 
@@ -109,25 +119,65 @@ const LiveData = () => {
         throw new Error("Invalid data format received");
       }
 
-      console.log("API Response sample:", result[0]); // Debug log
-
-      // Map Data - NEW API FORMAT (backend already filtered by index)
-      const mappedData: GreeksData[] = result.map((item: any) => {
-          // New API returns: { timestamp, index_name, expiry_date, greeks: {...} }
-          if (!item || !item.greeks) {
-            console.warn("Invalid item:", item);
-            return null;
+      // 1. Create Lookup Map for fetched data
+      const dataMap = new Map();
+      result.forEach((item: any) => {
+          if (item?.greeks && item.timestamp) {
+              const timeStr = format(new Date(item.timestamp), "HH:mm");
+              dataMap.set(timeStr, item);
           }
-          return {
-            timestamp: item.timestamp, // ISO format: "2025-12-11T09:16:00"
-            greeks: item.greeks, // All Greeks are here
-            baseline_diff: item.baseline_diff // Change from Open (9:15)
-          };
-      }).filter((item) => item !== null) as GreeksData[];
+      });
 
-      console.log(`Received ${mappedData.length} records for ${selectedIndex}`); // Debug log
-      setData(mappedData);
+      // 2. Generate Full Time Backbone
+      const timeSlots = generateTimeSlots(selectedDate);
+      
+      // 3. Merge & Calculate Baseline
+      let baseline: any = null;
+      
+      const processedData: GreeksData[] = timeSlots.map((slotTime) => {
+          const timeKey = format(slotTime, "HH:mm");
+          const existingData = dataMap.get(timeKey);
+
+          const point: GreeksData = {
+              timestamp: slotTime.toISOString(),
+              greeks: existingData ? existingData.greeks : null,
+              baseline_diff: null
+          };
+
+          if (existingData) {
+               if (!baseline) {
+                   baseline = existingData.greeks;
+                   point.baseline_diff = {
+                       call_vega_from_open: 0, put_vega_from_open: 0, diff_vega_from_open: 0,
+                       call_gamma_from_open: 0, put_gamma_from_open: 0, diff_gamma_from_open: 0,
+                       call_delta_from_open: 0, put_delta_from_open: 0, diff_delta_from_open: 0,
+                       call_theta_from_open: 0, put_theta_from_open: 0, diff_theta_from_open: 0,
+                   };
+               } else {
+                   const curr = existingData.greeks;
+                   point.baseline_diff = {
+                       call_vega_from_open: curr.call_vega - baseline.call_vega,
+                       put_vega_from_open: curr.put_vega - baseline.put_vega,
+                       diff_vega_from_open: curr.diff_vega - baseline.diff_vega,
+                       call_gamma_from_open: curr.call_gamma - baseline.call_gamma,
+                       put_gamma_from_open: curr.put_gamma - baseline.put_gamma,
+                       diff_gamma_from_open: curr.diff_gamma - baseline.diff_gamma,
+                       call_delta_from_open: curr.call_delta - baseline.call_delta,
+                       put_delta_from_open: curr.put_delta - baseline.put_delta,
+                       diff_delta_from_open: curr.diff_delta - baseline.diff_delta,
+                       call_theta_from_open: curr.call_theta - baseline.call_theta,
+                       put_theta_from_open: curr.put_theta - baseline.put_theta,
+                       diff_theta_from_open: curr.diff_theta - baseline.diff_theta,
+                   };
+               }
+          }
+          return point;
+      });
+
+      console.log(`Processed ${processedData.length} time slots for ${selectedIndex}`);
+      setData(processedData);
       setLastUpdated(new Date());
+      
     } catch (error: any) {
       console.error("Fetch Error:", error);
       if (!silent) {
@@ -137,37 +187,32 @@ const LiveData = () => {
     } finally {
       if (!silent) setIsLoading(false);
     }
-  }, [token]);
+  }, [token, selectedIndex]);
 
   // Initial Fetch & Polling (Drift-Free)
   useEffect(() => {
     if (date && token) {
-      // 1. Initial Fetch
       fetchHistoryData(date);
       
       let timeoutId: NodeJS.Timeout;
 
-      // 2. Setup Polling if "Today" is selected
       if (isToday(date)) {
         const scheduleNext = () => {
           const now = new Date();
-          // Target: HH:mm:05 (5 seconds past the minute)
-          // This allows 5s buffer for backend aggregation to finish
           const target = new Date(now);
           target.setSeconds(5);
           target.setMilliseconds(0);
 
-          // If we passed current HH:mm:05, aim for next minute
           if (target.getTime() <= now.getTime()) {
             target.setMinutes(target.getMinutes() + 1);
           }
 
           const delay = target.getTime() - now.getTime();
-          console.log(`Scheduling next update in ${Math.round(delay/1000)}s at ${format(target, "HH:mm:ss")}`);
+          console.log(`Scheduling next update in ${Math.round(delay/1000)}s`);
 
           timeoutId = setTimeout(() => {
             fetchHistoryData(date, true);
-            scheduleNext(); // Recursive call
+            scheduleNext();
           }, delay);
         };
 
@@ -178,33 +223,34 @@ const LiveData = () => {
     }
   }, [date, token, selectedIndex, fetchHistoryData]);
 
-
   const formatTime = (isoString: string) => {
     try {
-        // Expecting "2025-12-11 10:00" or similar
         return format(new Date(isoString), "HH:mm");
     } catch (e) {
-        return isoString.split(" ")[1] || isoString;
+        return "";
     }
   };
 
   const fmt = (val: any, digits = 2) => {
+      if (val === null || val === undefined) return "-";
       const num = Number(val);
       if (isNaN(num)) return "-";
       return num.toFixed(digits);
   };
   
-  // Chart Custom Tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-background border rounded p-2 shadow-lg text-xs">
-          <p className="font-bold">{label}</p>
+        <div className="bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3 shadow-xl text-xs">
+          <p className="font-medium mb-2 text-muted-foreground">{formatTime(label)}</p>
           {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }}>
-              {entry.name}: {fmt(entry.value)}
-            </p>
-          ))}
+             entry.value !== undefined && entry.value !== null && (
+            <div key={index} className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+              <span className="text-foreground">{entry.name}:</span>
+              <span className="font-mono font-medium">{fmt(entry.value)}</span>
+            </div>
+          )))}
         </div>
       );
     }
@@ -226,7 +272,7 @@ const LiveData = () => {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
       <AuthenticatedNavbar />
-      <div className="container mx-auto py-6 px-4 max-w-7xl space-y-6">
+      <div className="container mx-auto py-6 px-4 max-w-[1600px] space-y-6">
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -240,21 +286,17 @@ const LiveData = () => {
           </div>
 
           <div className="flex gap-3">
-            {/* Index Selector */}
-            <div>
-              <select 
-                value={selectedIndex}
-                onChange={(e) => setSelectedIndex(e.target.value)}
-                className="h-10 px-4 py-2 bg-background border border-primary/20 hover:border-primary/50 rounded-md text-sm transition-colors cursor-pointer"
-              >
-                <option value="NIFTY">NIFTY</option>
-                <option value="BANKNIFTY">BANKNIFTY</option>
-                <option value="FINNIFTY">FINNIFTY</option>
-                <option value="MIDCPNIFTY">MIDCPNIFTY</option>
-              </select>
-            </div>
+            <select 
+              value={selectedIndex}
+              onChange={(e) => setSelectedIndex(e.target.value)}
+              className="h-10 px-4 py-2 bg-background border border-primary/20 hover:border-primary/50 rounded-md text-sm transition-colors cursor-pointer"
+            >
+              <option value="NIFTY">NIFTY</option>
+              <option value="BANKNIFTY">BANKNIFTY</option>
+              <option value="FINNIFTY">FINNIFTY</option>
+              <option value="MIDCPNIFTY">MIDCPNIFTY</option>
+            </select>
 
-            {/* Date Picker */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant={"outline"} className="w-[200px] justify-start text-left font-normal border-primary/20 hover:border-primary/50 transition-colors">
@@ -275,214 +317,120 @@ const LiveData = () => {
           </div>
         </div>
 
-        {/* Charts Section - All Greeks (Stacked Full Width) */}
+        {/* Charts Section */}
         <div className="space-y-6">
-            {/* 1. Vega Chart (Call vs Put) */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
-                <CardHeader>
+            {/* 1. Vega Chart */}
+            <Card className="border-border/40 bg-card/40 backdrop-blur-md shadow-2xl ring-1 ring-white/5">
+                <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <TrendingUp className="w-4 h-4 text-emerald-500" /> Vega Analysis (Call vs Put)
+                        <TrendingUp className="w-4 h-4 text-emerald-500" /> Vega Analysis (Dynamic)
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="h-[350px]">
+                <CardContent className="h-[350px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.5} />
+                        <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#333" strokeOpacity={0.2} vertical={false} />
                             <XAxis 
                                 dataKey="timestamp" 
                                 tickFormatter={formatTime} 
-                                tick={{fontSize: 11, fill: '#666'}} 
-                                minTickGap={30}
-                                stroke="#999"
+                                tick={{fontSize: 10, fill: '#888'}} 
+                                minTickGap={50}
+                                stroke="#444"
+                                axisLine={false}
+                                tickLine={false}
                             />
                             <YAxis 
                                 domain={['auto', 'auto']} 
-                                tick={{fontSize: 11, fill: '#666'}}
-                                stroke="#999"
+                                tick={{fontSize: 10, fill: '#888'}}
+                                stroke="#444"
+                                axisLine={false}
+                                tickLine={false}
                             />
-                            <Tooltip 
-                                content={<CustomTooltip />}
-                                contentStyle={{
-                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                    border: '1px solid #ccc',
-                                    borderRadius: '6px',
-                                    padding: '8px'
-                                }}
-                            />
-                            <Legend 
-                                wrapperStyle={{
-                                    paddingTop: '12px',
-                                    fontSize: '12px'
-                                }}
-                            />
-                            <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.call_vega" 
-                                name="Call Vega" 
-                                stroke="#22c55e" 
-                                strokeWidth={2.5}
-                                dot={false}
-                                activeDot={{ r: 5, fill: '#22c55e' }}
-                            />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.put_vega" 
-                                name="Put Vega" 
-                                stroke="#ef4444" 
-                                strokeWidth={2.5}
-                                dot={false}
-                                activeDot={{ r: 5, fill: '#ef4444' }}
-                            />
+                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#666', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                            <Legend wrapperStyle={{paddingTop: '10px', fontSize: '11px'}} iconType="circle" />
+                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" strokeOpacity={0.5} />
+                            <Line type="monotone" dataKey="greeks.call_vega" name="Call Vega" stroke="#10b981" strokeWidth={1.5} dot={false} connectNulls={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+                            <Line type="monotone" dataKey="greeks.put_vega" name="Put Vega" stroke="#ef4444" strokeWidth={1.5} dot={false} connectNulls={false} activeDot={{ r: 4, strokeWidth: 0 }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            {/* 2. Gamma Chart (Call vs Put) - No Net Line */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <Activity className="w-4 h-4 text-purple-500" /> Gamma Analysis (Call vs Put)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.5} />
-                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 11, fill: '#666'}} minTickGap={30} stroke="#999" />
-                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 11, fill: '#666'}} stroke="#999" />
-                            <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
-                            <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
-                            <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
-                            <Line type="monotone" dataKey="greeks.call_gamma" name="Call Gamma" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
-                            <Line type="monotone" dataKey="greeks.put_gamma" name="Put Gamma" stroke="#ef4444" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#ef4444' }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-
-            {/* 3. Delta Chart (Call vs Put) - No Net Line */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <TrendingUp className="w-4 h-4 text-orange-500" /> Delta Analysis (Call vs Put)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.5} />
-                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 11, fill: '#666'}} minTickGap={30} stroke="#999" />
-                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 11, fill: '#666'}} stroke="#999" />
-                            <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
-                            <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
-                            <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
-                            <Line type="monotone" dataKey="greeks.call_delta" name="Call Delta" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
-                            <Line type="monotone" dataKey="greeks.put_delta" name="Put Delta" stroke="#ef4444" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#ef4444' }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-
-            {/* 4. Theta Chart (Call vs Put) - No Net Line */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <Activity className="w-4 h-4 text-pink-500" /> Theta Analysis (Call vs Put)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" strokeOpacity={0.5} />
-                            <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 11, fill: '#666'}} minTickGap={30} stroke="#999" />
-                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 11, fill: '#666'}} stroke="#999" />
-                            <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
-                            <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
-                            <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
-                            <Line type="monotone" dataKey="greeks.call_theta" name="Call Theta" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
-                            <Line type="monotone" dataKey="greeks.put_theta" name="Put Theta" stroke="#ef4444" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#ef4444' }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-
-            {/* Change from Open Charts Section */}
-            <div className="pt-8 pb-4">
-                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-blue-500" />
-                    Change from Market Open (09:15)
+            {/* 2. Change from Baseline */}
+            <div className="pt-4">
+                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 px-1">
+                    <Activity className="w-4 h-4 text-blue-500" />
+                    Relative Change (From Baseline)
                  </h2>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Vega Change */}
-                    <Card>
-                        <CardHeader><CardTitle className="text-sm">Vega Change</CardTitle></CardHeader>
-                        <CardContent className="h-[250px]">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Vega */}
+                    <Card className="border-border/40 bg-card/40 backdrop-blur-sm">
+                        <CardHeader className="py-3"><CardTitle className="text-xs font-medium uppercase text-muted-foreground">Vega Δ</CardTitle></CardHeader>
+                        <CardContent className="h-[250px] p-2">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={data}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} />
-                                    <YAxis fontSize={10} />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <ReferenceLine y={0} stroke="#666" />
-                                    <Line type="monotone" dataKey="baseline_diff.call_vega" name="Call Δ" stroke="#22c55e" dot={false} strokeWidth={2} />
-                                    <Line type="monotone" dataKey="baseline_diff.put_vega" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={2} />
-                                    <Line type="monotone" dataKey="baseline_diff.diff_vega" name="Net Δ" stroke="#3b82f6" dot={false} strokeWidth={2} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#333" strokeOpacity={0.1} />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} axisLine={false} tickLine={false} minTickGap={40}/>
+                                    <YAxis fontSize={10} axisLine={false} tickLine={false} width={30} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#666', strokeWidth: 1 }}/>
+                                    <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                                    <Line type="monotone" dataKey="baseline_diff.call_vega_from_open" name="Call Δ" stroke="#10b981" dot={false} strokeWidth={1.5} connectNulls={false} />
+                                    <Line type="monotone" dataKey="baseline_diff.put_vega_from_open" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={1.5} connectNulls={false} />
+                                    <Line type="monotone" dataKey="baseline_diff.diff_vega_from_open" name="Net Δ" stroke="#3b82f6" dot={false} strokeWidth={1.5} connectNulls={false} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </CardContent>
                     </Card>
 
-                    {/* Gamma Change */}
-                     <Card>
-                        <CardHeader><CardTitle className="text-sm">Gamma Change</CardTitle></CardHeader>
-                        <CardContent className="h-[250px]">
+                    {/* Gamma */}
+                     <Card className="border-border/40 bg-card/40 backdrop-blur-sm">
+                        <CardHeader className="py-3"><CardTitle className="text-xs font-medium uppercase text-muted-foreground">Gamma Δ</CardTitle></CardHeader>
+                        <CardContent className="h-[250px] p-2">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={data}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} />
-                                    <YAxis fontSize={10} />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <ReferenceLine y={0} stroke="#666" />
-                                    <Line type="monotone" dataKey="baseline_diff.call_gamma" name="Call Δ" stroke="#22c55e" dot={false} strokeWidth={2} />
-                                    <Line type="monotone" dataKey="baseline_diff.put_gamma" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={2} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#333" strokeOpacity={0.1} />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} axisLine={false} tickLine={false} minTickGap={40}/>
+                                    <YAxis fontSize={10} axisLine={false} tickLine={false} width={30} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#666', strokeWidth: 1 }}/>
+                                    <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                                    <Line type="monotone" dataKey="baseline_diff.call_gamma_from_open" name="Call Δ" stroke="#10b981" dot={false} strokeWidth={1.5} connectNulls={false} />
+                                    <Line type="monotone" dataKey="baseline_diff.put_gamma_from_open" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={1.5} connectNulls={false} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </CardContent>
                     </Card>
                     
-                    {/* Delta Change */}
-                     <Card>
-                        <CardHeader><CardTitle className="text-sm">Delta Change</CardTitle></CardHeader>
-                        <CardContent className="h-[250px]">
+                    {/* Delta */}
+                     <Card className="border-border/40 bg-card/40 backdrop-blur-sm">
+                        <CardHeader className="py-3"><CardTitle className="text-xs font-medium uppercase text-muted-foreground">Delta Δ</CardTitle></CardHeader>
+                        <CardContent className="h-[250px] p-2">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={data}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} />
-                                    <YAxis fontSize={10} />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <ReferenceLine y={0} stroke="#666" />
-                                    <Line type="monotone" dataKey="baseline_diff.call_delta" name="Call Δ" stroke="#22c55e" dot={false} strokeWidth={2} />
-                                    <Line type="monotone" dataKey="baseline_diff.put_delta" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={2} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#333" strokeOpacity={0.1} />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} axisLine={false} tickLine={false} minTickGap={40}/>
+                                    <YAxis fontSize={10} axisLine={false} tickLine={false} width={30} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#666', strokeWidth: 1 }} />
+                                    <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                                    <Line type="monotone" dataKey="baseline_diff.call_delta_from_open" name="Call Δ" stroke="#10b981" dot={false} strokeWidth={1.5} connectNulls={false} />
+                                    <Line type="monotone" dataKey="baseline_diff.put_delta_from_open" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={1.5} connectNulls={false} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </CardContent>
                     </Card>
 
-                    {/* Theta Change */}
-                     <Card>
-                        <CardHeader><CardTitle className="text-sm">Theta Change</CardTitle></CardHeader>
-                        <CardContent className="h-[250px]">
+                    {/* Theta */}
+                     <Card className="border-border/40 bg-card/40 backdrop-blur-sm">
+                        <CardHeader className="py-3"><CardTitle className="text-xs font-medium uppercase text-muted-foreground">Theta Δ</CardTitle></CardHeader>
+                        <CardContent className="h-[250px] p-2">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={data}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} />
-                                    <YAxis fontSize={10} />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <ReferenceLine y={0} stroke="#666" />
-                                    <Line type="monotone" dataKey="baseline_diff.call_theta" name="Call Δ" stroke="#22c55e" dot={false} strokeWidth={2} />
-                                    <Line type="monotone" dataKey="baseline_diff.put_theta" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={2} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#333" strokeOpacity={0.1} />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} axisLine={false} tickLine={false} minTickGap={40}/>
+                                    <YAxis fontSize={10} axisLine={false} tickLine={false} width={30} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#666', strokeWidth: 1 }} />
+                                    <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                                    <Line type="monotone" dataKey="baseline_diff.call_theta_from_open" name="Call Δ" stroke="#10b981" dot={false} strokeWidth={1.5} connectNulls={false} />
+                                    <Line type="monotone" dataKey="baseline_diff.put_theta_from_open" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={1.5} connectNulls={false} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </CardContent>
@@ -496,11 +444,12 @@ const LiveData = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Detailed Market Logs</CardTitle>
             <Button variant="outline" size="sm" onClick={() => {
-                if (!data.length) return;
+                const validData = data.filter(r => r.greeks !== null);
+                if (!validData.length) return;
                 const csvContent = "data:text/csv;charset=utf-8," 
                     + "Time,Call Vega,Put Vega,Net Vega,Call Gamma,Put Gamma,Net Gamma,Call Delta,Put Delta,Net Delta\n"
-                    + data.map(row => {
-                        const g = row.greeks;
+                    + validData.map(row => {
+                        const g = row.greeks!;
                         const t = format(new Date(row.timestamp), "HH:mm:ss");
                         return `${t},${g.call_vega},${g.put_vega},${g.diff_vega},${g.call_gamma},${g.put_gamma},${g.diff_gamma},${g.call_delta},${g.put_delta},${g.diff_delta}`;
                     }).join("\n");
@@ -542,29 +491,23 @@ const LiveData = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {[...data].reverse().map((row, index) => { // Show newest first
-                       const g = row.greeks;
-                       
-                       return (
+                    {[...data]
+                        .filter(row => row.greeks !== null)
+                        .reverse()
+                        .map((row, index) => {
+                           const g = row.greeks!;
+                           return (
                       <TableRow key={index} className="hover:bg-muted/50 transition-colors">
                         <TableCell className="font-medium font-mono text-xs">{formatTime(row.timestamp)}</TableCell>
-                        
-                        {/* Vega */}
                         <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_vega)}</TableCell>
                         <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_vega)}</TableCell>
                         <TableCell className="text-right font-mono text-xs font-bold text-emerald-600 bg-emerald-500/5">{fmt(g.diff_vega)}</TableCell>
-                        
-                        {/* Gamma */}
                         <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_gamma)}</TableCell>
                         <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_gamma)}</TableCell>
                         <TableCell className="text-right font-mono text-xs font-bold text-purple-600 bg-purple-500/5">{fmt(g.diff_gamma)}</TableCell>
-                        
-                        {/* Delta */}
                         <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_delta)}</TableCell>
                         <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_delta)}</TableCell>
                         <TableCell className="text-right font-mono text-xs font-bold text-orange-600 bg-orange-500/5">{fmt(g.diff_delta)}</TableCell>
-                        
-                        {/* Theta */}
                         <TableCell className="text-right font-mono text-xs text-green-600/90">{fmt(g.call_theta)}</TableCell>
                         <TableCell className="text-right font-mono text-xs text-red-600/90">{fmt(g.put_theta)}</TableCell>
                         <TableCell className="text-right font-mono text-xs font-bold text-pink-600 bg-pink-500/5">{fmt(g.diff_theta)}</TableCell>
