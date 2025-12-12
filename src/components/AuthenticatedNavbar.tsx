@@ -2,13 +2,53 @@ import { Link } from "react-router-dom";
 import { Phone, Mail, Clock, Menu, X } from "lucide-react";
 import { useAuth, useSession } from "@/contexts/AuthContext";
 import { useState } from "react";
- 
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+
 const AuthenticatedNavbar = () => {
   const { logout, user } = useAuth();
   const { sessionTimeLeft } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
   
   const toggleMenu = () => setIsOpen(!isOpen);
+
+// ... (formatTime helper remains same)
+
+// ... (JSX structure)
+
+              <div className="flex items-center gap-2 ml-4">
+                <Button variant="outline" size="sm" onClick={async () => {
+                  try {
+                    const resp = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/upstox-login-url`, {
+                      method: 'GET',
+                    });
+                    if (!resp.ok) throw new Error(`Status ${resp.status}`);
+                    const data = await resp.json();
+                    
+                    if (data.url) {
+                        toast({
+                        title: 'Redirecting to Upstox...',
+                        description: "Please login to authorize.",
+                        variant: 'default',
+                      });
+                      window.location.href = data.url;
+                    } else {
+                         throw new Error("No URL received");
+                    }
+
+                  } catch (e) {
+                    console.error(e);
+                    toast({
+                      title: 'Connection Failed',
+                      description: (e as Error).message,
+                      variant: 'destructive',
+                    });
+                  }
+                }}>
+                  Connect Upstox
+                </Button>
+              </div>
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -82,6 +122,33 @@ const AuthenticatedNavbar = () => {
               <Link to="/contact" className="text-white hover:text-primary transition-colors font-medium">
                 Contact Us
               </Link>
+              <div className="flex items-center gap-2 ml-4">
+                <Button variant="outline" size="sm" onClick={async () => {
+                  const { toast } = useToast();
+                  try {
+                    const resp = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/auto-login`, {
+                      method: 'POST',
+                      credentials: 'include',
+                    });
+                    if (!resp.ok) throw new Error(`Status ${resp.status}`);
+                    const data = await resp.json();
+                    toast({
+                      title: 'Upstox Automation Started',
+                      description: data.message,
+                      variant: 'default',
+                    });
+                  } catch (e) {
+                    console.error(e);
+                    toast({
+                      title: 'Token Generation Failed',
+                      description: (e as Error).message,
+                      variant: 'destructive',
+                    });
+                  }
+                }}>
+                  Generate Upstox Token
+                </Button>
+              </div>
             </div>
 
             {/* Mobile Menu Button */}

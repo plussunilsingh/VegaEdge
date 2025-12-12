@@ -121,7 +121,7 @@ const LiveData = () => {
           return {
             timestamp: item.timestamp, // ISO format: "2025-12-11T09:16:00"
             greeks: item.greeks, // All Greeks are here
-            // velocity and baseline_diff not yet implemented in new API
+            baseline_diff: item.baseline_diff // Change from Open (9:15)
           };
       }).filter((item) => item !== null) as GreeksData[];
 
@@ -317,7 +317,7 @@ const LiveData = () => {
                 </CardContent>
             </Card>
 
-            {/* 2. Gamma Chart (Call vs Put) */}
+            {/* 2. Gamma Chart (Call vs Put) - No Net Line */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
@@ -333,30 +333,14 @@ const LiveData = () => {
                             <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
                             <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
                             <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.call_gamma" 
-                                name="Call Gamma" 
-                                stroke="#22c55e" 
-                                strokeWidth={2.5}
-                                dot={false}
-                                activeDot={{ r: 5, fill: '#22c55e' }}
-                            />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.put_gamma" 
-                                name="Put Gamma" 
-                                stroke="#ef4444" 
-                                strokeWidth={2.5}
-                                dot={false}
-                                activeDot={{ r: 5, fill: '#ef4444' }}
-                            />
+                            <Line type="monotone" dataKey="greeks.call_gamma" name="Call Gamma" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
+                            <Line type="monotone" dataKey="greeks.put_gamma" name="Put Gamma" stroke="#ef4444" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#ef4444' }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            {/* 3. Delta Chart (Call vs Put) */}
+            {/* 3. Delta Chart (Call vs Put) - No Net Line */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
@@ -372,30 +356,14 @@ const LiveData = () => {
                             <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
                             <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
                             <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.call_delta" 
-                                name="Call Delta" 
-                                stroke="#22c55e" 
-                                strokeWidth={2.5}
-                                dot={false}
-                                activeDot={{ r: 5, fill: '#22c55e' }}
-                            />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.put_delta" 
-                                name="Put Delta" 
-                                stroke="#ef4444" 
-                                strokeWidth={2.5}
-                                dot={false}
-                                activeDot={{ r: 5, fill: '#ef4444' }}
-                            />
+                            <Line type="monotone" dataKey="greeks.call_delta" name="Call Delta" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
+                            <Line type="monotone" dataKey="greeks.put_delta" name="Put Delta" stroke="#ef4444" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#ef4444' }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            {/* 4. Theta Chart (Call vs Put) */}
+            {/* 4. Theta Chart (Call vs Put) - No Net Line */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
@@ -411,34 +379,120 @@ const LiveData = () => {
                             <Tooltip content={<CustomTooltip />} contentStyle={{backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '6px', padding: '8px'}} />
                             <Legend wrapperStyle={{paddingTop: '12px', fontSize: '12px'}} />
                             <ReferenceLine y={0} stroke="#999" strokeDasharray="3 3" strokeWidth={1} />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.call_theta" 
-                                name="Call Theta" 
-                                stroke="#22c55e" 
-                                strokeWidth={2.5}
-                                dot={false}
-                                activeDot={{ r: 5, fill: '#22c55e' }}
-                            />
-                            <Line 
-                                type="monotone" 
-                                dataKey="greeks.put_theta" 
-                                name="Put Theta" 
-                                stroke="#ef4444" 
-                                strokeWidth={2.5}
-                                dot={false}
-                                activeDot={{ r: 5, fill: '#ef4444' }}
-                            />
+                            <Line type="monotone" dataKey="greeks.call_theta" name="Call Theta" stroke="#22c55e" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#22c55e' }} />
+                            <Line type="monotone" dataKey="greeks.put_theta" name="Put Theta" stroke="#ef4444" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#ef4444' }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
+
+            {/* Change from Open Charts Section */}
+            <div className="pt-8 pb-4">
+                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-blue-500" />
+                    Change from Market Open (09:15)
+                 </h2>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Vega Change */}
+                    <Card>
+                        <CardHeader><CardTitle className="text-sm">Vega Change</CardTitle></CardHeader>
+                        <CardContent className="h-[250px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={data}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} />
+                                    <YAxis fontSize={10} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <ReferenceLine y={0} stroke="#666" />
+                                    <Line type="monotone" dataKey="baseline_diff.call_vega" name="Call Δ" stroke="#22c55e" dot={false} strokeWidth={2} />
+                                    <Line type="monotone" dataKey="baseline_diff.put_vega" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={2} />
+                                    <Line type="monotone" dataKey="baseline_diff.diff_vega" name="Net Δ" stroke="#3b82f6" dot={false} strokeWidth={2} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+
+                    {/* Gamma Change */}
+                     <Card>
+                        <CardHeader><CardTitle className="text-sm">Gamma Change</CardTitle></CardHeader>
+                        <CardContent className="h-[250px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={data}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} />
+                                    <YAxis fontSize={10} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <ReferenceLine y={0} stroke="#666" />
+                                    <Line type="monotone" dataKey="baseline_diff.call_gamma" name="Call Δ" stroke="#22c55e" dot={false} strokeWidth={2} />
+                                    <Line type="monotone" dataKey="baseline_diff.put_gamma" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={2} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                    
+                    {/* Delta Change */}
+                     <Card>
+                        <CardHeader><CardTitle className="text-sm">Delta Change</CardTitle></CardHeader>
+                        <CardContent className="h-[250px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={data}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} />
+                                    <YAxis fontSize={10} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <ReferenceLine y={0} stroke="#666" />
+                                    <Line type="monotone" dataKey="baseline_diff.call_delta" name="Call Δ" stroke="#22c55e" dot={false} strokeWidth={2} />
+                                    <Line type="monotone" dataKey="baseline_diff.put_delta" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={2} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+
+                    {/* Theta Change */}
+                     <Card>
+                        <CardHeader><CardTitle className="text-sm">Theta Change</CardTitle></CardHeader>
+                        <CardContent className="h-[250px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={data}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTime} fontSize={10} />
+                                    <YAxis fontSize={10} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <ReferenceLine y={0} stroke="#666" />
+                                    <Line type="monotone" dataKey="baseline_diff.call_theta" name="Call Δ" stroke="#22c55e" dot={false} strokeWidth={2} />
+                                    <Line type="monotone" dataKey="baseline_diff.put_theta" name="Put Δ" stroke="#ef4444" dot={false} strokeWidth={2} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                 </div>
+            </div>
         </div>
 
         {/* Data Table */}
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Detailed Market Logs</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => {
+                if (!data.length) return;
+                const csvContent = "data:text/csv;charset=utf-8," 
+                    + "Time,Call Vega,Put Vega,Net Vega,Call Gamma,Put Gamma,Net Gamma,Call Delta,Put Delta,Net Delta\n"
+                    + data.map(row => {
+                        const g = row.greeks;
+                        const t = format(new Date(row.timestamp), "HH:mm:ss");
+                        return `${t},${g.call_vega},${g.put_vega},${g.diff_vega},${g.call_gamma},${g.put_gamma},${g.diff_gamma},${g.call_delta},${g.put_delta},${g.diff_delta}`;
+                    }).join("\n");
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `market_data_${selectedIndex}_${format(date || new Date(), "yyyy-MM-dd")}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }}>
+                Download CSV
+            </Button>
           </CardHeader>
           <CardContent>
             {isLoading && !data.length ? (
@@ -467,7 +521,7 @@ const LiveData = () => {
                   </TableHeader>
                   <TableBody>
                     {[...data].reverse().map((row, index) => { // Show newest first
-                       const g = row.greeks || {};
+                       const g = row.greeks;
                        
                        return (
                       <TableRow key={index} className="hover:bg-muted/50 transition-colors">
