@@ -113,6 +113,9 @@ const AuthenticatedNavbar = () => {
               <Link to="/live-data" className="text-white hover:text-primary transition-colors font-medium">
                 Live Data
               </Link>
+              <Link to="/upstox-token" className="text-white hover:text-primary transition-colors font-medium">
+                Upstox Token
+              </Link>
               <Link to="/my-account" className="text-white hover:text-primary transition-colors font-medium">
                 My Account
               </Link>
@@ -122,33 +125,6 @@ const AuthenticatedNavbar = () => {
               <Link to="/contact" className="text-white hover:text-primary transition-colors font-medium">
                 Contact Us
               </Link>
-              <div className="flex items-center gap-2 ml-4">
-                <Button variant="outline" size="sm" onClick={async () => {
-                  const { toast } = useToast();
-                  try {
-                    const resp = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/auto-login`, {
-                      method: 'POST',
-                      credentials: 'include',
-                    });
-                    if (!resp.ok) throw new Error(`Status ${resp.status}`);
-                    const data = await resp.json();
-                    toast({
-                      title: 'Upstox Automation Started',
-                      description: data.message,
-                      variant: 'default',
-                    });
-                  } catch (e) {
-                    console.error(e);
-                    toast({
-                      title: 'Token Generation Failed',
-                      description: (e as Error).message,
-                      variant: 'destructive',
-                    });
-                  }
-                }}>
-                  Generate Upstox Token
-                </Button>
-              </div>
             </div>
 
             {/* Mobile Menu Button */}
