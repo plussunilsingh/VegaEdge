@@ -139,22 +139,44 @@ const LiveData = () => {
     }
   }, [token]);
 
-  // Initial Fetch & Polling
+  // Initial Fetch & Polling (Drift-Free)
   useEffect(() => {
     if (date && token) {
+      // 1. Initial Fetch
       fetchHistoryData(date);
       
-      // Setup Polling if "Today" is selected
-      let interval: NodeJS.Timeout;
+      let timeoutId: NodeJS.Timeout;
+
+      // 2. Setup Polling if "Today" is selected
       if (isToday(date)) {
-        interval = setInterval(() => {
-          fetchHistoryData(date, true);
-        }, 60000); // Poll every 1 minute
+        const scheduleNext = () => {
+          const now = new Date();
+          // Target: HH:mm:05 (5 seconds past the minute)
+          // This allows 5s buffer for backend aggregation to finish
+          const target = new Date(now);
+          target.setSeconds(5);
+          target.setMilliseconds(0);
+
+          // If we passed current HH:mm:05, aim for next minute
+          if (target.getTime() <= now.getTime()) {
+            target.setMinutes(target.getMinutes() + 1);
+          }
+
+          const delay = target.getTime() - now.getTime();
+          console.log(`Scheduling next update in ${Math.round(delay/1000)}s at ${format(target, "HH:mm:ss")}`);
+
+          timeoutId = setTimeout(() => {
+            fetchHistoryData(date, true);
+            scheduleNext(); // Recursive call
+          }, delay);
+        };
+
+        scheduleNext();
       }
       
-      return () => clearInterval(interval);
+      return () => clearTimeout(timeoutId);
     }
-  }, [date, token, selectedIndex, fetchHistoryData]); // Added selectedIndex to dependencies
+  }, [date, token, selectedIndex, fetchHistoryData]);
 
 
   const formatTime = (isoString: string) => {
