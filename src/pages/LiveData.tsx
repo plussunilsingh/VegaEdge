@@ -236,17 +236,20 @@ const LiveData = () => {
                 </CardHeader>
                 <CardContent className="flex-1 w-full min-h-0 p-2">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                        <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#333" strokeOpacity={0.2} vertical={false} />
                             <XAxis 
                                 dataKey="timestamp" 
                                 tickFormatter={formatTime} 
                                 tick={{fontSize: 10, fill: '#888'}} 
-                                minTickGap={30} // Dense ticks
+                                minTickGap={0} // Allow crowded ticks
                                 stroke="#444"
                                 axisLine={false}
                                 tickLine={false}
-                                interval={window.innerWidth > 1400 ? 5 : 'preserveStartEnd'} // Show every 5th minute on large screens
+                                angle={-45}
+                                textAnchor="end"
+                                height={60}
+                                interval={window.innerWidth > 1400 ? 4 : 'preserveStartEnd'} // Show every 5th minute approx
                             />
                             <YAxis 
                                 domain={['auto', 'auto']} 
@@ -291,7 +294,7 @@ const LiveData = () => {
             <Card className="col-span-12 lg:col-span-3 border-border/40 bg-card/40 backdrop-blur-md shadow-xl flex flex-col h-[400px]">
                 <CardHeader className="py-3 border-b border-border/10">
                     <div className="flex justify-between items-center">
-                         <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">Live Logs</CardTitle>
+                         <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">{title} Table</CardTitle>
                          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
                             {tableData.length > 0 ? formatTime(tableData[0].timestamp) : '--:--'}
                          </span>
