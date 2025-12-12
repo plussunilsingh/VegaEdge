@@ -64,6 +64,9 @@ const UpstoxToken = () => {
     }
   };
 
+  const [isCoolingDown, setIsCoolingDown] = useState(false);
+  const [cooldownTime, setCooldownTime] = useState(0);
+
   const handleGenerateToken = async () => {
     try {
         const resp = await fetch(`${BACKEND_API_BASE_URL}/auth/upstox-login-url`, {
@@ -73,11 +76,46 @@ const UpstoxToken = () => {
         const data = await resp.json();
         
         if (data.url) {
-            toast({
-            title: 'Redirecting...',
-            description: "Redirecting to Upstox login.",
-            });
-            window.location.href = data.url;
+            // Open Popup
+            const width = 600;
+            const height = 700;
+            const left = (window.screen.width - width) / 2;
+            const top = (window.screen.height - height) / 2;
+            
+            const popup = window.open(
+                data.url, 
+                "UpstoxLogin", 
+                `width=${width},height=${height},top=${top},left=${left},resizable,scrollbars`
+            );
+
+            if (!popup) {
+                 toast({
+                    title: "Popup Blocked",
+                    description: "Please allow popups for this site to log in.",
+                    variant: "destructive"
+                 });
+                 return;
+            }
+
+            // Listen for message
+            const handleMessage = (event: MessageEvent) => {
+                // Trust only your own origin if needed, but here we listen for specific type
+                if (event.data?.type === "UPSTOX_SUCCESS") {
+                   toast({
+                       title: "Success",
+                       description: event.data.message || "Token generated successfully!",
+                   });
+                   
+                   // Start Cooldown
+                   startCooldown(15);
+                   
+                   // Cleanup
+                   window.removeEventListener("message", handleMessage);
+                }
+            };
+            
+            window.addEventListener("message", handleMessage);
+
         } else {
                 throw new Error("No URL received");
         }
@@ -88,6 +126,22 @@ const UpstoxToken = () => {
             variant: 'destructive',
         });
     }
+  };
+
+  const startCooldown = (seconds: number) => {
+      setIsCoolingDown(true);
+      setCooldownTime(seconds);
+      
+      const interval = setInterval(() => {
+          setCooldownTime((prev) => {
+              if (prev <= 1) {
+                  clearInterval(interval);
+                  setIsCoolingDown(false);
+                  return 0;
+              }
+              return prev - 1;
+          });
+      }, 1000);
   };
 
   return (
@@ -147,8 +201,13 @@ const UpstoxToken = () => {
                     <li>Token will be saved automatically.</li>
                 </ol>
               </div>
-              <Button onClick={handleGenerateToken} variant="secondary" className="w-full">
-                Generate New Token
+              <Button 
+                onClick={handleGenerateToken} 
+                variant="secondary" 
+                className="w-full"
+                disabled={isCoolingDown}
+              >
+                {isCoolingDown ? `Please wait ${cooldownTime}s` : "Generate New Token"}
               </Button>
             </CardContent>
           </Card>
