@@ -14,26 +14,47 @@ const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { toast } = useToast();
-  const [name, setName] = useState("");
+  
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Validation
+  const validatePhone = (p: string) => /^\d{10}$/.test(p);
+  const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side Validation
+    if (!validatePhone(phone)) {
+        toast({
+            title: "Invalid Phone Number",
+            description: "Phone number must be exactly 10 digits for Indian users.",
+            variant: "destructive"
+        });
+        return;
+    }
+    if (!validateEmail(email)) {
+        toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
+        return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Map form data to backend UserCreate schema
-      // We use email as username to ensure consistency with login
       const response = await fetch(endpoints.auth.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          username: email, 
           email: email, 
-          password: password 
+          password: password,
+          first_name: firstName,
+          last_name: lastName,
+          phone_number: phone
         })
       });
 
@@ -77,19 +98,32 @@ const Register = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto bg-card rounded-2xl p-8 shadow-lg">
             <h1 className="text-3xl font-bold text-center mb-8">Create Account</h1>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input 
-                  id="name" 
-                  type="text" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name" 
-                  className="mt-2"
-                  required
-                />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input 
+                      id="firstName" 
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="First Name" 
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input 
+                      id="lastName" 
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Last Name" 
+                      className="mt-1"
+                      required
+                    />
+                  </div>
               </div>
+
               <div>
                 <Label htmlFor="email">Email Address</Label>
                 <Input 
@@ -98,22 +132,28 @@ const Register = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email" 
-                  className="mt-2"
+                  className="mt-1"
                   required
                 />
               </div>
+
               <div>
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">Phone Number (10 Digits)</Label>
                 <Input 
                   id="phone" 
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter your phone" 
-                  className="mt-2"
+                  onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setPhone(val);
+                  }}
+                  placeholder="9876543210" 
+                  className="mt-1"
                   required
                 />
+                <p className="text-[10px] text-muted-foreground mt-1">Indian format required (10 digits)</p>
               </div>
+
               <div>
                 <Label htmlFor="password">Password</Label>
                 <Input 
@@ -122,13 +162,14 @@ const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create password" 
-                  className="mt-2"
+                  className="mt-1"
                   required
                 />
               </div>
+
               <Button 
                 type="submit" 
-                className="w-full rounded-full" 
+                className="w-full rounded-full mt-4" 
                 size="lg"
                 disabled={isLoading}
               >

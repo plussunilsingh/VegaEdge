@@ -4,7 +4,9 @@ import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 
 interface User {
   id: string;
-  name: string;
+  name: string; // Display Name (Full Name)
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   profileImage?: string;
@@ -27,6 +29,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 interface SessionContextType { sessionTimeLeft: number; }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
+
+// Helper to map backend response to User object
+const mapUser = (userData: any): User => ({
+    id: userData.id.toString(),
+    firstName: userData.first_name || "",
+    lastName: userData.last_name || "",
+    name: userData.first_name ? `${userData.first_name} ${userData.last_name || ""}`.trim() : userData.email.split('@')[0],
+    email: userData.email,
+    phone: userData.phone_number || "",
+    approved: true,
+    role: userData.role || "NORMAL_USER",
+    is_subscribed: userData.is_subscribed || false,
+    profileImage: userData.profileImage 
+});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -133,15 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Failed to refresh user data');
       })
       .then(freshUserData => {
-         const mappedUser: User = {
-           id: freshUserData.id.toString(),
-           name: freshUserData.username,
-           email: freshUserData.email,
-           phone: "",
-           approved: true,
-           role: freshUserData.role || "NORMAL_USER",
-           is_subscribed: freshUserData.is_subscribed || false
-         };
+         const mappedUser = mapUser(freshUserData);
          setUser(mappedUser);
          localStorage.setItem('alphaedge_user', JSON.stringify(mappedUser));
       })
@@ -157,7 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await fetch(endpoints.auth.login, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password })
+        body: JSON.stringify({ email, password })
       });
       
       if (!response.ok) {
@@ -175,15 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (userResponse.ok) {
            const userData = await userResponse.json();
-           const mappedUser: User = {
-             id: userData.id.toString(),
-             name: userData.username, 
-             email: userData.email,
-             phone: "", 
-             approved: true, 
-             role: userData.role || "NORMAL_USER",
-             is_subscribed: userData.is_subscribed || false
-           };
+           const mappedUser = mapUser(userData);
 
            setUser(mappedUser);
            localStorage.setItem('alphaedge_user', JSON.stringify(mappedUser));

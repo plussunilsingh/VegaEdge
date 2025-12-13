@@ -145,7 +145,7 @@ const LiveData = () => {
           return {
               timestamp: slotTime.toISOString(),
               greeks: greeks,
-              baseline_diff: null
+              baseline_diff: existingData?.baseline_diff || null
           };
       });
 
@@ -288,7 +288,7 @@ const LiveData = () => {
                             {/* Vertical Line Cursor */}
                             <Tooltip 
                                 content={<CustomTooltip />} 
-                                cursor={{ stroke: '#fff', strokeWidth: 1.5, strokeDasharray: '4 4', strokeOpacity: 0.7 }} 
+                                cursor={{ stroke: '#ef4444', strokeWidth: 1.5, opacity: 0.8 }} 
                             />
                             <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
                             <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" strokeOpacity={0.5} />
