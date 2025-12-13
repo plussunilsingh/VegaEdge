@@ -32,38 +32,42 @@ const LoadingFallback = () => (
   </div>
 );
 
+import { HelmetProvider } from "react-helmet-async";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/disclaimer" element={<Disclaimer />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/my-account" element={<MyAccount />} />
-              <Route path="/chart" element={<Chart />} />
-              <Route path="/openchart" element={<Openchart />} />
-              <Route path="/greeks" element={<GreeksAnalysis />} />
-              <Route path="/change-password" element={<ChangePassword />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/live-data" element={<LiveData />} />
-              <Route path="/upstox-token" element={<UpstoxToken />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/disclaimer" element={<Disclaimer />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/my-account" element={<MyAccount />} />
+                <Route path="/chart" element={<Chart />} />
+                <Route path="/openchart" element={<Openchart />} />
+                <Route path="/greeks" element={<GreeksAnalysis />} />
+                <Route path="/change-password" element={<ChangePassword />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/live-data" element={<LiveData />} />
+                <Route path="/upstox-token" element={<UpstoxToken />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </HelmetProvider>
   </QueryClientProvider>
 );
 

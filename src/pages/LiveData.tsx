@@ -49,11 +49,18 @@ interface GreeksData {
   baseline_diff?: any; // Keeping for interface compatibility but not using
 }
 
+import { SEOHead } from "@/components/SEOHead";
+
 const LiveData = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
+  const { user, profileImageUrl } = useAuth();
+  
+  // State for date selection
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  
+  // State for fetched data
   const [data, setData] = useState<GreeksData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -75,7 +82,7 @@ const LiveData = () => {
   };
 
   const fetchHistoryData = useCallback(async (selectedDate: Date, silent = false) => {
-    if (!silent) setIsLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
     try {
       if (!BACKEND_API_BASE_URL) {
@@ -89,6 +96,12 @@ const LiveData = () => {
           Authorization: `Bearer ${token}`, 
         },
       });
+
+      if (response.status === 401) {
+        toast.error("Session Expired. Please login again.");
+        // TODO: Trigger global login modal here
+        throw new Error("Session Expired");
+      }
 
       if (!response.ok) {
         throw new Error(`Failed to fetch data: ${response.status}`);
@@ -116,9 +129,22 @@ const LiveData = () => {
           const timeKey = format(slotTime, "HH:mm");
           const existingData = dataMap.get(timeKey);
 
+          let greeks = null;
+          if (existingData && existingData.greeks) {
+              const g = existingData.greeks;
+              greeks = {
+                  ...g,
+                  // Enforce Net = Put - Call as per user request
+                  diff_vega: g.put_vega - g.call_vega,
+                  diff_gamma: g.put_gamma - g.call_gamma,
+                  diff_delta: g.put_delta - g.call_delta,
+                  diff_theta: g.put_theta - g.call_theta,
+              };
+          }
+
           return {
               timestamp: slotTime.toISOString(),
-              greeks: existingData ? existingData.greeks : null,
+              greeks: greeks,
               baseline_diff: null
           };
       });
@@ -134,18 +160,18 @@ const LiveData = () => {
         toast.error("Failed to refresh market data");
       }
     } finally {
-      if (!silent) setIsLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [token, selectedIndex]);
 
   // Initial Fetch & Polling (Drift-Free)
   useEffect(() => {
-    if (date && token) {
-      fetchHistoryData(date);
+    if (selectedDate && token) {
+      fetchHistoryData(selectedDate);
       
       let timeoutId: NodeJS.Timeout;
 
-      if (isToday(date)) {
+      if (isToday(selectedDate)) {
         const scheduleNext = () => {
           const now = new Date();
           const target = new Date(now);
@@ -160,7 +186,7 @@ const LiveData = () => {
           console.log(`Scheduling next update in ${Math.round(delay/1000)}s`);
 
           timeoutId = setTimeout(() => {
-            fetchHistoryData(date, true);
+            fetchHistoryData(selectedDate, true);
             scheduleNext();
           }, delay);
         };
@@ -170,7 +196,7 @@ const LiveData = () => {
       
       return () => clearTimeout(timeoutId);
     }
-  }, [date, token, selectedIndex, fetchHistoryData]);
+  }, [selectedDate, token, selectedIndex, fetchHistoryData]);
 
   const formatTime = (isoString: string) => {
     try {
@@ -225,7 +251,7 @@ const LiveData = () => {
       const tableData = [...data].filter(row => row.greeks !== null).reverse();
 
       return (
-        <div className="grid grid-cols-12 gap-4 h-[400px]">
+        <div className="grid grid-cols-12 gap-4 h-[600px]">
             {/* Chart Area (Span 9) */}
             <Card className="col-span-12 lg:col-span-9 border-border/40 bg-card/40 backdrop-blur-md shadow-xl ring-1 ring-white/5 flex flex-col">
                 <CardHeader className="py-2 pb-0">
@@ -242,14 +268,14 @@ const LiveData = () => {
                                 dataKey="timestamp" 
                                 tickFormatter={formatTime} 
                                 tick={{fontSize: 10, fill: '#888'}} 
-                                minTickGap={0} // Allow crowded ticks
+                                minTickGap={0} 
                                 stroke="#444"
                                 axisLine={false}
                                 tickLine={false}
                                 angle={-45}
                                 textAnchor="end"
                                 height={60}
-                                interval={window.innerWidth > 1400 ? 4 : 'preserveStartEnd'} // Show every 5th minute approx
+                                interval={window.innerWidth > 1400 ? 5 : 'preserveStartEnd'} 
                             />
                             <YAxis 
                                 domain={['auto', 'auto']} 
@@ -259,7 +285,11 @@ const LiveData = () => {
                                 tickLine={false}
                                 width={40}
                             />
-                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#666', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                            {/* Vertical Line Cursor */}
+                            <Tooltip 
+                                content={<CustomTooltip />} 
+                                cursor={{ stroke: '#fff', strokeWidth: 1.5, strokeDasharray: '4 4', strokeOpacity: 0.7 }} 
+                            />
                             <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
                             <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" strokeOpacity={0.5} />
                             
@@ -291,8 +321,8 @@ const LiveData = () => {
             </Card>
 
             {/* Table Area (Span 3) */}
-            <Card className="col-span-12 lg:col-span-3 border-border/40 bg-card/40 backdrop-blur-md shadow-xl flex flex-col h-[400px]">
-                <CardHeader className="py-3 border-b border-border/10">
+            <Card className="col-span-12 lg:col-span-3 border-border/40 bg-card/40 backdrop-blur-md shadow-xl flex flex-col h-[600px]">
+                <CardHeader className="py-3 border-b border-border/10 bg-muted/40">
                     <div className="flex justify-between items-center">
                          <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">{title} Table</CardTitle>
                          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
@@ -302,23 +332,23 @@ const LiveData = () => {
                 </CardHeader>
                 <CardContent className="p-0 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
                     <Table>
-                        <TableHeader className="sticky top-0 bg-background/95 backdrop-blur z-10">
-                            <TableRow className="border-b border-border/10 text-[10px]">
-                                <TableHead className="w-[60px] h-8 text-muted-foreground">Time</TableHead>
-                                <TableHead className="text-right h-8 text-green-500">Call</TableHead>
-                                <TableHead className="text-right h-8 text-red-500">Put</TableHead>
-                                <TableHead className="text-right h-8 font-bold text-foreground">Net</TableHead>
+                        <TableHeader className="sticky top-0 bg-background/95 backdrop-blur z-10 border-b-2 border-border/50 shadow-md">
+                            <TableRow className="border-b border-border/10 text-[10px] hover:bg-transparent uppercase tracking-wider">
+                                <TableHead className="w-[60px] h-9 text-muted-foreground font-bold pl-4">Time</TableHead>
+                                <TableHead className="text-right h-9 text-green-500 font-bold border-l border-border/10 bg-green-500/5">Call</TableHead>
+                                <TableHead className="text-right h-9 text-red-500 font-bold border-l border-border/10 bg-red-500/5">Put</TableHead>
+                                <TableHead className="text-right h-9 font-extrabold text-foreground border-l border-border/10 pr-4 bg-muted/20">Net</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {tableData.map((row, i) => {
                                 const g = row.greeks;
                                 return (
-                                    <TableRow key={i} className="border-b border-border/5 text-[11px] hover:bg-muted/30">
-                                        <TableCell className="font-mono text-muted-foreground py-1">{formatTime(row.timestamp)}</TableCell>
-                                        <TableCell className="text-right font-mono text-green-400 py-1">{fmt(g[dataKeyCall])}</TableCell>
-                                        <TableCell className="text-right font-mono text-red-400 py-1">{fmt(g[dataKeyPut])}</TableCell>
-                                        <TableCell className={cn("text-right font-mono font-bold py-1", colorNet)}>{fmt(g[dataKeyNet])}</TableCell>
+                                    <TableRow key={i} className="border-b border-border/5 text-[11px] hover:bg-muted/30 transition-colors">
+                                        <TableCell className="font-mono text-muted-foreground py-1 pl-4">{formatTime(row.timestamp)}</TableCell>
+                                        <TableCell className="text-right font-mono text-green-400 py-1 border-l border-border/5">{fmt(g[dataKeyCall])}</TableCell>
+                                        <TableCell className="text-right font-mono text-red-400 py-1 border-l border-border/5">{fmt(g[dataKeyPut])}</TableCell>
+                                        <TableCell className={cn("text-right font-mono font-bold py-1 border-l border-border/5 pr-4", colorNet)}>{fmt(g[dataKeyNet])}</TableCell>
                                     </TableRow>
                                 );
                             })}
@@ -337,7 +367,7 @@ const LiveData = () => {
             <AuthenticatedNavbar />
             <div className="container mx-auto py-20 text-center">
                  <h2 className="text-xl text-red-500">Error Loading Data</h2>
-                 <Button onClick={() => date && fetchHistoryData(date)} className="mt-4">Retry</Button>
+                 <Button onClick={() => selectedDate && fetchHistoryData(selectedDate)} className="mt-4">Retry</Button>
             </div>
         </div>
       );
@@ -376,14 +406,14 @@ const LiveData = () => {
               <PopoverTrigger asChild>
                 <Button variant={"outline"} className="h-8 text-xs justify-start text-left font-normal border-border/40 hover:border-primary/50 transition-colors">
                   <CalendarIcon className="mr-2 h-3 w-3" />
-                  {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
                 <Calendar
                   mode="single"
-                  selected={date}
-                  onSelect={setDate}
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
                   initialFocus
                   disabled={(d) => d > new Date() || d < new Date("1900-01-01")}
                 />
@@ -460,7 +490,7 @@ const LiveData = () => {
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `market_data_${selectedIndex}_${format(date || new Date(), "yyyy-MM-dd")}.csv`);
+                link.setAttribute("download", `market_data_${selectedIndex}_${format(selectedDate || new Date(), "yyyy-MM-dd")}.csv`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

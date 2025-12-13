@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
-import { endpoints } from "@/config";
+import { endpoints, SESSION_TIMEOUT } from "@/config";
+import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 
 interface User {
   id: string;
@@ -27,14 +28,14 @@ interface SessionContextType { sessionTimeLeft: number; }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-const SESSION_TIMEOUT = 600; // 10 minutes in seconds (matches backend JWT expiration)
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number>(SESSION_TIMEOUT);
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
 
   // Track user activity
   useEffect(() => {
@@ -56,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // Session timeout countdown
+  // Session timeout countdown (Local Inactivity)
   useEffect(() => {
     if (!user) return;
 
@@ -65,7 +66,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const timeLeft = SESSION_TIMEOUT - timeSinceActivity;
 
       if (timeLeft <= 0) {
-        logout();
+        // Instead of hard logout, trigger session expiry flow to allow re-login
+        setIsSessionExpired(true);
       } else {
         setSessionTimeLeft(timeLeft);
       }
@@ -73,6 +75,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => clearInterval(interval);
   }, [user, lastActivity]);
+
+  // Global Session Event Listener (from API 401s)
+  useEffect(() => {
+      const handleExpired = () => setIsSessionExpired(true);
+      window.addEventListener('session-expired', handleExpired);
+      return () => window.removeEventListener('session-expired', handleExpired);
+  }, []);
+
+  // Heartbeat Check (Server Connectivity)
+  useEffect(() => {
+      if (!user || isSessionExpired) return;
+
+      const heartbeatInterval = setInterval(async () => {
+          try {
+             // Only ping if we have token
+             if (token) {
+                 const res = await fetch(`${endpoints.auth.login.replace('/login', '')}/heartbeat`, {
+                      headers: { 'Authorization': `Bearer ${token}` }
+                 });
+                 if (res.status === 401) {
+                     setIsSessionExpired(true);
+                 }
+             }
+          } catch (e) {
+              console.warn("Heartbeat failed, potential connection issue");
+          }
+      }, 60000); // Check every minute
+
+      return () => clearInterval(heartbeatInterval);
+  }, [user, token, isSessionExpired]);
+
 
   // Check if user is already logged in
   useEffect(() => {
@@ -91,7 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfileImageUrl(`upload/${userData.profileImage}`);
       }
 
-      // Then fetch fresh data from backend to ensure role/subscription status is up to date
+      // Then fetch fresh data from backend
       fetch(endpoints.auth.me, {
         headers: { 'Authorization': `Bearer ${sessionToken}` }
       })
@@ -114,14 +147,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       })
       .catch(err => {
         console.error("Error refreshing user data:", err);
-        // If token is invalid, maybe logout? For now, just log error.
+        // Do NOT auto logout here immediately, let session expiry handle it if 401
       });
     }
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
-      // Call backend
       const response = await fetch(endpoints.auth.login, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -134,25 +166,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const data = await response.json();
       
-      // Backend returns { access_token: "...", token_type: "bearer" }
       if (data.access_token) {
         const sessionToken = data.access_token;
         
-        // We need to fetch user details separately usually, or decode token.
-        // For now, let's fetch /auth/me using the token
         const userResponse = await fetch(endpoints.auth.me, {
           headers: { 'Authorization': `Bearer ${sessionToken}` }
         });
         
         if (userResponse.ok) {
            const userData = await userResponse.json();
-           // Map backend user to frontend User interface
            const mappedUser: User = {
              id: userData.id.toString(),
-             name: userData.username, // or userData.email if name missing
+             name: userData.username, 
              email: userData.email,
-             phone: "", // Backend might not have phone
-             approved: true, // Assume approved for now
+             phone: "", 
+             approved: true, 
              role: userData.role || "NORMAL_USER",
              is_subscribed: userData.is_subscribed || false
            };
@@ -164,6 +192,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
            
            setLastActivity(Date.now());
            setSessionTimeLeft(SESSION_TIMEOUT);
+           
+           // Clear session expired state if we were in recovery mode
+           setIsSessionExpired(false);
+           
            return true;
         }
       }
@@ -190,12 +222,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Logout API call failed:", error);
     } finally {
-      // Always clear local state even if API fails
       setUser(null);
       setProfileImageUrl(null);
       localStorage.removeItem('alphaedge_user');
       localStorage.removeItem('alphaedge_session');
       setToken(null);
+      setIsSessionExpired(false);
       window.location.replace('/');
     }
   }, []);
@@ -213,6 +245,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <SessionContext.Provider value={{ sessionTimeLeft }}>
       <AuthContext.Provider value={authContextValue}>
         {children}
+        {/* Global Session Expired Modal */}
+        <SessionExpiredModal open={isSessionExpired} onOpenChange={setIsSessionExpired} />
       </AuthContext.Provider>
     </SessionContext.Provider>
   );

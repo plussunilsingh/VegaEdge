@@ -36,3 +36,5 @@ export const endpoints = {
     toggleStatus: (userId: string) => `${BACKEND_API_BASE_URL}/admin/users/${userId}/status`,
   }
 };
+
+export const SESSION_TIMEOUT = 10 * 60; // 10 minutes (in seconds)
