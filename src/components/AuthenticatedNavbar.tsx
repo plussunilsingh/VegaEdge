@@ -71,12 +71,14 @@ const AuthenticatedNavbar = () => {
               contact@vegagreeks.com
             </a>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="w-4 h-4 text-primary" />
-            <span className={`font-medium ${sessionTimeLeft <= 30 ? 'text-red-600' : 'text-muted-foreground'}`}>
-              Session: {formatTime(sessionTimeLeft)}
-            </span>
-          </div>
+            {sessionTimeLeft > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-primary" />
+              <span className={`font-medium ${sessionTimeLeft <= 30 ? 'text-red-600' : 'text-muted-foreground'}`}>
+                Session: {formatTime(sessionTimeLeft)}
+              </span>
+            </div>
+            )}
         </div>
       </div>
 
@@ -95,7 +97,7 @@ const AuthenticatedNavbar = () => {
             <div className="hidden md:flex items-center gap-8">
               {user && (
                   <span className="text-gray-300 font-medium">
-                    Welcome, {user.name}
+                    Welcome, {user.firstName || user.name.split(' ')[0]}
                   </span>
               )}
 
@@ -142,7 +144,7 @@ const AuthenticatedNavbar = () => {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {user && (
                   <div className="px-3 py-2 text-base font-medium text-gray-300 border-b border-gray-700 mb-2">
-                    Welcome, {user.name}
+                    Welcome, {user.firstName || user.name.split(' ')[0]}
                   </div>
               )}
               {user?.role === 'ADMIN_USER' && (

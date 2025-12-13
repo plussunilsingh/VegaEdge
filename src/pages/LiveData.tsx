@@ -249,6 +249,29 @@ const LiveData = () => {
       
       // Filter valid data for table
       const tableData = [...data].filter(row => row.greeks !== null).reverse();
+      
+      // Helper to determine trend if provided or calculate it
+      const getTrend = (greeks: any) => {
+          if (title !== "Vega") return null; // Only for Vega Table
+          
+          // Logic: Call > Put = Bullish, Put > Call = Bearish
+          // Or use backend provided 'trend' if available
+          const diff = greeks.call_vega - greeks.put_vega;
+          // Note: Previously we calculated diff_vega = put - call in fetchHistoryData?
+          // Let's check fetchHistoryData: diff_vega: g.put_vega - g.call_vega
+          // If Put Vega is higher -> Bearish sentiment? Or is it?
+          // High Put Vega usually means fear/hedging -> Bearish?
+          // High Call Vega -> Bullish? 
+          // Let's stick to a simple mapping for now:
+          // If Diff (Put - Call) is Positive -> Put > Call -> Bearish?
+          // Actually, let's use the 'diff_vega' from data. 
+          // If Net (Put - Call) is positive, Put is dominant.
+          
+          const net = greeks[dataKeyNet]; 
+          if (net > 0.5) return { text: "Bearish", color: "text-red-500 font-bold" };
+          if (net < -0.5) return { text: "Bullish", color: "text-green-500 font-bold" };
+          return { text: "Sideways", color: "text-yellow-500 font-bold" };
+      };
 
       return (
         <div className="grid grid-cols-12 gap-4 h-[600px]">
@@ -337,18 +360,25 @@ const LiveData = () => {
                                 <TableHead className="w-[60px] h-9 text-muted-foreground font-bold pl-4">Time</TableHead>
                                 <TableHead className="text-right h-9 text-green-500 font-bold border-l border-border/10 bg-green-500/5">Call</TableHead>
                                 <TableHead className="text-right h-9 text-red-500 font-bold border-l border-border/10 bg-red-500/5">Put</TableHead>
-                                <TableHead className="text-right h-9 font-extrabold text-foreground border-l border-border/10 pr-4 bg-muted/20">Net</TableHead>
+                                <TableHead className="text-right h-9 font-extrabold text-foreground border-l border-border/10 bg-muted/20">Net</TableHead>
+                                {title === "Vega" && <TableHead className="text-center h-9 font-bold text-foreground border-l border-border/10 pr-4">Trend</TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {tableData.map((row, i) => {
                                 const g = row.greeks;
+                                const trend = getTrend(g);
                                 return (
                                     <TableRow key={i} className="border-b border-border/5 text-[11px] hover:bg-muted/30 transition-colors">
                                         <TableCell className="font-mono text-muted-foreground py-1 pl-4">{formatTime(row.timestamp)}</TableCell>
                                         <TableCell className="text-right font-mono text-green-400 py-1 border-l border-border/5">{fmt(g[dataKeyCall])}</TableCell>
                                         <TableCell className="text-right font-mono text-red-400 py-1 border-l border-border/5">{fmt(g[dataKeyPut])}</TableCell>
-                                        <TableCell className={cn("text-right font-mono font-bold py-1 border-l border-border/5 pr-4", colorNet)}>{fmt(g[dataKeyNet])}</TableCell>
+                                        <TableCell className={cn("text-right font-mono font-bold py-1 border-l border-border/5", title !== "Vega" && "pr-4", colorNet)}>{fmt(g[dataKeyNet])}</TableCell>
+                                        {title === "Vega" && (
+                                            <TableCell className={cn("text-center font-mono py-1 border-l border-border/5 pr-4", trend?.color)}>
+                                                {trend?.text}
+                                            </TableCell>
+                                        )}
                                     </TableRow>
                                 );
                             })}

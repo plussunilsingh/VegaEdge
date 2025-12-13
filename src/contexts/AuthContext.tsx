@@ -2,6 +2,13 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { endpoints, SESSION_TIMEOUT } from "@/config";
 import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 
+// Define Role Enum on Frontend for consistency
+export enum UserRole {
+  SUPER_ADMIN_USER = "SUPER_ADMIN_USER",
+  ADMIN_USER = "ADMIN_USER",
+  NORMAL_USER = "NORMAL_USER"
+}
+
 interface User {
   id: string;
   name: string; // Display Name (Full Name)
@@ -11,7 +18,7 @@ interface User {
   phone: string;
   profileImage?: string;
   approved?: boolean;
-  role: string;
+  role: UserRole | string; // Allow string fallbacks but prefer Enum
   is_subscribed: boolean;
 }
 
@@ -39,7 +46,7 @@ const mapUser = (userData: any): User => ({
     email: userData.email,
     phone: userData.phone_number || "",
     approved: true,
-    role: userData.role || "NORMAL_USER",
+    role: userData.role || UserRole.NORMAL_USER,
     is_subscribed: userData.is_subscribed || false,
     profileImage: userData.profileImage 
 });
