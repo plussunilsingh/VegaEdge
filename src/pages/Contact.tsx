@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
-import Footer from "@/components/Footer";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -94,7 +94,7 @@ const Contact = () => {
           </div>
         </div>
       </main>
-      <Footer />
+
     </div>
   );
 };

@@ -29,6 +29,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   profileImageUrl: string | null;
   token: string | null;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Initial load check
 
   const [isSessionExpired, setIsSessionExpired] = useState(false);
 
@@ -163,7 +165,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .catch(err => {
         console.error("Error refreshing user data:", err);
         // Do NOT auto logout here immediately, let session expiry handle it if 401
-      });
+      })
+      .finally(() => setIsLoading(false));
+    } else {
+        setIsLoading(false);
     }
   }, []);
 
@@ -245,8 +250,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logout, 
     isAuthenticated: !!user,
     profileImageUrl,
-    token
-  }), [user, login, logout, profileImageUrl, token]);
+    token,
+    isLoading
+  }), [user, login, logout, profileImageUrl, token, isLoading]);
 
   return (
     <SessionContext.Provider value={{ sessionTimeLeft }}>

@@ -30,6 +30,10 @@ export const endpoints = {
   market: {
     greeks: (instrumentKey: string, expiryDate: string, token: string) =>
       `${BACKEND_API_BASE_URL}/market/greeks?instrument_key=${instrumentKey}&expiry_date=${expiryDate}&upstox_access_token=${token}`,
+    history: (date: string, indexName: string, expiry?: string) => 
+      `${BACKEND_API_BASE_URL}/market/history?date=${date}&index_name=${indexName}${expiry ? `&expiry=${expiry}` : ''}`,
+    expiryList: `${BACKEND_API_BASE_URL}/market/expiry-list`,
+    refreshCache: `${BACKEND_API_BASE_URL}/market/cache-refresh`,
   },
   admin: {
     users: `${BACKEND_API_BASE_URL}/admin/users`,

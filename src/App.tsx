@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { HelmetProvider } from "react-helmet-async";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Lazy load pages
 const Index = lazy(() => import("./pages/Index"));
@@ -18,11 +20,11 @@ const MyAccount = lazy(() => import("./pages/MyAccount"));
 const Chart = lazy(() => import("./pages/Chart"));
 const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const Openchart = lazy(() => import("./pages/Openchart"));
-const GreeksAnalysis = lazy(() => import("./pages/GreeksAnalysis"));
+// const GreeksAnalysis = lazy(() => import("./pages/GreeksAnalysis")); // DELETED
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const LiveData = lazy(() => import("./pages/LiveData"));
-const UpstoxToken = lazy(() => import("./pages/UpstoxToken"));
+const UpstoxToken = lazy(() => import("./pages/UpstoxToken")); // Keeping for now but features moved to Admin
 
 const queryClient = new QueryClient();
 
@@ -32,7 +34,9 @@ const LoadingFallback = () => (
   </div>
 );
 
-import { HelmetProvider } from "react-helmet-async";
+import Footer from "@/components/Footer";
+
+// ... (lazy imports)
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -43,26 +47,33 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/disclaimer" element={<Disclaimer />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/my-account" element={<MyAccount />} />
-                <Route path="/chart" element={<Chart />} />
-                <Route path="/openchart" element={<Openchart />} />
-                <Route path="/greeks" element={<GreeksAnalysis />} />
-                <Route path="/change-password" element={<ChangePassword />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/live-data" element={<LiveData />} />
-                <Route path="/upstox-token" element={<UpstoxToken />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <div className="flex flex-col min-h-screen">
+                <main className="flex-1">
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/disclaimer" element={<Disclaimer />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    
+                    {/* Protected Routes */}
+                    <Route path="/my-account" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
+                    <Route path="/chart" element={<ProtectedRoute><Chart /></ProtectedRoute>} />
+                    <Route path="/openchart" element={<ProtectedRoute><Openchart /></ProtectedRoute>} />
+                    <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                    <Route path="/live-data" element={<ProtectedRoute><LiveData /></ProtectedRoute>} />
+                    <Route path="/upstox-token" element={<ProtectedRoute><UpstoxToken /></ProtectedRoute>} />
+                    
+                    {/* Catch-all */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
             </Suspense>
           </BrowserRouter>
         </TooltipProvider>

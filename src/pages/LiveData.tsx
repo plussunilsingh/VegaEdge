@@ -51,11 +51,28 @@ interface GreeksData {
 
 import { SEOHead } from "@/components/SEOHead";
 
-const LiveData = () => {
+  // Helper for initial date (Weekend -> Friday)
+  const getInitialDate = () => {
+    const today = new Date();
+    const day = today.getDay();
+    if (day === 0) { // Sunday
+       const friday = new Date(today);
+       friday.setDate(today.getDate() - 2);
+       return friday;
+    }
+    if (day === 6) { // Saturday
+       const friday = new Date(today);
+       friday.setDate(today.getDate() - 1);
+       return friday;
+    }
+    return today;
+  };
+
+  const LiveData = () => {
   const { user, profileImageUrl } = useAuth();
   
   // State for date selection
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(getInitialDate());
   
   // Expiry State
   const [expiryList, setExpiryList] = useState<string[]>([]);
@@ -270,7 +287,8 @@ const LiveData = () => {
       colorCall, 
       colorPut,
       colorNet, // Used for table background
-      data 
+      data,
+      selectedDate // Pass selectedDate for ReferenceLine calculation
   }: any) => {
       
       // Filter valid data for table
@@ -280,23 +298,18 @@ const LiveData = () => {
       const getTrend = (greeks: any) => {
           if (title !== "Vega") return null; // Only for Vega Table
           
-          // Logic: Call > Put = Bullish, Put > Call = Bearish
-          // Or use backend provided 'trend' if available
-          const diff = greeks.call_vega - greeks.put_vega;
-          // Note: Previously we calculated diff_vega = put - call in fetchHistoryData?
-          // Let's check fetchHistoryData: diff_vega: g.put_vega - g.call_vega
-          // If Put Vega is higher -> Bearish sentiment? Or is it?
-          // High Put Vega usually means fear/hedging -> Bearish?
-          // High Call Vega -> Bullish? 
-          // Let's stick to a simple mapping for now:
-          // If Diff (Put - Call) is Positive -> Put > Call -> Bearish?
-          // Actually, let's use the 'diff_vega' from data. 
-          // If Net (Put - Call) is positive, Put is dominant.
-          
           const net = greeks[dataKeyNet]; 
           if (net > 0.5) return { text: "Bearish", color: "text-red-500 font-bold" };
           if (net < -0.5) return { text: "Bullish", color: "text-green-500 font-bold" };
           return { text: "Sideways", color: "text-yellow-500 font-bold" };
+      };
+
+      // Calculate 09:15 timestamp for ReferenceLine
+      const getStartReference = () => {
+          if (!selectedDate) return null;
+          const start = new Date(selectedDate);
+          start.setHours(9, 15, 0, 0);
+          return start.toISOString();
       };
 
       return (
@@ -342,6 +355,9 @@ const LiveData = () => {
                             <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
                             <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" strokeOpacity={0.5} />
                             
+                            {/* 09:15 Reference Line */}
+                            <ReferenceLine x={getStartReference()} stroke="#3b82f6" strokeDasharray="4 4" label={{ value: '09:15', position: 'insideTopLeft', fill: '#3b82f6', fontSize: 10 }} />
+
                             {/* Call Line */}
                             <Line 
                                 type="monotone" 
@@ -501,6 +517,7 @@ const LiveData = () => {
             colorCall="#10b981"
             colorPut="#ef4444"
             colorNet="text-emerald-500 bg-emerald-500/5"
+            selectedDate={selectedDate}
         />
 
         {/* 2. Gamma Section */}
@@ -514,6 +531,7 @@ const LiveData = () => {
             colorCall="#10b981"
             colorPut="#ef4444"
             colorNet="text-purple-500 bg-purple-500/5"
+            selectedDate={selectedDate}
         />
 
         {/* 3. Delta Section */}
@@ -527,6 +545,7 @@ const LiveData = () => {
             colorCall="#10b981"
             colorPut="#ef4444"
             colorNet="text-orange-500 bg-orange-500/5"
+            selectedDate={selectedDate}
         />
 
         {/* 4. Theta Section */}
@@ -540,6 +559,7 @@ const LiveData = () => {
             colorCall="#10b981"
             colorPut="#ef4444"
             colorNet="text-pink-500 bg-pink-500/5"
+            selectedDate={selectedDate}
         />
 
         {/* Detailed Logs Footer */}

@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 
 const Disclaimer = () => {
   return (
@@ -62,7 +62,7 @@ const Disclaimer = () => {
           </div>
         </div>
       </main>
-      <Footer />
+
     </div>
   );
 };

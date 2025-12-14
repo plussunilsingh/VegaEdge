@@ -5,7 +5,7 @@ import About from "@/components/About";
 import FAQ from "@/components/FAQ";
 import Team from "@/components/Team";
 import Testimonials from "@/components/Testimonials";
-import Footer from "@/components/Footer";
+
 
 const Index = () => {
   return (
@@ -17,7 +17,7 @@ const Index = () => {
       <FAQ />
       <Team />
       <Testimonials />
-      <Footer />
+
     </div>
   );
 };
