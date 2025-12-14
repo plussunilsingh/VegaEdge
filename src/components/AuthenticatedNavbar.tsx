@@ -112,9 +112,6 @@ const AuthenticatedNavbar = () => {
               <Link to="/live-data" className="text-white hover:text-primary transition-colors font-medium">
                 Live Data
               </Link>
-              <Link to="/upstox-token" className="text-white hover:text-primary transition-colors font-medium">
-                Upstox Token
-              </Link>
               <Link to="/my-account" className="text-white hover:text-primary transition-colors font-medium">
                 My Account
               </Link>
