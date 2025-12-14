@@ -109,9 +109,6 @@ const AuthenticatedNavbar = () => {
               <Link to="/chart" className="text-white hover:text-primary transition-colors font-medium">
                 Chart
               </Link>
-              <Link to="/greeks" className="text-white hover:text-primary transition-colors font-medium">
-                Greeks Analysis
-              </Link>
               <Link to="/live-data" className="text-white hover:text-primary transition-colors font-medium">
                 Live Data
               </Link>
@@ -154,9 +151,6 @@ const AuthenticatedNavbar = () => {
               )}
               <Link to="/chart" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                 Chart
-              </Link>
-              <Link to="/greeks" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
-                Greeks Analysis
               </Link>
               <Link to="/live-data" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                 Live Data
