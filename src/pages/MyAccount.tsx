@@ -96,8 +96,7 @@ const MyAccount = () => {
                       className="w-full h-full object-cover"
                       loading="lazy"
                       decoding="async"
-                      {/* @ts-ignore */}
-                      fetchpriority="low"
+                      {...({ fetchpriority: "low" } as any)}
                       onError={(e) => {
                         const target = e.currentTarget;
                         if (target.src.includes("/img/user.jpg")) return; // Prevent loop

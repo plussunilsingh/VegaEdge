@@ -1,5 +1,8 @@
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
+import { endpoints } from "@/config";
+import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +13,50 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Contact = () => {
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+        // Backend expects { name, email, message }. We are appending subject to message for now as backend schema is fixed.
+        // Actually I can update the backend controller to accept subject if I want, but let's just append it.
+        const payload = {
+            name: formData.name,
+            email: formData.email,
+            message: `Subject: ${formData.subject}\n\n${formData.message}`
+        };
+
+        const response = await fetch(endpoints.contact.submit, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error("Failed to send message");
+
+        toast({
+            title: "Message Sent",
+            description: "We have received your message and will get back to you shortly."
+        });
+        setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not send message. Please try again later."
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -27,25 +74,57 @@ const Contact = () => {
           <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             <div className="bg-card rounded-2xl p-8 shadow-lg">
               <h2 className="text-2xl font-bold mb-6">Send us a message</h2>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div>
                   <Label htmlFor="name">Your Name</Label>
-                  <Input id="name" type="text" placeholder="Enter your name" className="mt-2" />
+                  <Input 
+                    id="name" 
+                    type="text" 
+                    placeholder="Enter your name" 
+                    className="mt-2" 
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" className="mt-2" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    className="mt-2" 
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="subject">Subject</Label>
-                  <Input id="subject" type="text" placeholder="What is this about?" className="mt-2" />
+                  <Input 
+                    id="subject" 
+                    type="text" 
+                    placeholder="What is this about?" 
+                    className="mt-2" 
+                    value={formData.subject}
+                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="message">Message</Label>
-                  <Textarea id="message" rows={5} placeholder="Your message..." className="mt-2" />
+                  <Textarea 
+                    id="message" 
+                    rows={5} 
+                    placeholder="Your message..." 
+                    className="mt-2" 
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    required
+                  />
                 </div>
-                <Button type="submit" className="w-full rounded-full" size="lg">
-                  Send Message
+                <Button type="submit" className="w-full rounded-full" size="lg" disabled={isSubmitting}>
+                  {isSubmitting ? "Sending..." : "Send Message"}
                 </Button>
               </form>
             </div>

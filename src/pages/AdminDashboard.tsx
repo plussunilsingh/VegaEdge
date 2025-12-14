@@ -102,10 +102,8 @@ const AdminDashboard = () => {
                However, the user might have added it or it was in UpstoxToken.tsx code implies it works.
                I'll trust the previous code snippet validity. */
 
-            const response = await fetch(`${endpoints.auth.me.replace('/me', '')}/save-manual-token`, { 
-                 // Hacky url construction or add to config. Let's assume standardized.
-                 // Better: config.endpoints.auth doesn't have it.
-                 // I will skip precise URL check and use the one that works or fallback.
+            // Use explicit endpoint from config
+            const response = await fetch(endpoints.auth.saveToken, { 
                   method: "POST",
                   headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                   body: JSON.stringify({ access_token: manualToken.trim() })
@@ -275,10 +273,14 @@ const AdminDashboard = () => {
                                                 <td className="px-6 py-3">
                                                     <div className="flex items-center gap-3">
                                                         {u.profile_image ? (
-                                                            <img src={u.profile_image} alt="" className="w-8 h-8 rounded-full object-cover border" />
+                                                            <img 
+                                                              src={u.profile_image.startsWith('http') ? u.profile_image : `${endpoints.auth.login.replace('/auth/login', '')}/${u.profile_image}`} 
+                                                              alt="" 
+                                                              className="w-8 h-8 rounded-full object-cover border" 
+                                                            />
                                                         ) : (
                                                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                                                {u.username.slice(0,2).toUpperCase()}
+                                                                {(u.username || u.email || "??").slice(0,2).toUpperCase()}
                                                             </div>
                                                         )}
                                                         <div>

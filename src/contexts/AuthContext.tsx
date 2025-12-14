@@ -146,7 +146,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Cache profile image URL
       if (userData.profileImage) {
-        setProfileImageUrl(`upload/${userData.profileImage}`);
+         if (userData.profileImage.startsWith('http')) {
+            setProfileImageUrl(userData.profileImage);
+         } else {
+             // userData.profileImage is likely "user_images/..."
+             // We need to append it to backend base url.
+             // Import BACKEND_API_BASE_URL from config (it is not exported by default, checking config.ts)
+             // config.ts exports BACKEND_API_BASE_URL.
+             setProfileImageUrl(`${endpoints.auth.login.replace('/auth/login', '')}/${userData.profileImage}`);
+         }
       }
 
       // Then fetch fresh data from backend
