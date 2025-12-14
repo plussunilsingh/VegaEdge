@@ -67,6 +67,25 @@ const AdminDashboard = () => {
             toast.error("Error updating status");
         }
     });
+    
+    // Refresh Cache Mutation
+    const refreshCacheMutation = useMutation({
+        mutationFn: async () => {
+             const token = localStorage.getItem('alphaedge_session');
+             const response = await fetch(endpoints.market.refreshCache, {
+                 method: 'POST',
+                 headers: { 'Authorization': `Bearer ${token}` }
+             });
+             if (!response.ok) throw new Error("Failed to refresh cache");
+             return response.json();
+        },
+        onSuccess: () => {
+             toast.success("Market Cache Refreshed Successfully");
+        },
+        onError: () => {
+             toast.error("Failed to refresh cache");
+        }
+    });
 
     if (currentUser?.role !== 'ADMIN_USER') {
         return (
@@ -85,9 +104,14 @@ const AdminDashboard = () => {
             <div className="flex-1 container mx-auto py-10 px-4">
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-                    <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['users'] })}>
-                        Refresh List
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="secondary" onClick={() => refreshCacheMutation.mutate()} disabled={refreshCacheMutation.isPending}>
+                            {refreshCacheMutation.isPending ? "Refreshing..." : "Refresh Market Cache"}
+                        </Button>
+                        <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['users'] })}>
+                            Refresh List
+                        </Button>
+                    </div>
                 </div>
                 
                 <div className="bg-white rounded-lg shadow overflow-hidden">

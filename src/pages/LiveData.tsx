@@ -17,7 +17,7 @@ import { Calendar as CalendarIcon, Loader2, TrendingUp, Activity, Waves, Zap } f
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { BACKEND_API_BASE_URL } from "@/config";
+import { BACKEND_API_BASE_URL, endpoints } from "@/config";
 import { 
   LineChart, 
   Line, 
@@ -57,6 +57,10 @@ const LiveData = () => {
   // State for date selection
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
+  // Expiry State
+  const [expiryList, setExpiryList] = useState<string[]>([]);
+  const [selectedExpiry, setSelectedExpiry] = useState<string>("");
+
   // State for fetched data
   const [data, setData] = useState<GreeksData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,6 +85,26 @@ const LiveData = () => {
       return slots;
   };
 
+  // Fetch Expiry List on mount
+  useEffect(() => {
+     if (token) {
+        fetch(endpoints.market.expiryList, {
+             headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                 setExpiryList(data);
+                 // Optional: Auto-select closest expiry?
+                 // For now, let user select or default to None (which means all/merged in backend logic, or we force one)
+                 // Requirement: "Add a expiry select drop down"
+                 if (data.length > 0) setSelectedExpiry(data[0]); 
+            }
+        })
+        .catch(err => console.error("Failed to fetch expiry list", err));
+     }
+  }, [token]);
+
   const fetchHistoryData = useCallback(async (selectedDate: Date, silent = false) => {
     if (!silent) setLoading(true);
     setError(null);
@@ -91,7 +115,9 @@ const LiveData = () => {
 
       const dateStr = format(selectedDate, "yyyy-MM-dd");
       
-      const response = await fetch(`${BACKEND_API_BASE_URL}/market/history?date=${dateStr}&index_name=${selectedIndex}`, {
+      const url = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
+
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`, 
         },
@@ -162,7 +188,7 @@ const LiveData = () => {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [token, selectedIndex]);
+  }, [token, selectedIndex, selectedExpiry]);
 
   // Initial Fetch & Polling (Drift-Free)
   useEffect(() => {
@@ -196,7 +222,7 @@ const LiveData = () => {
       
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedDate, token, selectedIndex, fetchHistoryData]);
+  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData]);
 
   const formatTime = (isoString: string) => {
     try {
@@ -430,6 +456,18 @@ const LiveData = () => {
               <option value="BANKNIFTY">BANKNIFTY</option>
               <option value="FINNIFTY">FINNIFTY</option>
               <option value="MIDCPNIFTY">MIDCPNIFTY</option>
+            </select>
+
+            {/* Expiry Dropdown */}
+             <select 
+              value={selectedExpiry}
+              onChange={(e) => setSelectedExpiry(e.target.value)}
+              className="h-8 px-3 bg-background border border-border/40 hover:border-primary/50 rounded-md text-xs transition-colors cursor-pointer outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">All Expiries</option>
+              {expiryList.map(exp => (
+                  <option key={exp} value={exp}>{exp}</option>
+              ))}
             </select>
 
             <Popover>
