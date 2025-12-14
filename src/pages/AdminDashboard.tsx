@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ShieldCheck, Key, RefreshCw, Smartphone, Mail, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { ShieldCheck, Key, RefreshCw, CheckCircle, Search, ChevronLeft, ChevronRight, Hash } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
   id: number;
@@ -20,6 +22,8 @@ interface User {
   profile_image?: string;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 const AdminDashboard = () => {
     const { user: currentUser, token } = useAuth();
     const queryClient = useQueryClient();
@@ -29,6 +33,10 @@ const AdminDashboard = () => {
     const [isSavingToken, setIsSavingToken] = useState(false);
     const [isCoolingDown, setIsCoolingDown] = useState(false);
     const [cooldownTime, setCooldownTime] = useState(0);
+
+    // --- State for User Table ---
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
 
     // --- Queries & Mutations ---
     const fetchUsers = async () => {
@@ -74,7 +82,7 @@ const AdminDashboard = () => {
                  headers: { 'Authorization': `Bearer ${token}` }
              });
              if (!response.ok) throw new Error("Failed to refresh cache");
-             return response.json(); // Expecting/checking {message: ...}
+             return response.json(); 
         },
         onSuccess: () => toast.success("Market Cache Refreshed Successfully"),
         onError: () => toast.error("Failed to refresh cache")
@@ -85,24 +93,6 @@ const AdminDashboard = () => {
         if (!manualToken.trim()) return toast.error("Please enter an access token.");
         setIsSavingToken(true);
         try {
-            // Using endpoint for internal token save if exists? 
-            // Previous code used /auth/save-manual-token (Need to verify if this exists in AuthController or needs creating. 
-            // Assuming it exists based on previous file content, else we need to create it. 
-            // Wait, previous file used `${BACKEND_API_BASE_URL}/auth/save-manual-token`.
-            
-            // Let's assume it exists or I should add it. I haven't added it in this plan but previous file had it.
-            // Actually, I should verify AuthController.
-            // For safety, I'll stick to what was in UpstoxToken.tsx logic.
-            
-            // Note: If endpoint is missing, this will 404. Ideally we should have checked.
-            // Re-using logic from UpstoxToken.tsx
-            
-            /* ERROR RISK: Is /auth/save-manual-token implemented? 
-               Looking at auth_controller.py log history... I don't recall seeing it explicitly. 
-               However, the user might have added it or it was in UpstoxToken.tsx code implies it works.
-               I'll trust the previous code snippet validity. */
-
-            // Use explicit endpoint from config
             const response = await fetch(endpoints.auth.saveToken, { 
                   method: "POST",
                   headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
@@ -121,7 +111,7 @@ const AdminDashboard = () => {
 
     const handleAutoGenerateToken = async () => {
         try {
-             // Assuming endpoint exists as per UpstoxToken.tsx
+             // Assuming endpoint layout follows auth pattern
              const baseUrl = endpoints.auth.login.replace('/login', ''); // base auth url
              const resp = await fetch(`${baseUrl}/upstox-login-url`, { method: 'GET' });
              if (!resp.ok) throw new Error(`Status ${resp.status}`);
@@ -158,6 +148,19 @@ const AdminDashboard = () => {
         }, 1000);
     };
 
+    // --- Filter & Pagination Logic ---
+    const filteredUsers = users.filter((u: User) => 
+        u.username?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+    const paginatedUsers = filteredUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    useEffect(() => {
+        setCurrentPage(1); // Reset to page 1 on search
+    }, [searchTerm]);
+
 
     if (currentUser?.role !== 'ADMIN_USER') {
         return (
@@ -179,152 +182,211 @@ const AdminDashboard = () => {
                         <h1 className="text-3xl font-bold flex items-center gap-2">
                              <ShieldCheck className="w-8 h-8 text-primary" /> Admin Dashboard
                         </h1>
-                        <p className="text-muted-foreground text-sm mt-1">Manage users, tokens, and system cache.</p>
-                    </div>
-                    <div className="flex gap-3">
-                         <Button 
-                            variant="destructive" // Requested RED color
-                            onClick={() => refreshCacheMutation.mutate()} 
-                            disabled={refreshCacheMutation.isPending}
-                            className="shadow-sm"
-                        >
-                            <RefreshCw className={`w-4 h-4 mr-2 ${refreshCacheMutation.isPending ? 'animate-spin' : ''}`} />
-                            {refreshCacheMutation.isPending ? "Refreshing..." : "Refresh Cache"}
-                        </Button>
-                        <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['users'] })}>
-                            Refresh List
-                        </Button>
+                        <p className="text-muted-foreground text-sm mt-1">Manage users, tokens, and system configuration.</p>
                     </div>
                 </div>
 
-                {/* System & Token Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                     {/* Auto Token */}
-                     <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <RefreshCw className="w-4 h-4 text-green-600" /> Auto Generate Token
-                            </CardTitle>
-                            <CardDescription className="text-xs">Login to Upstox to refresh access token.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                             <Button 
-                                onClick={handleAutoGenerateToken} 
-                                className="w-full bg-green-600 hover:bg-green-700 text-white"
-                                disabled={isCoolingDown}
-                                size="sm"
-                            >
-                                {isCoolingDown ? `Wait ${cooldownTime}s` : "Generate New Token"}
-                            </Button>
-                        </CardContent>
-                     </Card>
+                <Tabs defaultValue="users" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-8">
+                        <TabsTrigger value="users">User Management</TabsTrigger>
+                        <TabsTrigger value="system">System & Tokens</TabsTrigger>
+                    </TabsList>
 
-                     {/* Manual Token */}
-                     <Card>
-                        <CardHeader className="pb-3">
-                             <CardTitle className="text-base flex items-center gap-2">
-                                <Key className="w-4 h-4 text-blue-600" /> Manual Token Entry
-                             </CardTitle>
-                             <CardDescription className="text-xs">Paste token if auto-generation fails.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex gap-2">
-                             <Textarea 
-                                placeholder="Paste token..." 
-                                value={manualToken}
-                                onChange={(e) => setManualToken(e.target.value)}
-                                className="min-h-[36px] h-9 py-1 text-xs font-mono resize-none"
-                             />
-                             <Button 
-                                onClick={handleManualTokenSave} 
-                                disabled={isSavingToken || !manualToken}
-                                size="sm"
-                            >
-                                Save
-                             </Button>
-                        </CardContent>
-                     </Card>
-                </div>
+                    <TabsContent value="users">
+                        <Card>
+                            <CardHeader className="pb-4 flex flex-row items-center justify-between space-y-0">
+                                <CardTitle className="text-xl">Users ({filteredUsers.length})</CardTitle>
+                                <div className="flex space-x-2 w-full md:w-auto">
+                                    <div className="relative w-full md:w-64">
+                                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                            placeholder="Search users..." 
+                                            className="pl-8"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['users'] })}>
+                                        <RefreshCw className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                {isLoading ? (
+                                    <div className="p-8 text-center text-gray-500 animate-pulse">Loading users...</div>
+                                ) : isError ? (
+                                    <div className="p-8 text-center text-red-500">Error loading users.</div>
+                                ) : (
+                                    <>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
+                                                    <tr>
+                                                        <th className="px-6 py-3">User</th>
+                                                        <th className="px-6 py-3">Role</th>
+                                                        <th className="px-6 py-3 text-center">Status</th>
+                                                        <th className="px-6 py-3 text-center">Subscribed</th>
+                                                        <th className="px-6 py-3 text-right">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {paginatedUsers.map((u: User) => (
+                                                        <tr key={u.id} className="hover:bg-gray-50/50">
+                                                            <td className="px-6 py-3">
+                                                                <div className="flex items-center gap-3">
+                                                                    {u.profile_image ? (
+                                                                        <img 
+                                                                          src={u.profile_image.startsWith('http') ? u.profile_image : `${endpoints.auth.login.replace('/auth/login', '')}/${u.profile_image}`} 
+                                                                          alt="" 
+                                                                          className="w-8 h-8 rounded-full object-cover border" 
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                                                            {(u.username || u.email || "??").slice(0,2).toUpperCase()}
+                                                                        </div>
+                                                                    )}
+                                                                    <div>
+                                                                        <div className="font-medium text-gray-900">{u.username}</div>
+                                                                        <div className="text-gray-500 text-xs">{u.email}</div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-3">
+                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.role === 'ADMIN_USER' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                                    {u.role}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-3 text-center">
+                                                                 {u.email_sent ? (
+                                                                     <CheckCircle className="w-4 h-4 text-green-500 mx-auto" />
+                                                                 ) : (
+                                                                     <div className="w-2 h-2 rounded-full bg-gray-300 mx-auto" />
+                                                                 )}
+                                                            </td>
+                                                            <td className="px-6 py-3 text-center">
+                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.is_subscribed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                                    {u.is_subscribed ? 'Yes' : 'No'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-3 text-right">
+                                                                <Button 
+                                                                    onClick={() => toggleMutation.mutate({ userId: u.id, currentStatus: u.is_subscribed })}
+                                                                    disabled={toggleMutation.isPending}
+                                                                    variant={u.is_subscribed ? "destructive" : "default"}
+                                                                    size="sm"
+                                                                    className="h-7 text-xs"
+                                                                >
+                                                                    {u.is_subscribed ? "Revoke" : "Approve"}
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        {/* Pagination */}
+                                        {totalPages > 1 && (
+                                            <div className="flex items-center justify-end p-4 gap-2">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    disabled={currentPage === 1}
+                                                >
+                                                    <ChevronLeft className="w-4 h-4" />
+                                                </Button>
+                                                <span className="text-sm text-gray-600">
+                                                    Page {currentPage} of {totalPages}
+                                                </span>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                    disabled={currentPage === totalPages}
+                                                >
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
 
-                {/* Users Table */}
-                <Card>
-                    <CardHeader className="pb-4">
-                        <CardTitle className="text-xl">User Management</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        {isLoading ? (
-                            <div className="p-8 text-center text-gray-500 animate-pulse">Loading users...</div>
-                        ) : isError ? (
-                            <div className="p-8 text-center text-red-500">Error loading users.</div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-                                        <tr>
-                                            <th className="px-6 py-3">User</th>
-                                            <th className="px-6 py-3">Role</th>
-                                            <th className="px-6 py-3 text-center">Email Sent</th>
-                                            <th className="px-6 py-3 text-center">Subscription</th>
-                                            <th className="px-6 py-3 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {users.map((u: User) => (
-                                            <tr key={u.id} className="hover:bg-gray-50/50">
-                                                <td className="px-6 py-3">
-                                                    <div className="flex items-center gap-3">
-                                                        {u.profile_image ? (
-                                                            <img 
-                                                              src={u.profile_image.startsWith('http') ? u.profile_image : `${endpoints.auth.login.replace('/auth/login', '')}/${u.profile_image}`} 
-                                                              alt="" 
-                                                              className="w-8 h-8 rounded-full object-cover border" 
-                                                            />
-                                                        ) : (
-                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                                                {(u.username || u.email || "??").slice(0,2).toUpperCase()}
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <div className="font-medium text-gray-900">{u.username}</div>
-                                                            <div className="text-gray-500 text-xs">{u.email}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-3">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.role === 'ADMIN_USER' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
-                                                        {u.role}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-3 text-center">
-                                                     {u.email_sent ? (
-                                                         <CheckCircle className="w-4 h-4 text-green-500 mx-auto" />
-                                                     ) : (
-                                                         <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />
-                                                     )}
-                                                </td>
-                                                <td className="px-6 py-3 text-center">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.is_subscribed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                        {u.is_subscribed ? 'Active' : 'Inactive'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-3 text-right">
-                                                    <Button 
-                                                        onClick={() => toggleMutation.mutate({ userId: u.id, currentStatus: u.is_subscribed })}
-                                                        disabled={toggleMutation.isPending}
-                                                        variant={u.is_subscribed ? "destructive" : "default"}
-                                                        size="sm"
-                                                        className="h-7 text-xs"
-                                                    >
-                                                        {u.is_subscribed ? "Disable" : "Enable"}
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                    <TabsContent value="system" className="space-y-6">
+                         {/* Cache Control */}
+                         <Card>
+                             <CardHeader>
+                                 <CardTitle className="text-base flex items-center gap-2">
+                                     <Hash className="w-4 h-4 text-orange-500" /> System Cache
+                                 </CardTitle>
+                                 <CardDescription className="text-xs">
+                                     Force refresh the market data cache if charts are not updating.
+                                 </CardDescription>
+                             </CardHeader>
+                             <CardContent>
+                                  <Button 
+                                     variant="destructive"
+                                     onClick={() => refreshCacheMutation.mutate()} 
+                                     disabled={refreshCacheMutation.isPending}
+                                     size="sm"
+                                 >
+                                     <RefreshCw className={`w-4 h-4 mr-2 ${refreshCacheMutation.isPending ? 'animate-spin' : ''}`} />
+                                     {refreshCacheMutation.isPending ? "Refreshing..." : "Purge & Refresh Cache"}
+                                 </Button>
+                             </CardContent>
+                         </Card>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Auto Token */}
+                            <Card>
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <RefreshCw className="w-4 h-4 text-green-600" /> Auto Generate Token
+                                    </CardTitle>
+                                    <CardDescription className="text-xs">Login to Upstox to refresh access token.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                     <Button 
+                                        onClick={handleAutoGenerateToken} 
+                                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                        disabled={isCoolingDown}
+                                        size="sm"
+                                    >
+                                        {isCoolingDown ? `Wait ${cooldownTime}s` : "Generate New Token"}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+
+                            {/* Manual Token */}
+                            <Card>
+                                <CardHeader className="pb-3">
+                                     <CardTitle className="text-base flex items-center gap-2">
+                                        <Key className="w-4 h-4 text-blue-600" /> Manual Token Entry
+                                     </CardTitle>
+                                     <CardDescription className="text-xs">Paste token if auto-generation fails.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex gap-2">
+                                     <Textarea 
+                                        placeholder="Paste token..." 
+                                        value={manualToken}
+                                        onChange={(e) => setManualToken(e.target.value)}
+                                        className="min-h-[36px] h-9 py-1 text-xs font-mono resize-none"
+                                     />
+                                     <Button 
+                                        onClick={handleManualTokenSave} 
+                                        disabled={isSavingToken || !manualToken}
+                                        size="sm"
+                                    >
+                                        Save
+                                     </Button>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     );
