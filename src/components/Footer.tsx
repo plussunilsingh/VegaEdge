@@ -8,8 +8,9 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <Link to="/" className="flex items-center mb-4">
-              <h1 className="text-white text-xl font-bold flex items-center">
-                <img src="/img/logo_red.png" style={{ width: '20%' }} alt="Logo" className="inline" /> Vega Greeks
+              <h1 className="text-white text-xl font-bold flex items-center gap-2">
+                <img src="/img/logo_red.png" alt="Logo" className="h-10 w-auto object-contain" /> 
+                <span>Vega Greeks</span>
               </h1>
             </Link>
             <p className="text-gray-400 mb-6">

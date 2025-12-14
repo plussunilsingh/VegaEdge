@@ -26,6 +26,13 @@ export const endpoints = {
     register: `${BACKEND_API_BASE_URL}/auth/register`,
     me: `${BACKEND_API_BASE_URL}/auth/me`,
     logout: `${BACKEND_API_BASE_URL}/auth/logout`,
+    saveToken: `${BACKEND_API_BASE_URL}/auth/save-manual-token`, // Explicit endpoint
+  },
+  user: {
+     image: `${BACKEND_API_BASE_URL}/user/image`,
+  },
+  contact: {
+     submit: `${BACKEND_API_BASE_URL}/contact/`,
   },
   market: {
     greeks: (instrumentKey: string, expiryDate: string, token: string) =>

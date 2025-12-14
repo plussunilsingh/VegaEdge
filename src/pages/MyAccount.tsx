@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
+import { endpoints } from "@/config";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,14 +19,46 @@ const MyAccount = () => {
     }
   };
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedFile) {
-      toast({
-        title: "Profile Updated",
-        description: "Your profile picture has been updated successfully.",
-      });
-      setSelectedFile(null);
+    if (!selectedFile) return;
+    
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    
+    try {
+        const token = localStorage.getItem('alphaedge_session'); // Or use useAuth().token
+        const response = await fetch(endpoints.user.image, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || "Upload failed");
+        }
+        
+        const data = await response.json();
+        
+        toast({
+          title: "Profile Updated",
+          description: "Your profile picture has been updated. Refreshing...",
+        });
+        
+        // Force reload or update context
+        window.location.reload(); 
+
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Upload Failed",
+            description: error.message
+        });
+    } finally {
+        setSelectedFile(null);
     }
   };
 
@@ -63,7 +96,8 @@ const MyAccount = () => {
                       className="w-full h-full object-cover"
                       loading="lazy"
                       decoding="async"
-                      fetchPriority="low"
+                      {/* @ts-ignore */}
+                      fetchpriority="low"
                       onError={(e) => {
                         const target = e.currentTarget;
                         if (target.src.includes("/img/user.jpg")) return; // Prevent loop
