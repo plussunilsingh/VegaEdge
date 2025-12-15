@@ -41,6 +41,7 @@ export const endpoints = {
       `${BACKEND_API_BASE_URL}/market/history?date=${date}&index_name=${indexName}${expiry ? `&expiry=${expiry}` : ''}`,
     expiryList: `${BACKEND_API_BASE_URL}/market/expiry-list`,
     refreshCache: `${BACKEND_API_BASE_URL}/market/cache-refresh`,
+    syncExpiries: `${BACKEND_API_BASE_URL}/market/sync-expiries`,
   },
   admin: {
     users: `${BACKEND_API_BASE_URL}/admin/users`,
