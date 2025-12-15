@@ -88,6 +88,19 @@ const AdminDashboard = () => {
         onError: () => toast.error("Failed to refresh cache")
     });
 
+    const syncExpiriesMutation = useMutation({
+        mutationFn: async () => {
+             const response = await fetch(endpoints.market.syncExpiries, {
+                 method: 'POST',
+                 headers: { 'Authorization': `Bearer ${token}` }
+             });
+             if (!response.ok) throw new Error("Failed to sync expiries");
+             return response.json(); 
+        },
+        onSuccess: (data) => toast.success(`Synced Expiries: ${Object.keys(data.data || {}).length} indices updated`),
+        onError: () => toast.error("Failed to sync expiries")
+    });
+
     // --- Upstox Handlers ---
     const handleManualTokenSave = async () => {
         if (!manualToken.trim()) return toast.error("Please enter an access token.");
@@ -339,8 +352,33 @@ const AdminDashboard = () => {
                              </CardContent>
                          </Card>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Auto Token */}
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             
+                             {/* Sync Expiries */}
+                             <Card>
+                                 <CardHeader className="pb-3">
+                                     <CardTitle className="text-base flex items-center gap-2">
+                                         <RefreshCw className="w-4 h-4 text-purple-500" /> Sync Expiries
+                                     </CardTitle>
+                                     <CardDescription className="text-xs">
+                                         Fetch latest contract expiries from Upstox to DB.
+                                         (Runs daily at 08:30 AM automatically)
+                                     </CardDescription>
+                                 </CardHeader>
+                                 <CardContent>
+                                      <Button 
+                                         variant="outline"
+                                         onClick={() => syncExpiriesMutation.mutate()} 
+                                         disabled={syncExpiriesMutation.isPending}
+                                         size="sm"
+                                         className="w-full"
+                                     >
+                                         {syncExpiriesMutation.isPending ? "Syncing..." : "Sync Now"}
+                                     </Button>
+                                 </CardContent>
+                             </Card>
+
+                             {/* Auto Token */}
                             <Card>
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-base flex items-center gap-2">
