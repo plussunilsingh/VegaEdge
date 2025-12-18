@@ -1,7 +1,21 @@
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Footer = () => {
+  const [apiVersion, setApiVersion] = useState<string>("Loading...");
+  const uiVersion = "1.0.7-4"; // Sync with package.json or hardcode for now
+
+  useEffect(() => {
+    fetch("http://localhost:8000/system/version")
+      .then(res => res.json())
+      .then(data => setApiVersion(data.version))
+      .catch(e => {
+          console.error("Failed to fetch API version", e);
+          setApiVersion("Offline");
+      });
+  }, []);
+
   return (
     <footer className="bg-black text-white">
       <div className="container mx-auto px-4 py-16">
@@ -67,6 +81,9 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-gray-400">
             <span>© Vega Greeks, All right reserved.</span>
+            <div className="text-xs mt-2 text-gray-600">
+                UI: v{uiVersion} | API: v{apiVersion}
+            </div>
           </div>
         </div>
       </div>
