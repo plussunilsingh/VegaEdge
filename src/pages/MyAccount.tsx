@@ -181,7 +181,7 @@ const MyAccount = () => {
 
                 <div className="space-y-4">
                   {user?.is_subscribed ? (
-                    <Link to="/chart">
+                    <Link to="/live-data">
                         <Button className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 text-lg">
                         Explore Our Vega Charts
                         </Button>
