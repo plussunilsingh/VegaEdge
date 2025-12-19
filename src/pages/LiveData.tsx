@@ -160,7 +160,8 @@ import { SEOHead } from "@/components/SEOHead";
       const dataMap = new Map();
       result.forEach((item: any) => {
           if (item?.greeks && item.timestamp) {
-              const timeStr = format(new Date(item.timestamp), "HH:mm");
+              const timeStr = item.timestamp;
+//               const timeStr = format(new Date(item.timestamp), "HH:mm");
               dataMap.set(timeStr, item);
           }
       });
