@@ -112,6 +112,9 @@ const AuthenticatedNavbar = () => {
               <Link to="/live-data" className="text-white hover:text-primary transition-colors font-medium">
                 Live Data
               </Link>
+              <Link to="/angleone-live-data" className="text-white hover:text-primary transition-colors font-medium">
+                AngelOne
+              </Link>
               <Link to="/my-account" className="text-white hover:text-primary transition-colors font-medium">
                 My Account
               </Link>
@@ -151,6 +154,9 @@ const AuthenticatedNavbar = () => {
               </Link>
               <Link to="/live-data" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                 Live Data
+              </Link>
+              <Link to="/angleone-live-data" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+                AngelOne
               </Link>
               <Link to="/my-account" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                 My Account
