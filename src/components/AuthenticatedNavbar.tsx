@@ -112,9 +112,9 @@ const AuthenticatedNavbar = () => {
               <Link to="/live-data" className="text-white hover:text-primary transition-colors font-medium">
                 Live Data
               </Link>
-              <Link to="/angleone-live-data" className="text-white hover:text-primary transition-colors font-medium">
+              { /* <Link to="/angleone-live-data" className="text-white hover:text-primary transition-colors font-medium">
                 AngelOne
-              </Link>
+              </Link>  */}
               <Link to="/my-account" className="text-white hover:text-primary transition-colors font-medium">
                 My Account
               </Link>
