@@ -56,6 +56,10 @@ const AngleOneLiveData = () => {
   // State for date selection
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
+  // State for expiries
+  const [expiries, setExpiries] = useState<string[]>([]);
+  const [selectedExpiry, setSelectedExpiry] = useState<string>("");
+
   // State for fetched data
   const [data, setData] = useState<GreeksData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -87,13 +91,41 @@ const AngleOneLiveData = () => {
       return slots;
   };
 
+  // 0. Fetch Expiries
+  useEffect(() => {
+      const fetchExpiries = async () => {
+          if (!token) return;
+          try {
+              const res = await fetch(`${BACKEND_API_BASE_URL}/angleone/expiry-list?index_name=${selectedIndex}`, {
+                  headers: { Authorization: `Bearer ${token}` }
+              });
+              const list = await res.json();
+              if (Array.isArray(list) && list.length > 0) {
+                  setExpiries(list);
+                  // Default to nearest future expiry or first
+                  // Assuming list is sorted by date ascending
+                  const today = new Date().toISOString().split('T')[0];
+                  const future = list.find(d => d >= today);
+                  setSelectedExpiry(future || list[0]);
+              } else {
+                  setExpiries([]);
+                  setSelectedExpiry("");
+              }
+          } catch(e) {
+              console.error("Failed to fetch AngelOne expiries", e);
+          }
+      };
+      fetchExpiries();
+  }, [token, selectedIndex]);
+
   // 1. Fetch History
-  const fetchHistoryData = useCallback(async (selectedDate: Date, silent = false) => {
+  const fetchHistoryData = useCallback(async (currentDate: Date, currentExpiry: string, silent = false) => {
+    if (!currentExpiry) return; // Wait for expiry selection
     if (!silent) setLoading(true);
     try {
-      const dateStr = format(selectedDate, "yyyy-MM-dd");
-      // New Endpoint: /angleone/history
-      const url = `${BACKEND_API_BASE_URL}/angleone/history?date=${dateStr}&index_name=${selectedIndex}`;
+      const dateStr = format(currentDate, "yyyy-MM-dd");
+      // New Endpoint with expiry param
+      const url = `${BACKEND_API_BASE_URL}/angleone/history?date=${dateStr}&index_name=${selectedIndex}&expiry_date=${currentExpiry}`;
 
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -103,13 +135,7 @@ const AngleOneLiveData = () => {
 
       const result = await response.json();
       
-      // Process Data (Similar to LiveData but fields match AngleOneLog model)
-      // Model: call_vega, put_vega...
-      // UI expects nested greeks object or flat? 
-      // LiveData expects `greeks: { ... }`.
-      // Ensure backend returns compatible shape or map it here.
-      // Backend returns list of Log objects.
-      
+      // Process Data
       const dataMap = new Map();
       result.forEach((item: any) => {
           if (item?.timestamp) {
@@ -117,13 +143,8 @@ const AngleOneLiveData = () => {
           }
       });
 
-      const timeSlots = generateTimeSlots(selectedDate);
+      const timeSlots = generateTimeSlots(currentDate);
       const processedData: GreeksData[] = timeSlots.map((slotTime) => {
-          const timeKey = slotTime.toISOString(); // Or match backend format strictly
-          // Backend returns ISO strings generally.
-          // Let's use simple string matching to be safe or find closest.
-          // Ideally backend timestamps are exact minutes.
-      
           // Simplification: Find item in result that matches minute
           const match = result.find((r: any) => {
               const d = new Date(r.timestamp);
@@ -135,7 +156,7 @@ const AngleOneLiveData = () => {
               greeks = {
                   call_vega: match.call_vega,
                   put_vega: match.put_vega,
-                  diff_vega: match.put_vega - match.call_vega, // Calculated Diff
+                  diff_vega: match.put_vega - match.call_vega,
                   call_delta: match.call_delta,
                   put_delta: match.put_delta,
                   diff_delta: match.put_delta - match.call_delta,
@@ -165,9 +186,25 @@ const AngleOneLiveData = () => {
     }
   }, [token, selectedIndex]);
 
+  // UseEffect for Initial Fetch and Polling
+  useEffect(() => {
+     if (token && selectedExpiry) {
+         fetchHistoryData(selectedDate, selectedExpiry);
+         
+         // Polling every minute
+         const interval = setInterval(() => {
+             // Only poll if viewing TODAY
+             if (isToday(selectedDate)) {
+                 fetchHistoryData(selectedDate, selectedExpiry, true);
+             }
+         }, 60000); // 1 minute
+         
+         return () => clearInterval(interval);
+     }
+  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData]);
+
   // 2. Trigger Fetch
   const handleTriggerFetch = async () => {
-      // Allow empty creds (Backend will scan ENV) 
       setLoading(true);
       try {
           const res = await fetch(`${BACKEND_API_BASE_URL}/angleone/fetch-data`, {
@@ -180,7 +217,7 @@ const AngleOneLiveData = () => {
                   payload: creds,
                   fetch_params: {
                       index_name: selectedIndex,
-                      expiry_date: format(selectedDate, "yyyy-MM-dd")
+                      expiry_date: selectedExpiry || format(selectedDate, "yyyy-MM-dd")
                   }
               })
           });
@@ -192,7 +229,7 @@ const AngleOneLiveData = () => {
           
           toast.success("Fetch triggered successfully!");
           // Refresh graph
-          fetchHistoryData(selectedDate);
+          if(selectedExpiry) fetchHistoryData(selectedDate, selectedExpiry);
           
       } catch (e: any) {
           toast.error(e.message);
@@ -200,10 +237,6 @@ const AngleOneLiveData = () => {
           setLoading(false);
       }
   };
-
-  useEffect(() => {
-     if (token) fetchHistoryData(selectedDate);
-  }, [selectedDate, token, selectedIndex, fetchHistoryData]);
 
   // Formatting helpers
   const formatTime = (iso: string) => { try { return format(new Date(iso), "HH:mm"); } catch { return ""; } };
@@ -230,9 +263,22 @@ const AngleOneLiveData = () => {
                  <Key className="w-3 h-3 mr-2" /> Credentials
              </Button>
 
-             <select value={selectedIndex} onChange={e => setSelectedIndex(e.target.value)} className="h-8 px-3 bg-background border rounded-md text-xs">
+             <select value={selectedIndex} onChange={e => setSelectedIndex(e.target.value)} className="h-8 px-3 bg-background border rounded-md text-xs w-24">
                  <option value="NIFTY">NIFTY</option>
                  <option value="BANKNIFTY">BANKNIFTY</option>
+             </select>
+             
+             {/* Expiry Selector */}
+             <select 
+                value={selectedExpiry} 
+                onChange={e => setSelectedExpiry(e.target.value)} 
+                className="h-8 px-3 bg-background border rounded-md text-xs w-32"
+                disabled={expiries.length === 0}
+             >
+                 {expiries.length === 0 && <option>No Expiries</option>}
+                 {expiries.map(exp => (
+                     <option key={exp} value={exp}>{exp}</option>
+                 ))}
              </select>
 
              <Popover>
