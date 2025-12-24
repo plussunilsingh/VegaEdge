@@ -167,12 +167,7 @@ const AngleOneLiveData = () => {
 
   // 2. Trigger Fetch
   const handleTriggerFetch = async () => {
-      if (!creds.client_code || !creds.password || !creds.totp_secret || !creds.api_key) {
-          toast.error("Please enter all AngelOne credentials");
-          setShowCreds(true);
-          return;
-      }
-      
+      // Allow empty creds (Backend will scan ENV) 
       setLoading(true);
       try {
           const res = await fetch(`${BACKEND_API_BASE_URL}/angleone/fetch-data`, {
