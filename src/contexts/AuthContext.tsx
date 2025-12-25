@@ -198,6 +198,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       })
       .then(res => {
         if (res.ok) return res.json();
+        if (res.status === 401) {
+            setIsSessionExpired(true);
+            throw new Error('Session expired');
+        }
         throw new Error('Failed to refresh user data');
       })
       .then(freshUserData => {
@@ -291,7 +295,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user, 
     login, 
     logout, 
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !isSessionExpired,
     profileImageUrl,
     token,
     isLoading,

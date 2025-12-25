@@ -118,7 +118,7 @@ import { SEOHead } from "@/components/SEOHead";
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [error, setError] = useState<string | null>(null);
-  const { token, isSessionExpired } = useAuth();
+  const { token, isSessionExpired, isAuthenticated } = useAuth();
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   // Helper to generate full day time slots (09:15 to 15:30)
@@ -139,7 +139,7 @@ import { SEOHead } from "@/components/SEOHead";
 
   // Fetch Expiry List on mount
   useEffect(() => {
-     if (token && !isSessionExpired) {
+     if (isAuthenticated) {
         fetch(endpoints.market.expiryList, {
              headers: { Authorization: `Bearer ${token}` }
         })
@@ -152,7 +152,7 @@ import { SEOHead } from "@/components/SEOHead";
         })
         .catch(err => console.error("Failed to fetch expiry list", err));
      }
-  }, [token, isSessionExpired]);
+  }, [isAuthenticated]);
 
   const fetchHistoryData = useCallback(async (selectedDate: Date, silent = false) => {
     if (!silent) setLoading(true);
@@ -264,7 +264,7 @@ import { SEOHead } from "@/components/SEOHead";
 
   // Initial Fetch & Polling (Drift-Free)
   useEffect(() => {
-    if (selectedDate && token && !isSessionExpired) {
+    if (selectedDate && isAuthenticated) {
       fetchHistoryData(selectedDate);
       
       let timeoutId: NodeJS.Timeout;
@@ -294,7 +294,7 @@ import { SEOHead } from "@/components/SEOHead";
       
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData, isSessionExpired]);
+  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData, isAuthenticated]);
 
 
   const fmt = (val: any, digits = 2) => {

@@ -51,7 +51,7 @@ interface GreeksData {
 }
 
 const AngleOneLiveData = () => {
-  const { token, isSessionExpired } = useAuth();
+  const { token, isSessionExpired, isAuthenticated } = useAuth();
   
   // State for date selection
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -94,7 +94,7 @@ const AngleOneLiveData = () => {
   // 0. Fetch Expiries
   useEffect(() => {
       const fetchExpiries = async () => {
-          if (!token || isSessionExpired) return;
+          if (!isAuthenticated) return;
           try {
               const res = await fetch(`${BACKEND_API_BASE_URL}/angleone/expiry-list?index_name=${selectedIndex}`, {
                   headers: { Authorization: `Bearer ${token}` }
@@ -187,20 +187,20 @@ const AngleOneLiveData = () => {
   }, [token, selectedIndex]);
 
   useEffect(() => {
-     if (token && selectedExpiry && !isSessionExpired) {
+     if (isAuthenticated && selectedExpiry) {
          fetchHistoryData(selectedDate, selectedExpiry);
          
          // Polling every minute
          const interval = setInterval(() => {
              // Only poll if viewing TODAY and session is active
-             if (isToday(selectedDate) && !isSessionExpired) {
+             if (isToday(selectedDate) && isAuthenticated) {
                  fetchHistoryData(selectedDate, selectedExpiry, true);
              }
          }, 60000); // 1 minute
          
          return () => clearInterval(interval);
      }
-  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData, isSessionExpired]);
+  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData, isAuthenticated]);
 
   // 2. Trigger Fetch
   const handleTriggerFetch = async () => {
