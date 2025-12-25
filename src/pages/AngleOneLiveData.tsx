@@ -103,13 +103,6 @@ const AngleOneLiveData = () => {
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [showCreds, setShowCreds] = useState(false);
-  const [creds, setCreds] = useState({
-      client_code: "",
-      password: "",
-      totp_secret: "",
-      api_key: ""
-  });
 
   const generateTimeSlots = useCallback((baseDate: Date) => {
       const slots = [];
@@ -174,20 +167,20 @@ const AngleOneLiveData = () => {
           const match = dataMap.get(timeKey);
 
           let greeks = null;
-          if (match) {
+          if (match && match.greeks) {
               greeks = {
-                  call_vega: Number(match.call_vega || 0),
-                  put_vega: Number(match.put_vega || 0),
-                  diff_vega: Number(match.put_vega || 0) - Number(match.call_vega || 0),
-                  call_delta: Number(match.call_delta || 0),
-                  put_delta: Number(match.put_delta || 0),
-                  diff_delta: Number(match.put_delta || 0) - Number(match.call_delta || 0),
-                  call_gamma: Number(match.call_gamma || 0),
-                  put_gamma: Number(match.put_gamma || 0),
-                  diff_gamma: Number(match.put_gamma || 0) - Number(match.call_gamma || 0),
-                  call_theta: Number(match.call_theta || 0),
-                  put_theta: Number(match.put_theta || 0),
-                  diff_theta: Number(match.put_theta || 0) - Number(match.call_theta || 0),
+                  call_vega: Number(match.greeks.call_vega || 0),
+                  put_vega: Number(match.greeks.put_vega || 0),
+                  diff_vega: Number(match.greeks.diff_vega || 0),
+                  call_delta: Number(match.greeks.call_delta || 0),
+                  put_delta: Number(match.greeks.put_delta || 0),
+                  diff_delta: Number(match.greeks.diff_delta || 0),
+                  call_gamma: Number(match.greeks.call_gamma || 0),
+                  put_gamma: Number(match.greeks.put_gamma || 0),
+                  diff_gamma: Number(match.greeks.diff_gamma || 0),
+                  call_theta: Number(match.greeks.call_theta || 0),
+                  put_theta: Number(match.greeks.put_theta || 0),
+                  diff_theta: Number(match.greeks.diff_theta || 0),
               };
           }
           return { timestamp: slotTime.toISOString(), greeks };
@@ -221,7 +214,6 @@ const AngleOneLiveData = () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
               body: JSON.stringify({
-                  payload: creds,
                   fetch_params: { index_name: selectedIndex, expiry_date: selectedExpiry || format(selectedDate, "yyyy-MM-dd") }
               })
           });
@@ -401,9 +393,6 @@ const AngleOneLiveData = () => {
            </div>
 
            <div className="flex flex-wrap gap-2 items-center w-full lg:w-auto">
-             <Button variant="outline" size="sm" onClick={() => setShowCreds(!showCreds)} className={cn("h-9 text-xs flex-1 sm:flex-none", showCreds && "bg-muted")}>
-                 <Key className="w-3 h-3 mr-2" /> Credentials
-             </Button>
              <select value={selectedIndex} onChange={e => setSelectedIndex(e.target.value)} className="h-9 px-3 bg-background border rounded-md text-xs flex-1 sm:w-24 sm:flex-none outline-none">
                  <option value="NIFTY">NIFTY</option>
                  <option value="BANKNIFTY">BANKNIFTY</option>
@@ -430,16 +419,6 @@ const AngleOneLiveData = () => {
            </div>
         </div>
 
-        {showCreds && (
-            <Card className="bg-muted/30 border-purple-500/20">
-                <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="space-y-1"><Label className="text-xs">Client Code</Label><Input value={creds.client_code} onChange={e => setCreds({...creds, client_code: e.target.value})} className="h-8 text-xs" /></div>
-                    <div className="space-y-1"><Label className="text-xs">Password</Label><Input type="password" value={creds.password} onChange={e => setCreds({...creds, password: e.target.value})} className="h-8 text-xs" /></div>
-                    <div className="space-y-1"><Label className="text-xs">TOTP Secret</Label><Input type="password" value={creds.totp_secret} onChange={e => setCreds({...creds, totp_secret: e.target.value})} className="h-8 text-xs" /></div>
-                    <div className="space-y-1"><Label className="text-xs">API Key</Label><Input type="password" value={creds.api_key} onChange={e => setCreds({...creds, api_key: e.target.value})} className="h-8 text-xs" /></div>
-                </CardContent>
-            </Card>
-        )}
 
         <GreekSection title="Vega" icon={TrendingUp} dataKeyCall="call_vega" dataKeyPut="put_vega" dataKeyNet="diff_vega" colorCall="#10b981" colorPut="#ef4444" colorNet="text-emerald-500" />
         <GreekSection title="Gamma" icon={Activity} dataKeyCall="call_gamma" dataKeyPut="put_gamma" dataKeyNet="diff_gamma" colorCall="#10b981" colorPut="#ef4444" colorNet="text-purple-500" />
