@@ -356,8 +356,8 @@ import { SEOHead } from "@/components/SEOHead";
           return { text: "Sideways", color: "text-yellow-500 font-bold" };
       }, [title, dataKeyNet]);
 
-      // Calculate symmetric domain for centered zero line
-      const yDomain = useMemo(() => {
+      // Calculate symmetric domain and explicit ticks for centered zero line
+      const { yDomain, yTicks } = useMemo(() => {
           let maxVal = 0;
           data.forEach((d: any) => {
               if (d.greeks) {
@@ -369,8 +369,16 @@ import { SEOHead } from "@/components/SEOHead";
                   maxVal = Math.max(maxVal, ...vals);
               }
           });
+          
+          // Add padding, ensure non-zero
           const limit = maxVal === 0 ? 1 : maxVal * 1.1; 
-          return [-limit, limit];
+          
+          // Generate explicit symmetric ticks: [-Limit, -Limit/2, 0, Limit/2, Limit]
+          // This ensures 0 is always there and ticks are perfectly matched
+          const step = limit / 2;
+          const ticks = [-limit, -step, 0, step, limit];
+          
+          return { yDomain: [-limit, limit], yTicks: ticks };
       }, [data, dataKeyCall, dataKeyPut, dataKeyNet]);
 
       // Calculate 09:15 timestamp for ReferenceLine
@@ -410,8 +418,9 @@ import { SEOHead } from "@/components/SEOHead";
                             />
                             <YAxis 
                                 domain={yDomain} 
+                                ticks={yTicks}
                                 tickFormatter={(val) => val.toFixed(2)}
-                                tickCount={7}
+                                // Removed auto tickCount since we provide specific ticks
                                 tick={{fontSize: 10, fill: '#888'}}
                                 stroke="#444"
                                 axisLine={{ stroke: '#666', strokeWidth: 1 }}
