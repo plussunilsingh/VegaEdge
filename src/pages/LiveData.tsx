@@ -399,74 +399,81 @@ import { SEOHead } from "@/components/SEOHead";
                         {title} Analysis
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 w-full min-h-0 p-2">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#333" strokeOpacity={0.2} vertical={false} />
-                            <XAxis 
-                                dataKey="timestamp" 
-                                tickFormatter={formatTime} 
-                                tick={{fontSize: 10, fill: '#888'}} 
-                                minTickGap={0} 
-                                stroke="#444"
-                                axisLine={false}
-                                tickLine={false}
-                                angle={-45}
-                                textAnchor="end"
-                                height={60}
-                                interval={window.innerWidth > 1400 ? 5 : 'preserveStartEnd'} 
-                            />
-                            <YAxis 
-                                domain={yDomain} 
-                                ticks={yTicks}
-                                tickFormatter={(val) => val.toFixed(2)}
-                                // Removed auto tickCount since we provide specific ticks
-                                tick={{fontSize: 10, fill: '#888'}}
-                                stroke="#444"
-                                axisLine={{ stroke: '#666', strokeWidth: 1 }}
-                                tickLine={false}
-                                width={45}
-                            />
-                            {/* Vertical Line Cursor */}
-                            <Tooltip 
-                                content={<CustomTooltip />} 
-                                cursor={{ stroke: '#ef4444', strokeWidth: 1.5, opacity: 0.8 }} 
-                            />
-                            <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
-                            <ReferenceLine y={0} stroke="#666" strokeOpacity={1} strokeWidth={1.5} />
-                            
-                            {/* 09:15 Reference Line */}
-                            <ReferenceLine 
-                                x={getStartReference()} 
-                                stroke="#ea580c" 
-                                strokeWidth={2}
-                                label={{ value: '09:15', position: 'insideTopLeft', fill: '#ea580c', fontSize: 10, fontWeight: 'bold' }} 
-                            />
+                <CardContent className="flex-1 w-full min-h-0 p-2 overflow-hidden relative">
+                    <div className="w-full h-full overflow-x-auto pb-2">
+                        <div className="min-w-[800px] h-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                                    {/* Premium Skeleton: Unified Steel Grey for Grid, Axis, Zero Line */}
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" strokeOpacity={0.4} vertical={false} />
+                                    <XAxis 
+                                        dataKey="timestamp" 
+                                        tickFormatter={formatTime} 
+                                        tick={{fontSize: 10, fill: '#94a3b8'}} 
+                                        minTickGap={0} 
+                                        stroke="#334155"
+                                        axisLine={{ stroke: '#334155' }}
+                                        tickLine={false}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={60}
+                                        interval={window.innerWidth > 1400 ? 5 : 'preserveStartEnd'} 
+                                    />
+                                    <YAxis 
+                                        domain={yDomain} 
+                                        ticks={yTicks}
+                                        tickFormatter={(val) => val.toFixed(2)}
+                                        tick={{fontSize: 10, fill: '#94a3b8'}}
+                                        stroke="#334155"
+                                        axisLine={{ stroke: '#334155', strokeWidth: 1.5 }}
+                                        tickLine={false}
+                                        width={45}
+                                    />
+                                    {/* Vertical Line Cursor */}
+                                    <Tooltip 
+                                        content={<CustomTooltip />} 
+                                        cursor={{ stroke: '#475569', strokeWidth: 1.5, opacity: 0.8 }} 
+                                    />
+                                    <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
+                                    
+                                    {/* Zero Line - Part of Skeleton */}
+                                    <ReferenceLine y={0} stroke="#334155" strokeOpacity={1} strokeWidth={1.5} />
+                                    
+                                    {/* 09:15 Reference Line - Matches Skeleton but Dashed */}
+                                    <ReferenceLine 
+                                        x={getStartReference()} 
+                                        stroke="#334155" 
+                                        strokeWidth={1.5}
+                                        strokeDasharray="4 4"
+                                        label={{ value: '09:15', position: 'insideTopLeft', fill: '#64748b', fontSize: 10 }} 
+                                    />
 
-                            {/* Call Line */}
-                            <Line 
-                                type="monotone" 
-                                dataKey={`greeks.${dataKeyCall}`} 
-                                name={`Call ${title}`} 
-                                stroke={colorCall} 
-                                strokeWidth={1.5}
-                                dot={false}
-                                connectNulls={false}
-                                activeDot={{ r: 4, strokeWidth: 0 }}
-                            />
-                            {/* Put Line */}
-                            <Line 
-                                type="monotone" 
-                                dataKey={`greeks.${dataKeyPut}`} 
-                                name={`Put ${title}`} 
-                                stroke={colorPut} 
-                                strokeWidth={1.5}
-                                dot={false}
-                                connectNulls={false}
-                                activeDot={{ r: 4, strokeWidth: 0 }}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                                    {/* Call Line */}
+                                    <Line 
+                                        type="monotone" 
+                                        dataKey={`greeks.${dataKeyCall}`} 
+                                        name={`Call ${title}`} 
+                                        stroke={colorCall} 
+                                        strokeWidth={1.5}
+                                        dot={false}
+                                        connectNulls={false}
+                                        activeDot={{ r: 4, strokeWidth: 0 }}
+                                    />
+                                    {/* Put Line */}
+                                    <Line 
+                                        type="monotone" 
+                                        dataKey={`greeks.${dataKeyPut}`} 
+                                        name={`Put ${title}`} 
+                                        stroke={colorPut} 
+                                        strokeWidth={1.5}
+                                        dot={false}
+                                        connectNulls={false}
+                                        activeDot={{ r: 4, strokeWidth: 0 }}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
