@@ -145,7 +145,7 @@ const AngleOneLiveData = () => {
     if (!silent) setLoading(true);
     try {
       const dateStr = format(currentDate, "yyyy-MM-dd");
-      const url = `${BACKEND_API_BASE_URL}/angleone/history?date=${dateStr}&index_name=${selectedIndex}&expiry_date=${currentExpiry}`;
+      const url = `${BACKEND_API_BASE_URL}/angleone/history?date=${dateStr}&index_name=${selectedIndex}&expiry=${currentExpiry}`;
       const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (!response.ok) throw new Error("Fetch failed");
       const result = await response.json();
