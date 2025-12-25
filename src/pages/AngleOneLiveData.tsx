@@ -285,12 +285,12 @@ const AngleOneLiveData = () => {
              </p>
            </div>
 
-           <div className="flex flex-wrap gap-2 items-center">
-             <Button variant="outline" size="sm" onClick={() => setShowCreds(!showCreds)} className={cn("text-xs", showCreds && "bg-muted")}>
+           <div className="flex flex-wrap gap-2 items-center w-full lg:w-auto">
+             <Button variant="outline" size="sm" onClick={() => setShowCreds(!showCreds)} className={cn("h-9 text-xs flex-1 sm:flex-none", showCreds && "bg-muted")}>
                  <Key className="w-3 h-3 mr-2" /> Credentials
              </Button>
 
-             <select value={selectedIndex} onChange={e => setSelectedIndex(e.target.value)} className="h-8 px-3 bg-background border rounded-md text-xs w-24">
+             <select value={selectedIndex} onChange={e => setSelectedIndex(e.target.value)} className="h-9 px-3 bg-background border rounded-md text-xs flex-1 sm:w-24 sm:flex-none">
                  <option value="NIFTY">NIFTY</option>
                  <option value="BANKNIFTY">BANKNIFTY</option>
              </select>
@@ -299,7 +299,7 @@ const AngleOneLiveData = () => {
              <select 
                 value={selectedExpiry} 
                 onChange={e => setSelectedExpiry(e.target.value)} 
-                className="h-8 px-3 bg-background border rounded-md text-xs w-32"
+                className="h-9 px-3 bg-background border rounded-md text-xs flex-1 sm:w-32 sm:flex-none"
                 disabled={expiries.length === 0}
              >
                  {expiries.length === 0 && <option>No Expiries</option>}
@@ -310,7 +310,7 @@ const AngleOneLiveData = () => {
 
              <Popover>
                <PopoverTrigger asChild>
-                 <Button variant="outline" className="h-8 text-xs justify-start text-left font-normal">
+                 <Button variant="outline" className="h-9 text-xs justify-start text-left font-normal flex-1 sm:flex-none sm:min-w-[150px]">
                    <CalendarIcon className="mr-2 h-3 w-3" />
                    {format(selectedDate, "PPP")}
                  </Button>
@@ -320,7 +320,7 @@ const AngleOneLiveData = () => {
                </PopoverContent>
              </Popover>
 
-             <Button size="sm" onClick={handleTriggerFetch} disabled={loading} className="h-8 text-xs bg-purple-600 hover:bg-purple-700">
+             <Button size="sm" onClick={handleTriggerFetch} disabled={loading} className="h-9 text-xs bg-purple-600 hover:bg-purple-700 w-full sm:w-auto">
                  {loading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <RefreshCw className="w-3 h-3 mr-2" />}
                  Fetch Latest
              </Button>
@@ -357,8 +357,8 @@ const AngleOneLiveData = () => {
         {/* Actually, copying the GreekSection component from LiveData is best practice. */}
         {/* I will implement one Vega Section as Proof of Concept and user can ask to expand. */}
         
-        <div className="grid grid-cols-12 gap-4 h-[500px]">
-             <Card className="col-span-12 lg:col-span-9 bg-card/40 backdrop-blur-md flex flex-col">
+        <div className="grid grid-cols-12 gap-4 lg:h-[500px] h-auto">
+             <Card className="col-span-12 lg:col-span-9 bg-card/40 backdrop-blur-md flex flex-col h-[400px] lg:h-full">
                  <CardHeader className="py-2"><CardTitle className="text-sm">Vega Analysis</CardTitle></CardHeader>
                  <CardContent className="flex-1 w-full min-h-0 p-2 overflow-hidden relative">
                     <div className="w-full h-full overflow-x-auto pb-2">
@@ -415,10 +415,11 @@ const AngleOneLiveData = () => {
                  </CardContent>
              </Card>
              
-             <Card className="col-span-12 lg:col-span-3 bg-card/40 backdrop-blur-md flex flex-col h-[500px]">
+             <Card className="col-span-12 lg:col-span-3 bg-card/40 backdrop-blur-md flex flex-col h-[400px] lg:h-full">
                  <CardHeader className="py-2"><CardTitle className="text-sm">Vega Table</CardTitle></CardHeader>
-                 <CardContent className="p-0 overflow-y-auto flex-1">
-                    <Table>
+                  <CardContent className="p-0 overflow-hidden flex-1 flex flex-col">
+                    <div className="overflow-x-auto overflow-y-auto flex-1">
+                        <Table>
                         <TableHeader className="sticky top-0 bg-background/95 backdrop-blur z-10">
                             <TableRow className="text-[10px] uppercase">
                                 <TableHead>Time</TableHead>
@@ -437,8 +438,9 @@ const AngleOneLiveData = () => {
                                 </TableRow>
                             ))}
                         </TableBody>
-                    </Table>
-                 </CardContent>
+                        </Table>
+                    </div>
+                  </CardContent>
              </Card>
         </div>
 

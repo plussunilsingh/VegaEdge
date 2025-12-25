@@ -387,9 +387,9 @@ import { SEOHead } from "@/components/SEOHead";
       };
 
       return (
-        <div className="grid grid-cols-12 gap-4 h-[600px]">
+        <div className="grid grid-cols-12 gap-4 lg:h-[600px] h-auto">
             {/* Chart Area (Span 9) */}
-            <Card className="col-span-12 lg:col-span-9 border-border/40 bg-card/40 backdrop-blur-md shadow-xl ring-1 ring-white/5 flex flex-col">
+            <Card className="col-span-12 lg:col-span-9 border-border/40 bg-card/40 backdrop-blur-md shadow-xl ring-1 ring-white/5 flex flex-col h-[400px] lg:h-full">
                 <CardHeader className="py-2 pb-0">
                     <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
                         <Icon className={cn("w-4 h-4", colorCall.replace('stroke-', 'text-').replace('#', 'text-'))} /> 
@@ -475,7 +475,7 @@ import { SEOHead } from "@/components/SEOHead";
             </Card>
 
             {/* Table Area (Span 3) */}
-            <Card className="col-span-12 lg:col-span-3 border-border/40 bg-card/40 backdrop-blur-md shadow-xl flex flex-col h-[600px]">
+            <Card className="col-span-12 lg:col-span-3 border-border/40 bg-card/40 backdrop-blur-md shadow-xl flex flex-col h-[400px] lg:h-full">
                 <CardHeader className="py-3 border-b border-border/10 bg-muted/40">
                     <div className="flex justify-between items-center">
                          <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">{title} Table</CardTitle>
@@ -484,8 +484,9 @@ import { SEOHead } from "@/components/SEOHead";
                          </span>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
-                    <Table>
+                <CardContent className="p-0 overflow-hidden flex-1 flex flex-col">
+                    <div className="overflow-x-auto overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
+                        <Table>
                         <TableHeader className="sticky top-0 bg-background/95 backdrop-blur z-10 border-b-2 border-border/50 shadow-md">
                             <TableRow className="border-b border-border/10 text-[10px] hover:bg-transparent uppercase tracking-wider">
                                 <TableHead className="w-[60px] h-9 text-muted-foreground font-bold pl-4">Time</TableHead>
@@ -514,7 +515,8 @@ import { SEOHead } from "@/components/SEOHead";
                                 );
                             })}
                         </TableBody>
-                    </Table>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -541,7 +543,7 @@ import { SEOHead } from "@/components/SEOHead";
       <div className="w-[98%] max-w-[1920px] mx-auto py-4 space-y-6">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-2">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 px-2">
           <div>
             <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent flex items-center gap-3">
               Market Intelligence <span className="text-xs font-normal text-muted-foreground border border-border/50 px-2 py-0.5 rounded-full">{selectedIndex}</span>
@@ -551,11 +553,11 @@ import { SEOHead } from "@/components/SEOHead";
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <select 
               value={selectedIndex}
               onChange={(e) => setSelectedIndex(e.target.value)}
-              className="h-8 px-3 bg-background border border-border/40 hover:border-primary/50 rounded-md text-xs transition-colors cursor-pointer outline-none focus:ring-1 focus:ring-primary"
+              className="h-9 px-3 bg-background border border-border/40 hover:border-primary/50 rounded-md text-xs transition-colors cursor-pointer outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[100px]"
             >
               <option value="NIFTY">NIFTY</option>
               <option value="BANKNIFTY">BANKNIFTY</option>
@@ -567,7 +569,7 @@ import { SEOHead } from "@/components/SEOHead";
              <select 
               value={selectedExpiry}
               onChange={(e) => setSelectedExpiry(e.target.value)}
-              className="h-8 px-3 bg-background border border-border/40 hover:border-primary/50 rounded-md text-xs transition-colors cursor-pointer outline-none focus:ring-1 focus:ring-primary"
+              className="h-9 px-3 bg-background border border-border/40 hover:border-primary/50 rounded-md text-xs transition-colors cursor-pointer outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px]"
             >
               <option value="">All Expiries</option>
               {expiryList.map(exp => (
@@ -577,7 +579,7 @@ import { SEOHead } from "@/components/SEOHead";
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant={"outline"} className="h-8 text-xs justify-start text-left font-normal border-border/40 hover:border-primary/50 transition-colors">
+                <Button variant={"outline"} className="h-9 text-xs justify-start text-left font-normal border-border/40 hover:border-primary/50 transition-colors flex-1 sm:flex-none sm:min-w-[150px]">
                   <CalendarIcon className="mr-2 h-3 w-3" />
                   {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                 </Button>
