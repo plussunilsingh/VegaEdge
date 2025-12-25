@@ -46,6 +46,12 @@ export const endpoints = {
   admin: {
     users: `${BACKEND_API_BASE_URL}/admin/users`,
     toggleStatus: (userId: string) => `${BACKEND_API_BASE_URL}/admin/users/${userId}/status`,
+  },
+  angleone: {
+    history: (date: string, indexName: string, expiry?: string) => 
+      `${BACKEND_API_BASE_URL}/angleone/history?date=${date}&index_name=${indexName}${expiry ? `&expiry=${expiry}` : ''}`,
+    expiryList: (indexName?: string) => `${BACKEND_API_BASE_URL}/angleone/expiry-list${indexName ? `?index_name=${indexName}` : ''}`,
+    fetchData: `${BACKEND_API_BASE_URL}/angleone/fetch-data`,
   }
 };
 
