@@ -276,8 +276,8 @@ const LiveData = () => {
         };
 
         return (
-            <div className="grid grid-cols-12 gap-6 lg:min-h-[600px] xl:min-h-[700px] h-auto mb-10">
-                <Card className="col-span-12 lg:col-span-9 border-slate-200 bg-white shadow-sm ring-1 ring-slate-100 flex flex-col min-h-[450px] lg:h-full overflow-hidden group relative">
+            <div className="grid grid-cols-12 gap-6 h-full mb-10">
+                <Card className="col-span-12 lg:col-span-9 border-slate-200 bg-white shadow-sm ring-1 ring-slate-100 flex flex-col h-[500px] lg:h-[600px] overflow-hidden group relative">
                     <CardHeader className="py-4 px-6 border-b border-slate-100 flex flex-row items-center justify-between z-10 bg-slate-50/50">
                         <CardTitle className="flex items-center gap-3 text-sm font-bold text-slate-800 uppercase tracking-widest">
                             <Icon className={cn("w-5 h-5", colorNet.replace('text-', 'text-'))} /> 
@@ -286,7 +286,7 @@ const LiveData = () => {
                     </CardHeader>
                     <CardContent className="flex-1 w-full min-h-0 p-4 overflow-hidden relative z-10">
                         <div className="w-full h-full overflow-x-auto custom-scrollbar">
-                            <div className="min-w-[800px] h-full">
+                            <div className="w-full h-full min-w-[800px] lg:min-w-0">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={data} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
                                         <defs>
@@ -371,7 +371,7 @@ const LiveData = () => {
                     </CardContent>
                 </Card>
 
-                <Card className="col-span-12 lg:col-span-3 border-slate-200 bg-white shadow-sm flex flex-col h-[400px] lg:h-full overflow-hidden">
+                <Card className="col-span-12 lg:col-span-3 border-slate-200 bg-white shadow-sm flex flex-col h-[400px] lg:h-[600px] overflow-hidden">
                     <CardHeader className="py-4 px-6 border-b border-slate-100 bg-slate-50/50">
                         <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-tighter">Live {title} Stream</CardTitle>
                     </CardHeader>
