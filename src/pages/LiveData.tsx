@@ -211,13 +211,35 @@ import { SEOHead } from "@/components/SEOHead";
           let greeks = null;
           if (existingData && existingData.greeks) {
               const g = existingData.greeks;
+              // Ensure all values are numbers to prevent chart scaling issues
+              const cv = Number(g.call_vega);
+              const pv = Number(g.put_vega);
+              
+              const cg = Number(g.call_gamma);
+              const pg = Number(g.put_gamma);
+              
+              const cd = Number(g.call_delta);
+              const pd = Number(g.put_delta);
+              
+              const ct = Number(g.call_theta);
+              const pt = Number(g.put_theta);
+
               greeks = {
-                  ...g,
-                  // Enforce Net = Put - Call as per user request
-                  diff_vega: g.put_vega - g.call_vega,
-                  diff_gamma: g.put_gamma - g.call_gamma,
-                  diff_delta: g.put_delta - g.call_delta,
-                  diff_theta: g.put_theta - g.call_theta,
+                  call_vega: cv,
+                  put_vega: pv,
+                  diff_vega: pv - cv,
+                  
+                  call_gamma: cg,
+                  put_gamma: pg,
+                  diff_gamma: pg - cg,
+                  
+                  call_delta: cd,
+                  put_delta: pd,
+                  diff_delta: pd - cd,
+                  
+                  call_theta: ct,
+                  put_theta: pt,
+                  diff_theta: pt - ct,
               };
           }
 
@@ -388,11 +410,13 @@ import { SEOHead } from "@/components/SEOHead";
                             />
                             <YAxis 
                                 domain={yDomain} 
+                                tickFormatter={(val) => val.toFixed(2)}
+                                tickCount={7}
                                 tick={{fontSize: 10, fill: '#888'}}
                                 stroke="#444"
                                 axisLine={{ stroke: '#666', strokeWidth: 1 }}
                                 tickLine={false}
-                                width={40}
+                                width={45}
                             />
                             {/* Vertical Line Cursor */}
                             <Tooltip 
