@@ -331,7 +331,7 @@ const AngleOneLiveData = () => {
                                             activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.call }}
                                             animationDuration={1500}
                                         />
-                                        <Line 
+                                         <Line 
                                             type="monotone" 
                                             dataKey={`greeks.${dataKeyPut}`} 
                                             name={`Put ${title}`} 
@@ -339,16 +339,6 @@ const AngleOneLiveData = () => {
                                             strokeWidth={2.5} 
                                             dot={false} 
                                             activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.put }}
-                                            animationDuration={1500}
-                                        />
-                                        <Line 
-                                            type="monotone" 
-                                            dataKey={`greeks.${dataKeyNet}`} 
-                                            name={`Net ${title}`} 
-                                            stroke={CHART_COLORS.net} 
-                                            strokeWidth={1.5} 
-                                            strokeDasharray="4 4" 
-                                            dot={false} 
                                             animationDuration={1500}
                                         />
                                     </LineChart>
