@@ -25,8 +25,30 @@ interface User {
 const ITEMS_PER_PAGE = 10;
 
 const AdminDashboard = () => {
-    const { user: currentUser, token, isSessionExpired, validateSession } = useAuth();
+    const { user: currentUser, token, isSessionExpired, validateSession, isAuthenticated } = useAuth();
     const queryClient = useQueryClient();
+
+    // Immediate dead-end for unauthorized or expired sessions
+    if (!isAuthenticated || currentUser?.role !== 'ADMIN_USER') {
+        return (
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+                <div className="text-center space-y-4 max-w-md bg-card p-8 rounded-xl border shadow-2xl">
+                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ShieldCheck className="w-8 h-8 text-red-500" />
+                    </div>
+                    <h2 className="text-2xl font-bold tracking-tight">Access Restricted</h2>
+                    <p className="text-muted-foreground">
+                        {isSessionExpired 
+                            ? "Your session has expired for security. Please re-login to access the administrative console." 
+                            : "You do not have the required permissions to view this secure page."}
+                    </p>
+                    <Button onClick={() => window.location.href = '/login'} className="w-full">
+                        Return to Login
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     // --- State for Upstox Token ---
     const [manualToken, setManualToken] = useState("");
@@ -177,16 +199,7 @@ const AdminDashboard = () => {
     }, [searchTerm]);
 
 
-    if (currentUser?.role !== 'ADMIN_USER' || isSessionExpired) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex flex-col">
-                <AuthenticatedNavbar />
-                <div className="flex-1 flex items-center justify-center text-red-500 font-bold">
-                    {isSessionExpired ? "Session Expired. Please Re-login." : "Access Denied"}
-                </div>
-            </div>
-        );
-    }
+    // (Old check removed, consolidated at top)
 
     return (
         <div className="min-h-screen bg-gray-50 text-foreground">

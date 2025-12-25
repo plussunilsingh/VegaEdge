@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, isToday } from "date-fns";
-import { Calendar as CalendarIcon, Loader2, TrendingUp, Activity, Waves, Zap } from "lucide-react";
+import { Calendar as CalendarIcon, Activity, Waves, Zap, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -46,83 +46,73 @@ interface GreeksData {
     put_theta: number;
     diff_theta: number;
   } | null;
-  baseline_diff?: any; // Keeping for interface compatibility but not using
+  baseline_diff?: any;
 }
 
 import { SEOHead } from "@/components/SEOHead";
 
-  // Helper for initial date (Weekend -> Friday)
-  const getInitialDate = () => {
+// --- Pure Helper Functions ---
+
+const getInitialDate = () => {
     const today = new Date();
     const day = today.getDay();
-    if (day === 0) { // Sunday
-       const friday = new Date(today);
-       friday.setDate(today.getDate() - 2);
-       return friday;
-    }
-    if (day === 6) { // Saturday
-       const friday = new Date(today);
-       friday.setDate(today.getDate() - 1);
-       return friday;
-    }
+    if (day === 0) return new Date(today.setDate(today.getDate() - 2)); // Sunday -> Friday
+    if (day === 6) return new Date(today.setDate(today.getDate() - 1)); // Saturday -> Friday
     return today;
-  };
+};
 
-  const formatTime = (isoString: string) => {
+const formatTime = (isoString: string) => {
     try {
         return format(new Date(isoString), "HH:mm");
     } catch (e) {
         return "";
     }
-  };
+};
 
-  const fmt = (val: any, digits = 2) => {
-      if (val === null || val === undefined) return "-";
-      const num = Number(val);
-      if (isNaN(num)) return "-";
-      return num.toFixed(digits);
-  };
-  
-  const CustomTooltip = ({ active, payload, label }: any) => {
+const fmtNum = (val: any, digits = 2) => {
+    if (val === null || val === undefined) return "-";
+    const num = Number(val);
+    if (isNaN(num)) return "-";
+    return num.toFixed(digits);
+};
+
+// --- Sub-components ---
+
+const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-      return (
-        <div className="bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3 shadow-xl text-xs">
-          <p className="font-medium mb-2 text-muted-foreground">{formatTime(label)}</p>
-          {payload.map((entry: any, index: number) => (
-             entry.value !== undefined && entry.value !== null && (
-            <div key={index} className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-              <span className="text-foreground">{entry.name}:</span>
-              <span className="font-mono font-medium">{fmt(entry.value)}</span>
+        return (
+            <div className="bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3 shadow-xl text-xs">
+                <p className="font-medium mb-2 text-muted-foreground">{formatTime(label)}</p>
+                {payload.map((entry: any, index: number) => (
+                    entry.value !== undefined && entry.value !== null && (
+                        <div key={index} className="flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                            <span className="text-foreground">{entry.name}:</span>
+                            <span className="font-mono font-medium">{fmtNum(entry.value)}</span>
+                        </div>
+                    )
+                ))}
             </div>
-          )))}
-        </div>
-      );
+        );
     }
     return null;
-  };
+};
 
-
-  const LiveData = () => {
-  const { user, profileImageUrl, validateSession } = useAuth();
+const LiveData = () => {
+  const { token, isAuthenticated, isSessionExpired, validateSession } = useAuth();
   
-  // State for date selection
+  // State
   const [selectedDate, setSelectedDate] = useState<Date>(getInitialDate());
-  
-  // Expiry State
   const [expiryList, setExpiryList] = useState<string[]>([]);
   const [selectedExpiry, setSelectedExpiry] = useState<string>("");
-
-  // State for fetched data
   const [data, setData] = useState<GreeksData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [error, setError] = useState<string | null>(null);
-  const { token, isSessionExpired, isAuthenticated } = useAuth();
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   // Helper to generate full day time slots (09:15 to 15:30)
-  const generateTimeSlots = (baseDate: Date) => {
+  const generateTimeSlots = useCallback((baseDate: Date) => {
       const slots = [];
       const start = new Date(baseDate);
       start.setHours(9, 15, 0, 0);
@@ -132,75 +122,60 @@ import { SEOHead } from "@/components/SEOHead";
       let current = start;
       while (current <= end) {
           slots.push(new Date(current));
-          current = new Date(current.getTime() + 60000); // Add 1 minute
+          current = new Date(current.getTime() + 60000);
       }
       return slots;
-  };
+  }, []);
 
-  // Fetch Expiry List on mount
+  // Fetch Expiry List
   useEffect(() => {
      if (isAuthenticated) {
         fetch(endpoints.market.expiryList, {
              headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => res.json())
-        .then(data => {
-            if (Array.isArray(data)) {
-                 setExpiryList(data);
-                 if (data.length > 0) setSelectedExpiry(data[0]); 
+        .then(val => {
+            if (Array.isArray(val)) {
+                 setExpiryList(val);
+                 if (val.length > 0 && !selectedExpiry) setSelectedExpiry(val[0]); 
             }
         })
         .catch(err => console.error("Failed to fetch expiry list", err));
      }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token, selectedExpiry]);
 
-  const fetchHistoryData = useCallback(async (selectedDate: Date, silent = false) => {
+  const fetchHistoryData = useCallback(async (dateObj: Date, silent = false) => {
     if (!silent) setLoading(true);
     setError(null);
     try {
-      if (!BACKEND_API_BASE_URL) {
-        throw new Error("Backend URL is not configured");
-      }
+      if (!BACKEND_API_BASE_URL) throw new Error("Backend URL missing");
 
-      const dateStr = format(selectedDate, "yyyy-MM-dd");
-      
+      const dateStr = format(dateObj, "yyyy-MM-dd");
       const url = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
 
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`, 
-        },
-      });
+      const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
       if (response.status === 401) {
-        toast.error("Session Expired. Please login again.");
-        // TODO: Trigger global login modal here
-        throw new Error("Session Expired");
+        toast.error("Session Expired");
+        throw new Error("Unauthorized");
       }
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const result = await response.json();
-      
-      if (!Array.isArray(result)) {
-        throw new Error("Invalid data format received");
-      }
+      if (!Array.isArray(result)) throw new Error("Invalid Format");
 
-      // 1. Create Lookup Map for fetched data
       const dataMap = new Map();
       result.forEach((item: any) => {
           if (item?.greeks && item.timestamp) {
-              const timeStr = item.timestamp;
-//               const timeStr = format(new Date(item.timestamp), "HH:mm");
-              dataMap.set(timeStr, item);
+              const dt = new Date(item.timestamp);
+              if (!isNaN(dt.getTime())) {
+                  dataMap.set(format(dt, "HH:mm"), item);
+              }
           }
       });
 
-      // 2. Generate Full Time Backbone
-      const timeSlots = generateTimeSlots(selectedDate);
-      
+      const timeSlots = generateTimeSlots(dateObj);
       const processedData: GreeksData[] = timeSlots.map((slotTime) => {
           const timeKey = format(slotTime, "HH:mm");
           const existingData = dataMap.get(timeKey);
@@ -208,35 +183,19 @@ import { SEOHead } from "@/components/SEOHead";
           let greeks = null;
           if (existingData && existingData.greeks) {
               const g = existingData.greeks;
-              // Ensure all values are numbers to prevent chart scaling issues
-              const cv = Number(g.call_vega);
-              const pv = Number(g.put_vega);
-              
-              const cg = Number(g.call_gamma);
-              const pg = Number(g.put_gamma);
-              
-              const cd = Number(g.call_delta);
-              const pd = Number(g.put_delta);
-              
-              const ct = Number(g.call_theta);
-              const pt = Number(g.put_theta);
-
               greeks = {
-                  call_vega: cv,
-                  put_vega: pv,
-                  diff_vega: pv - cv,
-                  
-                  call_gamma: cg,
-                  put_gamma: pg,
-                  diff_gamma: pg - cg,
-                  
-                  call_delta: cd,
-                  put_delta: pd,
-                  diff_delta: pd - cd,
-                  
-                  call_theta: ct,
-                  put_theta: pt,
-                  diff_theta: pt - ct,
+                  call_vega: Number(g.call_vega),
+                  put_vega: Number(g.put_vega),
+                  diff_vega: Number(g.put_vega) - Number(g.call_vega),
+                  call_gamma: Number(g.call_gamma),
+                  put_gamma: Number(g.put_gamma),
+                  diff_gamma: Number(g.put_gamma) - Number(g.call_gamma),
+                  call_delta: Number(g.call_delta),
+                  put_delta: Number(g.put_delta),
+                  diff_delta: Number(g.put_delta) - Number(g.call_delta),
+                  call_theta: Number(g.call_theta),
+                  put_theta: Number(g.put_theta),
+                  diff_theta: Number(g.put_theta) - Number(g.call_theta),
               };
           }
 
@@ -247,282 +206,150 @@ import { SEOHead } from "@/components/SEOHead";
           };
       });
 
-      console.log(`Processed ${processedData.length} time slots for ${selectedIndex}`);
       setData(processedData);
       setLastUpdated(new Date());
-      
-    } catch (error: any) {
-      console.error("Fetch Error:", error);
-      if (!silent) {
-        setError(error?.message || "Failed to load data");
-        toast.error("Failed to refresh market data");
-      }
+    } catch (e: any) {
+      console.error(e);
+      if (!silent) setError(e.message);
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [token, selectedIndex, selectedExpiry]);
+  }, [token, selectedIndex, selectedExpiry, generateTimeSlots]);
 
-  // Initial Fetch & Polling (Drift-Free)
+  // Polling Logic
   useEffect(() => {
     if (selectedDate && isAuthenticated) {
       fetchHistoryData(selectedDate);
-      
-      let timeoutId: NodeJS.Timeout;
+      if (!isToday(selectedDate)) return;
 
-      if (isToday(selectedDate)) {
-        const scheduleNext = () => {
-          const now = new Date();
-          const target = new Date(now);
-          target.setSeconds(5);
-          target.setMilliseconds(0);
+      const interval = setInterval(() => {
+          fetchHistoryData(selectedDate, true);
+      }, 60000);
 
-          if (target.getTime() <= now.getTime()) {
-            target.setMinutes(target.getMinutes() + 1);
-          }
+      return () => clearInterval(interval);
+    }
+  }, [selectedDate, selectedIndex, selectedExpiry, isAuthenticated, fetchHistoryData]);
 
-          const delay = target.getTime() - now.getTime();
-          console.log(`Scheduling next update in ${Math.round(delay/1000)}s`);
+  // --- Sub-components (Memoized) ---
+  const GreekSection = useMemo(() => {
+    return ({ title, dataKeyCall, dataKeyPut, dataKeyNet, colorCall, colorPut, colorNet, icon: Icon }: any) => {
+        
+        const filteredData = data.filter(d => d.greeks);
+        const tableData = [...data].filter(r => r.greeks !== null).reverse();
 
-          timeoutId = setTimeout(() => {
-            fetchHistoryData(selectedDate, true);
-            scheduleNext();
-          }, delay);
+        // Symmetric Scaling
+        const { yDomain, yTicks } = (() => {
+            let maxVal = 0;
+            data.forEach((d: any) => {
+                if (d.greeks) {
+                    maxVal = Math.max(maxVal, Math.abs((d.greeks as any)[dataKeyCall] || 0), Math.abs((d.greeks as any)[dataKeyPut] || 0), Math.abs((d.greeks as any)[dataKeyNet] || 0));
+                }
+            });
+            const limit = maxVal === 0 ? 1 : maxVal * 1.1; 
+            const step = limit / 2;
+            return { yDomain: [-limit, limit] as [number, number], yTicks: [-limit, -step, 0, step, limit] };
+        })();
+
+        const getStartRef = () => {
+             const start = new Date(selectedDate);
+             start.setHours(9, 15, 0, 0);
+             return start.toISOString();
         };
 
-        scheduleNext();
-      }
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData, isAuthenticated]);
+        const getTrend = (g: any) => {
+            if (title !== "Vega") return null;
+            const net = g[dataKeyNet];
+            if (net > 0.5) return { text: "Bearish", color: "text-red-500 font-bold" };
+            if (net < -0.5) return { text: "Bullish", color: "text-green-500 font-bold" };
+            return { text: "Sideways", color: "text-yellow-500 font-bold" };
+        };
 
+        return (
+            <div className="grid grid-cols-12 gap-4 lg:h-[600px] h-auto">
+                <Card className="col-span-12 lg:col-span-9 border-border/40 bg-card/40 backdrop-blur-md shadow-xl ring-1 ring-white/5 flex flex-col h-[400px] lg:h-full">
+                    <CardHeader className="py-2 pb-0">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                            <Icon className={cn("w-4 h-4", colorCall.startsWith('#') ? 'text-primary' : colorCall.replace('stroke-', 'text-'))} /> 
+                            {title} Analysis
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 w-full min-h-0 p-2 overflow-hidden relative">
+                        <div className="w-full h-full overflow-x-auto pb-2">
+                            <div className="min-w-[800px] h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" strokeOpacity={0.4} vertical={false} />
+                                        <XAxis 
+                                            dataKey="timestamp" 
+                                            tickFormatter={formatTime} 
+                                            tick={{fontSize: 10, fill: '#94a3b8'}}
+                                            stroke="#334155"
+                                            height={60}
+                                            angle={-45}
+                                            textAnchor="end"
+                                        />
+                                        <YAxis 
+                                            domain={yDomain} 
+                                            ticks={yTicks}
+                                            tickFormatter={(v) => v.toFixed(2)}
+                                            tick={{fontSize: 10, fill: '#94a3b8'}}
+                                            stroke="#334155"
+                                            width={45}
+                                        />
+                                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#475569', strokeWidth: 1 }} />
+                                        <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
+                                        
+                                        <ReferenceLine y={0} stroke="#334155" strokeWidth={1.5} />
+                                        <ReferenceLine x={getStartRef()} stroke="#334155" strokeDasharray="4 4" label={{ value: '09:15', position: 'insideTopLeft', fill: '#64748b', fontSize: 10 }} />
 
-  const fmt = (val: any, digits = 2) => {
-      if (val === null || val === undefined) return "-";
-      const num = Number(val);
-      if (isNaN(num)) return "-";
-      return num.toFixed(digits);
-  };
-  
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3 shadow-xl text-xs">
-          <p className="font-medium mb-2 text-muted-foreground">{formatTime(label)}</p>
-          {payload.map((entry: any, index: number) => (
-             entry.value !== undefined && entry.value !== null && (
-            <div key={index} className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-              <span className="text-foreground">{entry.name}:</span>
-              <span className="font-mono font-medium">{fmt(entry.value)}</span>
-            </div>
-          )))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // --------------------------------------------------------------------------
-  // Reusable Section Component: Chart (Left) + Table (Right)
-  // --------------------------------------------------------------------------
-  const GreekSection = ({ 
-      title, 
-      icon: Icon, 
-      dataKeyCall, 
-      dataKeyPut, 
-      dataKeyNet, 
-      colorCall, 
-      colorPut,
-      colorNet, // Used for table background
-      data,
-      selectedDate // Pass selectedDate for ReferenceLine calculation
-  }: any) => {
-      
-      const tableData = useMemo(() => 
-          [...data].filter(row => row.greeks !== null).reverse(),
-      [data]);
-      
-      // Helper to determine trend if provided or calculate it
-      const getTrend = useCallback((greeks: any) => {
-          if (title !== "Vega") return null; // Only for Vega Table
-          
-          const net = greeks[dataKeyNet]; 
-          if (net > 0.5) return { text: "Bearish", color: "text-red-500 font-bold" };
-          if (net < -0.5) return { text: "Bullish", color: "text-green-500 font-bold" };
-          return { text: "Sideways", color: "text-yellow-500 font-bold" };
-      }, [title, dataKeyNet]);
-
-      // Calculate symmetric domain and explicit ticks for centered zero line
-      const { yDomain, yTicks } = useMemo(() => {
-          let maxVal = 0;
-          data.forEach((d: any) => {
-              if (d.greeks) {
-                  const vals = [
-                      Math.abs(d.greeks[dataKeyCall] || 0),
-                      Math.abs(d.greeks[dataKeyPut] || 0),
-                      Math.abs(d.greeks[dataKeyNet] || 0)
-                  ];
-                  maxVal = Math.max(maxVal, ...vals);
-              }
-          });
-          
-          // Add padding, ensure non-zero
-          const limit = maxVal === 0 ? 1 : maxVal * 1.1; 
-          
-          // Generate explicit symmetric ticks: [-Limit, -Limit/2, 0, Limit/2, Limit]
-          // This ensures 0 is always there and ticks are perfectly matched
-          const step = limit / 2;
-          const ticks = [-limit, -step, 0, step, limit];
-          
-          return { yDomain: [-limit, limit], yTicks: ticks };
-      }, [data, dataKeyCall, dataKeyPut, dataKeyNet]);
-
-      // Calculate 09:15 timestamp for ReferenceLine
-      const getStartReference = () => {
-          if (!selectedDate) return null;
-          const start = new Date(selectedDate);
-          start.setHours(9, 15, 0, 0);
-          return start.toISOString();
-      };
-
-      return (
-        <div className="grid grid-cols-12 gap-4 lg:h-[600px] h-auto">
-            {/* Chart Area (Span 9) */}
-            <Card className="col-span-12 lg:col-span-9 border-border/40 bg-card/40 backdrop-blur-md shadow-xl ring-1 ring-white/5 flex flex-col h-[400px] lg:h-full">
-                <CardHeader className="py-2 pb-0">
-                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        <Icon className={cn("w-4 h-4", colorCall.replace('stroke-', 'text-').replace('#', 'text-'))} /> 
-                        {title} Analysis
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 w-full min-h-0 p-2 overflow-hidden relative">
-                    <div className="w-full h-full overflow-x-auto pb-2">
-                        <div className="min-w-[800px] h-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                                    {/* Premium Skeleton: Unified Steel Grey for Grid, Axis, Zero Line */}
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" strokeOpacity={0.4} vertical={false} />
-                                    <XAxis 
-                                        dataKey="timestamp" 
-                                        tickFormatter={formatTime} 
-                                        tick={{fontSize: 10, fill: '#94a3b8'}} 
-                                        minTickGap={0} 
-                                        stroke="#334155"
-                                        axisLine={{ stroke: '#334155' }}
-                                        tickLine={false}
-                                        angle={-45}
-                                        textAnchor="end"
-                                        height={60}
-                                        interval={window.innerWidth > 1400 ? 5 : 'preserveStartEnd'} 
-                                    />
-                                    <YAxis 
-                                        domain={yDomain} 
-                                        ticks={yTicks}
-                                        tickFormatter={(val) => val.toFixed(2)}
-                                        tick={{fontSize: 10, fill: '#94a3b8'}}
-                                        stroke="#334155"
-                                        axisLine={{ stroke: '#334155', strokeWidth: 1.5 }}
-                                        tickLine={false}
-                                        width={45}
-                                    />
-                                    {/* Vertical Line Cursor */}
-                                    <Tooltip 
-                                        content={<CustomTooltip />} 
-                                        cursor={{ stroke: '#475569', strokeWidth: 1.5, opacity: 0.8 }} 
-                                    />
-                                    <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
-                                    
-                                    {/* Zero Line - Part of Skeleton */}
-                                    <ReferenceLine y={0} stroke="#334155" strokeOpacity={1} strokeWidth={1.5} />
-                                    
-                                    {/* 09:15 Reference Line - Matches Skeleton but Dashed */}
-                                    <ReferenceLine 
-                                        x={getStartReference()} 
-                                        stroke="#334155" 
-                                        strokeWidth={1.5}
-                                        strokeDasharray="4 4"
-                                        label={{ value: '09:15', position: 'insideTopLeft', fill: '#64748b', fontSize: 10 }} 
-                                    />
-
-                                    {/* Call Line */}
-                                    <Line 
-                                        type="monotone" 
-                                        dataKey={`greeks.${dataKeyCall}`} 
-                                        name={`Call ${title}`} 
-                                        stroke={colorCall} 
-                                        strokeWidth={1.5}
-                                        dot={false}
-                                        connectNulls={false}
-                                        activeDot={{ r: 4, strokeWidth: 0 }}
-                                    />
-                                    {/* Put Line */}
-                                    <Line 
-                                        type="monotone" 
-                                        dataKey={`greeks.${dataKeyPut}`} 
-                                        name={`Put ${title}`} 
-                                        stroke={colorPut} 
-                                        strokeWidth={1.5}
-                                        dot={false}
-                                        connectNulls={false}
-                                        activeDot={{ r: 4, strokeWidth: 0 }}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
+                                        <Line type="monotone" dataKey={`greeks.${dataKeyCall}`} name={`Call ${title}`} stroke={colorCall} strokeWidth={1.5} dot={false} connectNulls={false} />
+                                        <Line type="monotone" dataKey={`greeks.${dataKeyPut}`} name={`Put ${title}`} stroke={colorPut} strokeWidth={1.5} dot={false} connectNulls={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
 
-            {/* Table Area (Span 3) */}
-            <Card className="col-span-12 lg:col-span-3 border-border/40 bg-card/40 backdrop-blur-md shadow-xl flex flex-col h-[400px] lg:h-full">
-                <CardHeader className="py-3 border-b border-border/10 bg-muted/40">
-                    <div className="flex justify-between items-center">
-                         <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">{title} Table</CardTitle>
-                         <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
-                            {tableData.length > 0 ? formatTime(tableData[0].timestamp) : '--:--'}
-                         </span>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0 overflow-hidden flex-1 flex flex-col">
-                    <div className="overflow-x-auto overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
-                        <Table>
-                        <TableHeader className="sticky top-0 bg-background/95 backdrop-blur z-10 border-b-2 border-border/50 shadow-md">
-                            <TableRow className="border-b border-border/10 text-[10px] hover:bg-transparent uppercase tracking-wider">
-                                <TableHead className="w-[60px] h-9 text-muted-foreground font-bold pl-4">Time</TableHead>
-                                <TableHead className="text-right h-9 text-green-500 font-bold border-l border-border/10 bg-green-500/5">Call</TableHead>
-                                <TableHead className="text-right h-9 text-red-500 font-bold border-l border-border/10 bg-red-500/5">Put</TableHead>
-                                <TableHead className="text-right h-9 font-extrabold text-foreground border-l border-border/10 bg-muted/20">Net</TableHead>
-                                {title === "Vega" && <TableHead className="text-center h-9 font-bold text-foreground border-l border-border/10 pr-4">Trend</TableHead>}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {tableData.map((row, i) => {
-                                const g = row.greeks;
-                                const trend = getTrend(g);
-                                return (
-                                    <TableRow key={i} className="border-b border-border/5 text-[11px] hover:bg-muted/30 transition-colors">
-                                        <TableCell className="font-mono text-muted-foreground py-1 pl-4">{formatTime(row.timestamp)}</TableCell>
-                                        <TableCell className="text-right font-mono text-green-400 py-1 border-l border-border/5">{fmt(g[dataKeyCall])}</TableCell>
-                                        <TableCell className="text-right font-mono text-red-400 py-1 border-l border-border/5">{fmt(g[dataKeyPut])}</TableCell>
-                                        <TableCell className={cn("text-right font-mono font-bold py-1 border-l border-border/5", title !== "Vega" && "pr-4", colorNet)}>{fmt(g[dataKeyNet])}</TableCell>
-                                        {title === "Vega" && (
-                                            <TableCell className={cn("text-center font-mono py-1 border-l border-border/5 pr-4", trend?.color)}>
-                                                {trend?.text}
-                                            </TableCell>
-                                        )}
+                <Card className="col-span-12 lg:col-span-3 border-border/40 bg-card/40 backdrop-blur-md shadow-xl flex flex-col h-[400px] lg:h-full">
+                    <CardHeader className="py-3 border-b border-border/10 bg-muted/40 font-semibold text-xs uppercase text-muted-foreground flex justify-between">
+                         {title} Table
+                    </CardHeader>
+                    <CardContent className="p-0 overflow-hidden flex-1">
+                        <div className="overflow-y-auto h-full">
+                            <Table>
+                                <TableHeader className="sticky top-0 bg-background/95 backdrop-blur z-10">
+                                    <TableRow className="text-[10px] uppercase">
+                                        <TableHead className="pl-4">Time</TableHead>
+                                        <TableHead className="text-right text-green-500">Call</TableHead>
+                                        <TableHead className="text-right text-red-500">Put</TableHead>
+                                        <TableHead className="text-right font-bold">Net</TableHead>
+                                        {title === "Vega" && <TableHead className="text-center">Trend</TableHead>}
                                     </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-      );
-  };
-
+                                </TableHeader>
+                                <TableBody>
+                                    {tableData.map((row, i) => (
+                                        <TableRow key={i} className="text-[11px]">
+                                            <TableCell className="pl-4">{formatTime(row.timestamp)}</TableCell>
+                                            <TableCell className="text-right">{fmtNum(row.greeks![dataKeyCall])}</TableCell>
+                                            <TableCell className="text-right">{fmtNum(row.greeks![dataKeyPut])}</TableCell>
+                                            <TableCell className={cn("text-right font-bold", colorNet)}>{fmtNum(row.greeks![dataKeyNet])}</TableCell>
+                                            {title === "Vega" && (
+                                                <TableCell className={cn("text-center", getTrend(row.greeks)?.color)}>
+                                                    {getTrend(row.greeks)?.text}
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    };
+  }, [data, selectedDate]);
 
   if (error && !data.length) {
       return (
@@ -536,13 +363,15 @@ import { SEOHead } from "@/components/SEOHead";
       );
   }
 
+  if (!isAuthenticated) return null;
+
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
+    <div className="min-h-screen bg-[#0a0a0b] text-foreground font-inter flex flex-col">
+      <SEOHead title={`${selectedIndex} Live Market Intelligence | Vega Market Edge`} />
       <AuthenticatedNavbar />
-      {/* Full Width Container */}
+      
       <div className="w-[98%] max-w-[1920px] mx-auto py-4 space-y-6">
         
-        {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 px-2">
           <div>
             <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent flex items-center gap-3">
@@ -557,7 +386,7 @@ import { SEOHead } from "@/components/SEOHead";
             <select 
               value={selectedIndex}
               onChange={(e) => setSelectedIndex(e.target.value)}
-              className="h-9 px-3 bg-background border border-border/40 hover:border-primary/50 rounded-md text-xs transition-colors cursor-pointer outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[100px]"
+              className="h-9 px-3 bg-background border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[100px]"
             >
               <option value="NIFTY">NIFTY</option>
               <option value="BANKNIFTY">BANKNIFTY</option>
@@ -565,93 +394,33 @@ import { SEOHead } from "@/components/SEOHead";
               <option value="MIDCPNIFTY">MIDCPNIFTY</option>
             </select>
 
-            {/* Expiry Dropdown */}
              <select 
               value={selectedExpiry}
               onChange={(e) => setSelectedExpiry(e.target.value)}
-              className="h-9 px-3 bg-background border border-border/40 hover:border-primary/50 rounded-md text-xs transition-colors cursor-pointer outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px]"
+              className="h-9 px-3 bg-background border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px]"
             >
               <option value="">All Expiries</option>
-              {expiryList.map(exp => (
-                  <option key={exp} value={exp}>{exp}</option>
-              ))}
+              {expiryList.map(exp => <option key={exp} value={exp}>{exp}</option>)}
             </select>
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant={"outline"} className="h-9 text-xs justify-start text-left font-normal border-border/40 hover:border-primary/50 transition-colors flex-1 sm:flex-none sm:min-w-[150px]">
+                <Button variant="outline" className="h-9 text-xs flex-1 sm:flex-none sm:min-w-[150px]">
                   <CalendarIcon className="mr-2 h-3 w-3" />
-                  {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                  {selectedDate ? format(selectedDate, "PPP") : "Select Date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  initialFocus
-                  disabled={(d) => d > new Date() || d < new Date("1900-01-01")}
-                />
+                <Calendar mode="single" selected={selectedDate} onSelect={(d) => d && setSelectedDate(d)} initialFocus />
               </PopoverContent>
             </Popover>
           </div>
         </div>
 
-        {/* 1. Vega Section */}
-        <GreekSection 
-            title="Vega" 
-            icon={TrendingUp} 
-            data={data}
-            dataKeyCall="call_vega"
-            dataKeyPut="put_vega"
-            dataKeyNet="diff_vega"
-            colorCall="#10b981"
-            colorPut="#ef4444"
-            colorNet="text-emerald-500 bg-emerald-500/5"
-            selectedDate={selectedDate}
-        />
-
-        {/* 2. Gamma Section */}
-        <GreekSection 
-            title="Gamma" 
-            icon={Activity} 
-            data={data}
-            dataKeyCall="call_gamma"
-            dataKeyPut="put_gamma"
-            dataKeyNet="diff_gamma"
-            colorCall="#10b981"
-            colorPut="#ef4444"
-            colorNet="text-purple-500 bg-purple-500/5"
-            selectedDate={selectedDate}
-        />
-
-        {/* 3. Delta Section */}
-        <GreekSection 
-            title="Delta" 
-            icon={Waves} 
-            data={data}
-            dataKeyCall="call_delta"
-            dataKeyPut="put_delta"
-            dataKeyNet="diff_delta"
-            colorCall="#10b981"
-            colorPut="#ef4444"
-            colorNet="text-orange-500 bg-orange-500/5"
-            selectedDate={selectedDate}
-        />
-
-        {/* 4. Theta Section */}
-        <GreekSection 
-            title="Theta" 
-            icon={Zap} 
-            data={data}
-            dataKeyCall="call_theta"
-            dataKeyPut="put_theta"
-            dataKeyNet="diff_theta"
-            colorCall="#10b981"
-            colorPut="#ef4444"
-            colorNet="text-pink-500 bg-pink-500/5"
-            selectedDate={selectedDate}
-        />
+        <GreekSection title="Vega" icon={TrendingUp} dataKeyCall="call_vega" dataKeyPut="put_vega" dataKeyNet="diff_vega" colorCall="#10b981" colorPut="#ef4444" colorNet="text-emerald-500" />
+        <GreekSection title="Gamma" icon={Activity} dataKeyCall="call_gamma" dataKeyPut="put_gamma" dataKeyNet="diff_gamma" colorCall="#10b981" colorPut="#ef4444" colorNet="text-purple-500" />
+        <GreekSection title="Delta" icon={Waves} dataKeyCall="call_delta" dataKeyPut="put_delta" dataKeyNet="diff_delta" colorCall="#10b981" colorPut="#ef4444" colorNet="text-orange-500" />
+        <GreekSection title="Theta" icon={Zap} dataKeyCall="call_theta" dataKeyPut="put_theta" dataKeyNet="diff_theta" colorCall="#10b981" colorPut="#ef4444" colorNet="text-pink-500" />
 
         {/* Detailed Logs Footer */}
         <div className="flex justify-end px-2">
