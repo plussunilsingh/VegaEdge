@@ -122,8 +122,18 @@ const AngleOneLiveData = () => {
       const slots = [];
       const start = new Date(baseDate);
       start.setHours(9, 15, 0, 0);
+      
       const end = new Date(baseDate);
-      end.setHours(15, 30, 0, 0);
+      // If it's today, extend slots to current time to show latest tests
+      if (isToday(baseDate)) {
+          const now = new Date();
+          // But don't go before 15:30 if it's still early
+          const marketEnd = new Date(baseDate);
+          marketEnd.setHours(15, 30, 0, 0);
+          end.setTime(Math.max(marketEnd.getTime(), now.getTime()));
+      } else {
+          end.setHours(15, 30, 0, 0);
+      }
 
       let current = start;
       while (current <= end) {
@@ -141,9 +151,12 @@ const AngleOneLiveData = () => {
         })
         .then(res => res.json())
         .then(val => {
+            console.log("ANGLEONE_EXPIRIES_FETCHED:", val);
             if (Array.isArray(val)) {
                  setExpiryList(val);
-                 if (val.length > 0 && !selectedExpiry) {
+                 
+                 // If current selectedExpiry is not in the new list, or if it's empty
+                 if (val.length > 0 && (!selectedExpiry || !val.includes(selectedExpiry))) {
                     const today = new Date().toISOString().split('T')[0];
                     const future = val.find(d => d >= today);
                     setSelectedExpiry(future || val[0]);
@@ -152,7 +165,7 @@ const AngleOneLiveData = () => {
         })
         .catch(err => console.error("Failed to fetch expiry list", err));
      }
-  }, [isAuthenticated, token, selectedIndex]);
+  }, [isAuthenticated, token, selectedIndex, selectedExpiry]); // Added selectedExpiry to deps to check membership
 
   const fetchHistoryData = useCallback(async (dateObj: Date, silent = false) => {
     if (!selectedExpiry) return;
@@ -174,6 +187,7 @@ const AngleOneLiveData = () => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const result = await response.json();
+      console.log(`ANGLEONE_HISTORY (${dateStr}, ${selectedIndex}, ${selectedExpiry}):`, result.length, "records");
       if (!Array.isArray(result)) throw new Error("Invalid Format");
 
       const dataMap = new Map();
