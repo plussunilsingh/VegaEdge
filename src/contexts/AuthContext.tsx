@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { endpoints, SESSION_TIMEOUT } from "@/config";
 import { SessionExpiredModal } from "@/components/SessionExpiredModal";
+import { toast } from "sonner";
 
 // Define Role Enum on Frontend for consistency
 export enum UserRole {
@@ -103,12 +104,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(interval);
   }, [user, lastActivity]);
 
-  // Global Session Event Listener (from API 401s)
   useEffect(() => {
       const handleExpired = () => setIsSessionExpired(true);
       window.addEventListener('session-expired', handleExpired);
       return () => window.removeEventListener('session-expired', handleExpired);
   }, []);
+
+  // Global Session Enforcement (Kill Switch)
+  // Blocks ALL API calls except login/logout/health when session is expired
+  useEffect(() => {
+    if (!isSessionExpired) return;
+
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+        const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request).url;
+        
+        const isAllowed = 
+            url.includes('/login') || 
+            url.includes('/logout') || 
+            url.includes('/heartbeat') || 
+            url.includes('/health') || 
+            url.includes('/metrics') ||
+            url.includes('/upstox-login-url');
+        
+        if (!isAllowed) {
+            console.warn(`[Session Guard] Blocking API call: ${url}`);
+            toast.error("Session expired. Action blocked.");
+            return new Response(JSON.stringify({ error: "Session Expired" }), { 
+                status: 401, 
+                statusText: "Unauthorized" 
+            });
+        }
+        return originalFetch(...args);
+    };
+
+    return () => {
+        window.fetch = originalFetch;
+    };
+  }, [isSessionExpired]);
 
   // Heartbeat Check (Server Connectivity)
   useEffect(() => {
