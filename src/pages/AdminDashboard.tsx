@@ -25,7 +25,7 @@ interface User {
 const ITEMS_PER_PAGE = 10;
 
 const AdminDashboard = () => {
-    const { user: currentUser, token } = useAuth();
+    const { user: currentUser, token, isSessionExpired, validateSession } = useAuth();
     const queryClient = useQueryClient();
 
     // --- State for Upstox Token ---
@@ -103,6 +103,7 @@ const AdminDashboard = () => {
 
     // --- Upstox Handlers ---
     const handleManualTokenSave = async () => {
+        if (!validateSession()) return;
         if (!manualToken.trim()) return toast.error("Please enter an access token.");
         setIsSavingToken(true);
         try {
@@ -123,6 +124,7 @@ const AdminDashboard = () => {
     };
 
     const handleAutoGenerateToken = async () => {
+        if (!validateSession()) return;
         try {
              // Assuming endpoint layout follows auth pattern
              const baseUrl = endpoints.auth.login.replace('/login', ''); // base auth url
@@ -175,11 +177,13 @@ const AdminDashboard = () => {
     }, [searchTerm]);
 
 
-    if (currentUser?.role !== 'ADMIN_USER') {
+    if (currentUser?.role !== 'ADMIN_USER' || isSessionExpired) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col">
                 <AuthenticatedNavbar />
-                <div className="flex-1 flex items-center justify-center text-red-500 font-bold">Access Denied</div>
+                <div className="flex-1 flex items-center justify-center text-red-500 font-bold">
+                    {isSessionExpired ? "Session Expired. Please Re-login." : "Access Denied"}
+                </div>
             </div>
         );
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -69,7 +69,7 @@ import { SEOHead } from "@/components/SEOHead";
   };
 
   const LiveData = () => {
-  const { user, profileImageUrl } = useAuth();
+  const { user, profileImageUrl, validateSession } = useAuth();
   
   // State for date selection
   const [selectedDate, setSelectedDate] = useState<Date>(getInitialDate());
@@ -292,18 +292,19 @@ import { SEOHead } from "@/components/SEOHead";
       selectedDate // Pass selectedDate for ReferenceLine calculation
   }: any) => {
       
-      // Filter valid data for table
-      const tableData = [...data].filter(row => row.greeks !== null).reverse();
+      const tableData = useMemo(() => 
+          [...data].filter(row => row.greeks !== null).reverse(),
+      [data]);
       
       // Helper to determine trend if provided or calculate it
-      const getTrend = (greeks: any) => {
+      const getTrend = useCallback((greeks: any) => {
           if (title !== "Vega") return null; // Only for Vega Table
           
           const net = greeks[dataKeyNet]; 
           if (net > 0.5) return { text: "Bearish", color: "text-red-500 font-bold" };
           if (net < -0.5) return { text: "Bullish", color: "text-green-500 font-bold" };
           return { text: "Sideways", color: "text-yellow-500 font-bold" };
-      };
+      }, [title, dataKeyNet]);
 
       // Calculate 09:15 timestamp for ReferenceLine
       const getStartReference = () => {
@@ -566,6 +567,7 @@ import { SEOHead } from "@/components/SEOHead";
         {/* Detailed Logs Footer */}
         <div className="flex justify-end px-2">
              <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => {
+                if (!validateSession()) return;
                 const validData = data.filter(r => r.greeks !== null);
                 if (!validData.length) return;
                 const csvContent = "data:text/csv;charset=utf-8," 

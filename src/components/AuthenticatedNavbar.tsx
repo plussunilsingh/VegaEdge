@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 
 const AuthenticatedNavbar = () => {
-  const { logout, user } = useAuth();
+  const { logout, user, validateSession } = useAuth();
   const { sessionTimeLeft } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
@@ -19,6 +19,7 @@ const AuthenticatedNavbar = () => {
 
               <div className="flex items-center gap-2 ml-4">
                 <Button variant="outline" size="sm" onClick={async () => {
+                  if (!validateSession()) return;
                   try {
                     const resp = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/upstox-login-url`, {
                       method: 'GET',

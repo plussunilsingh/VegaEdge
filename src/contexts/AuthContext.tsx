@@ -30,6 +30,8 @@ interface AuthContextType {
   profileImageUrl: string | null;
   token: string | null;
   isLoading: boolean;
+  isSessionExpired: boolean;
+  validateSession: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -259,8 +261,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAuthenticated: !!user,
     profileImageUrl,
     token,
-    isLoading
-  }), [user, login, logout, profileImageUrl, token, isLoading]);
+    isLoading,
+    isSessionExpired,
+    validateSession: () => {
+      if (isSessionExpired || !user) {
+        setIsSessionExpired(true);
+        return false;
+      }
+      return true;
+    }
+  }), [user, login, logout, profileImageUrl, token, isLoading, isSessionExpired]);
 
   return (
     <SessionContext.Provider value={{ sessionTimeLeft }}>
