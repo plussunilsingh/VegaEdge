@@ -25,8 +25,30 @@ interface User {
 const ITEMS_PER_PAGE = 10;
 
 const AdminDashboard = () => {
-    const { user: currentUser, token } = useAuth();
+    const { user: currentUser, token, isSessionExpired, validateSession, isAuthenticated } = useAuth();
     const queryClient = useQueryClient();
+
+    // Immediate dead-end for unauthorized or expired sessions
+    if (!isAuthenticated || currentUser?.role !== 'ADMIN_USER') {
+        return (
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+                <div className="text-center space-y-4 max-w-md bg-card p-8 rounded-xl border shadow-2xl">
+                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ShieldCheck className="w-8 h-8 text-red-500" />
+                    </div>
+                    <h2 className="text-2xl font-bold tracking-tight">Access Restricted</h2>
+                    <p className="text-muted-foreground">
+                        {isSessionExpired 
+                            ? "Your session has expired for security. Please re-login to access the administrative console." 
+                            : "You do not have the required permissions to view this secure page."}
+                    </p>
+                    <Button onClick={() => window.location.href = '/login'} className="w-full">
+                        Return to Login
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     // --- State for Upstox Token ---
     const [manualToken, setManualToken] = useState("");
@@ -103,6 +125,7 @@ const AdminDashboard = () => {
 
     // --- Upstox Handlers ---
     const handleManualTokenSave = async () => {
+        if (!validateSession()) return;
         if (!manualToken.trim()) return toast.error("Please enter an access token.");
         setIsSavingToken(true);
         try {
@@ -123,6 +146,7 @@ const AdminDashboard = () => {
     };
 
     const handleAutoGenerateToken = async () => {
+        if (!validateSession()) return;
         try {
              // Assuming endpoint layout follows auth pattern
              const baseUrl = endpoints.auth.login.replace('/login', ''); // base auth url
@@ -175,27 +199,20 @@ const AdminDashboard = () => {
     }, [searchTerm]);
 
 
-    if (currentUser?.role !== 'ADMIN_USER') {
-        return (
-            <div className="min-h-screen bg-gray-50 flex flex-col">
-                <AuthenticatedNavbar />
-                <div className="flex-1 flex items-center justify-center text-red-500 font-bold">Access Denied</div>
-            </div>
-        );
-    }
+    // (Old check removed, consolidated at top)
 
     return (
-        <div className="min-h-screen bg-gray-50 text-foreground">
+        <div className="min-h-screen bg-[#f8fafc] text-foreground">
             <AuthenticatedNavbar />
             <div className="container mx-auto py-8 px-4 space-y-8">
                 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                     <div>
-                        <h1 className="text-3xl font-bold flex items-center gap-2">
-                             <ShieldCheck className="w-8 h-8 text-primary" /> Admin Dashboard
+                        <h1 className="text-2xl font-bold flex items-center gap-2 text-[#00bcd4]">
+                             <ShieldCheck className="w-6 h-6 text-[#00bcd4]" /> Admin Dashboard
                         </h1>
-                        <p className="text-muted-foreground text-sm mt-1">Manage users, tokens, and system configuration.</p>
+                        <p className="text-slate-400 text-[11px] mt-1">Manage users, tokens, and system configuration.</p>
                     </div>
                 </div>
 

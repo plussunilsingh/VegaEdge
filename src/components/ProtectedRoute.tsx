@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isSessionExpired } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       );
   }
 
-  if (!user) {
+  if (!user || isSessionExpired) {
     // Redirect to login but save the attempted location
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

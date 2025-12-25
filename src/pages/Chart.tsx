@@ -53,7 +53,7 @@ const Chart = () => {
   }, [selectedOption, selectedDate]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
       <AuthenticatedNavbar />
       
       <main className="flex-1 py-8">
@@ -81,10 +81,10 @@ const Chart = () => {
             </div>
 
             <div className="flex flex-wrap gap-2 items-center justify-end">
-              <Button size="sm" className="bg-primary hover:bg-primary/90">Event-Driven</Button>
-              <Button size="sm" variant="secondary">Neutral Market</Button>
-              <Button size="sm" className="bg-green-600 hover:bg-green-700">Bearish</Button>
-              <Button size="sm" className="bg-red-600 hover:bg-red-700">Bullish</Button>
+              <Button size="sm" className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full border-none">Event-Driven</Button>
+              <Button size="sm" className="bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#1e293b] font-bold rounded-full border-none">Neutral Market</Button>
+              <Button size="sm" className="bg-[#10b981] hover:bg-[#059669] text-white font-bold rounded-full border-none">Bearish</Button>
+              <Button size="sm" className="bg-[#e11d48] hover:bg-[#be123c] text-white font-bold rounded-full border-none">Bullish</Button>
             </div>
           </div>
 
@@ -134,18 +134,18 @@ const Chart = () => {
             {/* Table Section */}
             <div className="lg:col-span-1">
               <div className="bg-card rounded-2xl shadow-lg overflow-hidden sticky top-24">
-                <div className="max-h-[800px] overflow-y-auto overflow-x-auto">
+                <div className="max-h-[800px] overflow-y-auto overflow-x-auto custom-scrollbar">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-black text-white z-10">
+                    <thead className="sticky top-0 bg-slate-100 text-slate-700 z-10 border-b border-slate-200">
                       <tr>
-                        <th className="px-4 py-3 text-left">Time</th>
-                        <th className="px-4 py-3 text-left">Call Vega</th>
-                        <th className="px-4 py-3 text-left">Put Vega</th>
-                        <th className="px-4 py-3 text-left">Difference</th>
-                        <th className="px-4 py-3 text-left">Trend</th>
+                        <th className="px-4 py-3 text-left font-semibold">Time</th>
+                        <th className="px-4 py-3 text-left font-semibold">Call Vega</th>
+                        <th className="px-4 py-3 text-left font-semibold">Put Vega</th>
+                        <th className="px-4 py-3 text-left font-semibold">Difference</th>
+                        <th className="px-4 py-3 text-left font-semibold text-center">Trend</th>
                       </tr>
                     </thead>
-                    <tbody dangerouslySetInnerHTML={{ __html: tableData }} />
+                    <tbody dangerouslySetInnerHTML={{ __html: tableData }} className="bg-white" />
                   </table>
                 </div>
               </div>

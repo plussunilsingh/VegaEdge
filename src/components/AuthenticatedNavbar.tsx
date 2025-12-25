@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 
 const AuthenticatedNavbar = () => {
-  const { logout, user } = useAuth();
+  const { logout, user, validateSession } = useAuth();
   const { sessionTimeLeft } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
@@ -19,6 +19,7 @@ const AuthenticatedNavbar = () => {
 
               <div className="flex items-center gap-2 ml-4">
                 <Button variant="outline" size="sm" onClick={async () => {
+                  if (!validateSession()) return;
                   try {
                     const resp = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/upstox-login-url`, {
                       method: 'GET',
@@ -88,8 +89,8 @@ const AuthenticatedNavbar = () => {
           <div className="flex items-center justify-between h-20">
             <Link to="/my-account" className="flex items-center gap-3">
               <h1 className="text-primary text-xl font-bold flex items-center gap-2">
-                <img src="/img/logo_red.png" alt="Logo" className="h-10 w-auto object-contain" /> 
-                <span>Vega Greeks</span>
+                <img src="/img/logo_red.png" alt="Vega Greeks" className="h-10 w-auto object-contain" /> 
+                <span className="text-white">Vega Greeks</span>
               </h1>
             </Link>
 
@@ -112,9 +113,11 @@ const AuthenticatedNavbar = () => {
               <Link to="/live-data" className="text-white hover:text-primary transition-colors font-medium">
                 Live Data
               </Link>
-              { /* <Link to="/angleone-live-data" className="text-white hover:text-primary transition-colors font-medium">
+              {
+             /*  <Link to="/angleone-live-data" className="text-white hover:text-primary transition-colors font-medium">
                 AngelOne
-              </Link>  */}
+              </Link>  */
+              }
               <Link to="/my-account" className="text-white hover:text-primary transition-colors font-medium">
                 My Account
               </Link>
@@ -155,16 +158,18 @@ const AuthenticatedNavbar = () => {
               <Link to="/live-data" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                 Live Data
               </Link>
-              <Link to="/angleone-live-data" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+             {
+             /* <Link to="/angleone-live-data" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                 AngelOne
-              </Link>
+              </Link>  */
+              }
               <Link to="/my-account" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                 My Account
               </Link>
               <button onClick={() => { toggleMenu(); logout(); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
                 Logout
               </button>
-              <Link to="/contact" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900">
+              <Link to="/contact" onClick={toggleMenu} className="block px-3 py-3 rounded-md text-base font-medium text-white hover:text-primary hover:bg-gray-900 border-t border-gray-800/10">
                 Contact Us
               </Link>
             </div>

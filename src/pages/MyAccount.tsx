@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const MyAccount = () => {
   const { user, profileImageUrl } = useAuth();
@@ -63,23 +64,23 @@ const MyAccount = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
       <AuthenticatedNavbar />
       
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4">
           {/* Strategy Buttons */}
-          <div className="flex flex-wrap gap-3 justify-center mb-8">
-            <Button className="bg-primary hover:bg-primary/90 rounded-full">
+          <div className="flex flex-wrap gap-4 justify-center mb-10">
+            <Button className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
               Event-Driven Strategies
             </Button>
-            <Button variant="secondary" className="rounded-full">
+            <Button className="bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#1e293b] font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
               Neutral Market Strategies
             </Button>
-            <Button className="bg-green-600 hover:bg-green-700 rounded-full">
+            <Button className="bg-[#10b981] hover:bg-[#059669] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
               Bearish Market Strategies
             </Button>
-            <Button className="bg-red-600 hover:bg-red-700 rounded-full">
+            <Button className="bg-[#e11d48] hover:bg-[#be123c] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
               Bullish Market Strategies
             </Button>
           </div>
@@ -112,9 +113,9 @@ const MyAccount = () => {
                       onChange={handleFileChange}
                       className="mb-4"
                     />
-                    <Button 
+                     <Button 
                       type="submit" 
-                      className="bg-red-600 hover:bg-red-700 w-full"
+                      className="bg-[#f0a0a0] hover:bg-[#e09090] text-white font-bold w-full rounded-full transition-transform hover:scale-[1.02] border-none"
                       disabled={!selectedFile}
                     >
                       Update Profile Pic
@@ -126,77 +127,67 @@ const MyAccount = () => {
               {/* User Details Section */}
               <div className="bg-card rounded-2xl p-8 shadow-lg">
                 <div className="space-y-6 mb-8">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-white text-sm">✓</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[10px] font-bold">✓</span>
                     </div>
-                    <div>
-                      <p className="text-lg">
-                        <span className="font-semibold">Name: </span>
-                        {user?.name || "User"}
-                      </p>
+                    <div className="flex items-center gap-2">
+                       <span className="font-bold text-slate-800 min-w-[60px]">Name:</span>
+                       <span className="text-slate-600 font-medium">{user?.name || "User"}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-white text-sm">✓</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[10px] font-bold">✓</span>
                     </div>
-                    <div>
-                      <p className="text-lg break-all">
-                        <span className="font-semibold">Email: </span>
-                        {user?.email || ""}
-                      </p>
+                    <div className="flex items-center gap-2">
+                       <span className="font-bold text-slate-800 min-w-[60px]">Email:</span>
+                       <span className="text-slate-600 font-medium break-all">{user?.email || ""}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-white text-sm">✓</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[10px] font-bold">✓</span>
                     </div>
-                    <div>
-                      <p className="text-lg">
-                        <span className="font-semibold">Phone: </span>
-                        {user?.phone || ""}
-                      </p>
+                    <div className="flex items-center gap-2">
+                       <span className="font-bold text-slate-800 min-w-[60px]">Phone:</span>
+                       <span className="text-slate-600 font-medium">{user?.phone || ""}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${user?.is_subscribed ? 'bg-green-500' : 'bg-red-500'}`}>
-                      <span className="text-white text-sm">✓</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[10px] font-bold">✓</span>
                     </div>
-                    <div>
-                      <p className="text-lg">
-                        <span className="font-semibold">Subscription: </span>
-                        {user?.is_subscribed ? (
-                            <span className="text-green-600 font-bold">Active</span>
-                        ) : (
-                            <span className="text-red-600 font-bold">Inactive</span>
-                        )}
-                      </p>
+                    <div className="flex items-center gap-2">
+                       <span className="font-bold text-slate-800 min-w-[100px]">Subscription:</span>
+                       <span className={cn("font-bold text-sm", user?.is_subscribed ? "text-[#10b981]" : "text-red-500")}>
+                         {user?.is_subscribed ? "Active" : "Inactive"}
+                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4 pt-4 border-t border-slate-50">
                   {user?.is_subscribed ? (
                     <Link to="/live-data">
-                        <Button className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 text-lg">
+                        <Button className="w-full bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full py-6 text-lg transition-transform hover:scale-[1.02] shadow-md border-none">
                         Explore Our Vega Charts
                         </Button>
                     </Link>
                   ) : (
                     <Button 
                         disabled 
-                        className="w-full bg-gray-400 cursor-not-allowed rounded-full py-6 text-lg"
+                        className="w-full bg-slate-200 text-slate-400 cursor-not-allowed rounded-full py-6 text-lg border-none"
                     >
                         Chart Access Restricted (Contact Admin)
                     </Button>
                   )}
 
                   <Link to="/change-password">
-                    <Button className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 text-lg">
+                    <Button className="w-full bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full py-6 text-lg transition-transform hover:scale-[1.02] shadow-md border-none">
                       Change Password
                     </Button>
                   </Link>
