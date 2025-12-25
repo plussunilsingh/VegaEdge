@@ -154,18 +154,18 @@ const AngleOneLiveData = () => {
           let greeks = null;
           if (match) {
               greeks = {
-                  call_vega: match.call_vega,
-                  put_vega: match.put_vega,
-                  diff_vega: match.put_vega - match.call_vega,
-                  call_delta: match.call_delta,
-                  put_delta: match.put_delta,
-                  diff_delta: match.put_delta - match.call_delta,
-                  call_gamma: match.call_gamma,
-                  put_gamma: match.put_gamma,
-                  diff_gamma: match.put_gamma - match.call_gamma,
-                  call_theta: match.call_theta,
-                  put_theta: match.put_theta,
-                  diff_theta: match.put_theta - match.call_theta,
+                  call_vega: Number(match.call_vega || 0),
+                  put_vega: Number(match.put_vega || 0),
+                  diff_vega: Number(match.put_vega || 0) - Number(match.call_vega || 0),
+                  call_delta: Number(match.call_delta || 0),
+                  put_delta: Number(match.put_delta || 0),
+                  diff_delta: Number(match.put_delta || 0) - Number(match.call_delta || 0),
+                  call_gamma: Number(match.call_gamma || 0),
+                  put_gamma: Number(match.put_gamma || 0),
+                  diff_gamma: Number(match.put_gamma || 0) - Number(match.call_gamma || 0),
+                  call_theta: Number(match.call_theta || 0),
+                  put_theta: Number(match.put_theta || 0),
+                  diff_theta: Number(match.put_theta || 0) - Number(match.call_theta || 0),
               };
           }
 
@@ -241,6 +241,34 @@ const AngleOneLiveData = () => {
   // Formatting helpers
   const formatTime = (iso: string) => { try { return format(new Date(iso), "HH:mm"); } catch { return ""; } };
   const fmt = (v: any) => v == null ? "-" : Number(v).toFixed(2);
+
+  // Calculate symmetric domain and explicit ticks for centered zero line
+  const { yDomain, yTicks } = useCallback(() => {
+      let maxVal = 0;
+      data.forEach((d: any) => {
+          if (d.greeks) {
+              const vals = [
+                  Math.abs(d.greeks.call_vega || 0),
+                  Math.abs(d.greeks.put_vega || 0),
+                  Math.abs(d.greeks.diff_vega || 0)
+              ];
+              maxVal = Math.max(maxVal, ...vals);
+          }
+      });
+      
+      const limit = maxVal === 0 ? 1 : maxVal * 1.1; 
+      const step = limit / 2;
+      const ticks = [-limit, -step, 0, step, limit];
+      
+      return { yDomain: [-limit, limit], yTicks: ticks };
+  }, [data])();
+
+  // 09:15 timestamp helper
+  const getStartReference = () => {
+      const start = new Date(selectedDate);
+      start.setHours(9, 15, 0, 0);
+      return start.toISOString();
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -333,18 +361,58 @@ const AngleOneLiveData = () => {
         <div className="grid grid-cols-12 gap-4 h-[500px]">
              <Card className="col-span-12 lg:col-span-9 bg-card/40 backdrop-blur-md flex flex-col">
                  <CardHeader className="py-2"><CardTitle className="text-sm">Vega Analysis</CardTitle></CardHeader>
-                 <CardContent className="flex-1 min-h-0 p-2">
-                     <ResponsiveContainer width="100%" height="100%">
-                         <LineChart data={data}>
-                             <CartesianGrid strokeDasharray="3 3" stroke="#333" opacity={0.2} vertical={false} />
-                             <XAxis dataKey="timestamp" tickFormatter={formatTime} tick={{fontSize: 10}} height={50} angle={-45} textAnchor="end" />
-                             <YAxis tick={{fontSize: 10}} domain={['auto', 'auto']} width={30} />
-                             <Tooltip contentStyle={{backgroundColor: '#000', border: '1px solid #333'}} labelFormatter={formatTime} />
-                             <Legend />
-                             <Line type="monotone" dataKey="greeks.call_vega" name="Call Vega" stroke="#10b981" dot={false} strokeWidth={2} />
-                             <Line type="monotone" dataKey="greeks.put_vega" name="Put Vega" stroke="#ef4444" dot={false} strokeWidth={2} />
-                         </LineChart>
-                     </ResponsiveContainer>
+                 <CardContent className="flex-1 w-full min-h-0 p-2 overflow-hidden relative">
+                    <div className="w-full h-full overflow-x-auto pb-2">
+                        <div className="min-w-[800px] h-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" strokeOpacity={0.4} vertical={false} />
+                                    <XAxis 
+                                        dataKey="timestamp" 
+                                        tickFormatter={formatTime} 
+                                        tick={{fontSize: 10, fill: '#94a3b8'}} 
+                                        minTickGap={0} 
+                                        stroke="#334155"
+                                        axisLine={{ stroke: '#334155' }}
+                                        tickLine={false}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={60}
+                                        interval={window.innerWidth > 1400 ? 5 : 'preserveStartEnd'} 
+                                    />
+                                    <YAxis 
+                                        domain={yDomain} 
+                                        ticks={yTicks}
+                                        tickFormatter={(val) => val.toFixed(2)}
+                                        tick={{fontSize: 10, fill: '#94a3b8'}}
+                                        stroke="#334155"
+                                        axisLine={{ stroke: '#334155', strokeWidth: 1.5 }}
+                                        tickLine={false}
+                                        width={45}
+                                    />
+                                    <Tooltip 
+                                        contentStyle={{backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc'}} 
+                                        labelFormatter={formatTime}
+                                        cursor={{ stroke: '#475569', strokeWidth: 1.5, opacity: 0.8 }} 
+                                    />
+                                    <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
+                                    
+                                    <ReferenceLine y={0} stroke="#334155" strokeOpacity={1} strokeWidth={1.5} />
+                                    
+                                    <ReferenceLine 
+                                        x={getStartReference()} 
+                                        stroke="#334155" 
+                                        strokeWidth={1.5}
+                                        strokeDasharray="4 4"
+                                        label={{ value: '09:15', position: 'insideTopLeft', fill: '#64748b', fontSize: 10 }} 
+                                    />
+
+                                    <Line type="monotone" dataKey="greeks.call_vega" name="Call Vega" stroke="#10b981" dot={false} strokeWidth={1.5} activeDot={{ r: 4, strokeWidth: 0 }} connectNulls={false} />
+                                    <Line type="monotone" dataKey="greeks.put_vega" name="Put Vega" stroke="#ef4444" dot={false} strokeWidth={1.5} activeDot={{ r: 4, strokeWidth: 0 }} connectNulls={false} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                  </CardContent>
              </Card>
              
