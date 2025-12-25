@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,24 @@ export const SessionExpiredModal = ({ open, onOpenChange }: SessionExpiredModalP
       setIsLoading(false);
     }
   };
+
+  // Callback to proactively check if session is live (requested by user)
+  // This handles cases where user might have logged in in another tab
+  useEffect(() => {
+    if (!open) return;
+
+    const checkInterval = setInterval(() => {
+        const storedUser = localStorage.getItem('alphaedge_user');
+        const sessionToken = localStorage.getItem('alphaedge_session');
+        
+        if (storedUser && sessionToken) {
+            console.log("[Session Recovery] Valid session detected, closing modal.");
+            onOpenChange(false);
+        }
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(checkInterval);
+  }, [open, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onOpenChange(val)}> 

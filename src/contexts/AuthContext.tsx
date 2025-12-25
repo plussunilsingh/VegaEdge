@@ -125,6 +125,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             url.includes('/heartbeat') || 
             url.includes('/health') || 
             url.includes('/metrics') ||
+            url.includes('/auth/me') ||
+            url.includes('/me') ||
+            url.includes('/user/image') ||
             url.includes('/upstox-login-url');
         
         if (!isAllowed) {
