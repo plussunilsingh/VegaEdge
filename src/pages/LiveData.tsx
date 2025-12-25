@@ -118,7 +118,7 @@ import { SEOHead } from "@/components/SEOHead";
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
+  const { token, isSessionExpired } = useAuth();
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   // Helper to generate full day time slots (09:15 to 15:30)
@@ -139,7 +139,7 @@ import { SEOHead } from "@/components/SEOHead";
 
   // Fetch Expiry List on mount
   useEffect(() => {
-     if (token) {
+     if (token && !isSessionExpired) {
         fetch(endpoints.market.expiryList, {
              headers: { Authorization: `Bearer ${token}` }
         })
@@ -147,15 +147,12 @@ import { SEOHead } from "@/components/SEOHead";
         .then(data => {
             if (Array.isArray(data)) {
                  setExpiryList(data);
-                 // Optional: Auto-select closest expiry?
-                 // For now, let user select or default to None (which means all/merged in backend logic, or we force one)
-                 // Requirement: "Add a expiry select drop down"
                  if (data.length > 0) setSelectedExpiry(data[0]); 
             }
         })
         .catch(err => console.error("Failed to fetch expiry list", err));
      }
-  }, [token]);
+  }, [token, isSessionExpired]);
 
   const fetchHistoryData = useCallback(async (selectedDate: Date, silent = false) => {
     if (!silent) setLoading(true);
@@ -267,7 +264,7 @@ import { SEOHead } from "@/components/SEOHead";
 
   // Initial Fetch & Polling (Drift-Free)
   useEffect(() => {
-    if (selectedDate && token) {
+    if (selectedDate && token && !isSessionExpired) {
       fetchHistoryData(selectedDate);
       
       let timeoutId: NodeJS.Timeout;
@@ -297,7 +294,7 @@ import { SEOHead } from "@/components/SEOHead";
       
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData]);
+  }, [selectedDate, token, selectedIndex, selectedExpiry, fetchHistoryData, isSessionExpired]);
 
 
   const fmt = (val: any, digits = 2) => {
