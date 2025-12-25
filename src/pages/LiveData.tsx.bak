@@ -102,6 +102,159 @@ import { SEOHead } from "@/components/SEOHead";
     return null;
   };
 
+  // --------------------------------------------------------------------------
+  // Reusable Section Component: Chart (Left) + Table (Right)
+  // --------------------------------------------------------------------------
+  const GreekSection = ({ 
+      title, 
+      icon: Icon, 
+      dataKeyCall, 
+      dataKeyPut, 
+      dataKeyNet, 
+      colorCall, 
+      colorPut,
+      colorNet, // Used for table background
+      data,
+      selectedDate // Pass selectedDate for ReferenceLine calculation
+  }: any) => {
+      
+      const tableData = useMemo(() => 
+          [...data].filter(row => row.greeks !== null).reverse(),
+      [data]);
+      
+      // Helper to determine trend if provided or calculate it
+      const getTrend = useCallback((greeks: any) => {
+          if (title !== "Vega") return null; // Only for Vega Table
+          
+          const net = greeks[dataKeyNet]; 
+          if (net > 0.5) return { text: "Bearish", color: "text-red-500 font-bold" };
+          if (net < -0.5) return { text: "Bullish", color: "text-green-500 font-bold" };
+          return { text: "Sideways", color: "text-yellow-500 font-bold" };
+      }, [title, dataKeyNet]);
+
+      // Calculate 09:15 timestamp for ReferenceLine
+      const getStartReference = () => {
+          if (!selectedDate) return null;
+          const start = new Date(selectedDate);
+          start.setHours(9, 15, 0, 0);
+          return start.toISOString();
+      };
+
+      return (
+        <div className="grid grid-cols-12 gap-4 h-[600px]">
+            {/* Chart Area (Span 9) */}
+            <Card className="col-span-12 lg:col-span-9 border-border/40 bg-card/40 backdrop-blur-md shadow-xl ring-1 ring-white/5 flex flex-col">
+                <CardHeader className="py-2 pb-0">
+                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        <Icon className={cn("w-4 h-4", colorCall.replace('stroke-', 'text-').replace('#', 'text-'))} /> 
+                        {title} Analysis
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 w-full min-h-0 p-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#333" strokeOpacity={0.2} vertical={false} />
+                            <XAxis 
+                                dataKey="timestamp" 
+                                tickFormatter={formatTime} 
+                                tick={{fontSize: 10, fill: '#888'}} 
+                                minTickGap={0} 
+                                stroke="#444"
+                                axisLine={false}
+                                tickLine={false}
+                                angle={-45}
+                                textAnchor="end"
+                                height={60}
+                                interval={window.innerWidth > 1400 ? 5 : 'preserveStartEnd'} 
+                            />
+                            <YAxis 
+                                domain={['auto', 'auto']} 
+                                tick={{fontSize: 10, fill: '#888'}}
+                                stroke="#444"
+                                axisLine={false}
+                                tickLine={false}
+                                width={40}
+                            />
+                            <Tooltip 
+                                content={<CustomTooltip />} 
+                                cursor={{ stroke: '#ef4444', strokeWidth: 1.5, opacity: 0.8 }} 
+                            />
+                            <Legend wrapperStyle={{paddingTop: '5px', fontSize: '11px'}} iconType="circle" />
+                            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" strokeOpacity={0.5} />
+                            
+                            <ReferenceLine x={getStartReference()} stroke="#3b82f6" strokeDasharray="4 4" label={{ value: '09:15', position: 'insideTopLeft', fill: '#3b82f6', fontSize: 10 }} />
+
+                            <Line 
+                                type="monotone" 
+                                dataKey={`greeks.${dataKeyCall}`} 
+                                name={`Call ${title}`} 
+                                stroke={colorCall} 
+                                strokeWidth={1.5}
+                                dot={false}
+                                connectNulls={false}
+                                activeDot={{ r: 4, strokeWidth: 0 }}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey={`greeks.${dataKeyPut}`} 
+                                name={`Put ${title}`} 
+                                stroke={colorPut} 
+                                strokeWidth={1.5}
+                                dot={false}
+                                connectNulls={false}
+                                activeDot={{ r: 4, strokeWidth: 0 }}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
+            {/* Table Area (Span 3) */}
+            <Card className="col-span-12 lg:col-span-3 border-border/40 bg-card/40 backdrop-blur-md shadow-xl flex flex-col h-[600px]">
+                <CardHeader className="py-3 border-b border-border/10 bg-muted/40">
+                    <div className="flex justify-between items-center">
+                         <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">{title} Table</CardTitle>
+                         <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
+                            {tableData.length > 0 ? formatTime(tableData[0].timestamp) : '--:--'}
+                         </span>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-0 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
+                    <Table>
+                        <TableHeader className="sticky top-0 bg-background/95 backdrop-blur z-10 border-b-2 border-border/50 shadow-md">
+                            <TableRow className="border-b border-border/10 text-[10px] hover:bg-transparent uppercase tracking-wider">
+                                <TableHead className="w-[60px] h-9 text-muted-foreground font-bold pl-4">Time</TableHead>
+                                <TableHead className="text-right h-9 text-green-500 font-bold border-l border-border/10 bg-green-500/5">Call</TableHead>
+                                <TableHead className="text-right h-9 text-red-500 font-bold border-l border-border/10 bg-red-500/5">Put</TableHead>
+                                <TableHead className="text-right h-9 font-extrabold text-foreground border-l border-border/10 bg-muted/20">Net</TableHead>
+                                {title === "Vega" && <TableHead className="text-center h-9 font-bold text-foreground border-l border-border/10 pr-4">Trend</TableHead>}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {tableData.map((row, i) => {
+                                const g = row.greeks;
+                                const trend = getTrend(g);
+                                return (
+                                    <TableRow key={i} className="border-b border-border/5 text-[11px] hover:bg-muted/30 transition-colors">
+                                        <TableCell className="font-mono text-muted-foreground py-1 pl-4">{formatTime(row.timestamp)}</TableCell>
+                                        <TableCell className="text-right font-mono text-green-400 py-1 border-l border-border/5">{fmt(g[dataKeyCall])}</TableCell>
+                                        <TableCell className="text-right font-mono text-red-400 py-1 border-l border-border/5">{fmt(g[dataKeyPut])}</TableCell>
+                                        <TableCell className={cn("text-right font-mono font-bold py-1 border-l border-border/5", title !== "Vega" && "pr-4", colorNet)}>{fmt(g[dataKeyNet])}</TableCell>
+                                        {title === "Vega" && (
+                                            <TableCell className={cn("text-center font-mono py-1 border-l border-border/5 pr-4", trend?.color)}>
+                                                {trend?.text}
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+      );
+  };
 
   const LiveData = () => {
   const { user, profileImageUrl, validateSession } = useAuth();
@@ -333,23 +486,6 @@ import { SEOHead } from "@/components/SEOHead";
           if (net < -0.5) return { text: "Bullish", color: "text-green-500 font-bold" };
           return { text: "Sideways", color: "text-yellow-500 font-bold" };
       }, [title, dataKeyNet]);
-
-      // Calculate symmetric domain for centered zero line
-      const yDomain = useMemo(() => {
-          let maxVal = 0;
-          data.forEach((d: any) => {
-              if (d.greeks) {
-                  const vals = [
-                      Math.abs(d.greeks[dataKeyCall] || 0),
-                      Math.abs(d.greeks[dataKeyPut] || 0),
-                      Math.abs(d.greeks[dataKeyNet] || 0)
-                  ];
-                  maxVal = Math.max(maxVal, ...vals);
-              }
-          });
-          const limit = maxVal === 0 ? 1 : maxVal * 1.1; 
-          return [-limit, limit];
-      }, [data, dataKeyCall, dataKeyPut, dataKeyNet]);
 
       // Calculate 09:15 timestamp for ReferenceLine
       const getStartReference = () => {
