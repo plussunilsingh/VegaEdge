@@ -63,11 +63,11 @@ const getInitialDate = () => {
 
 // --- Constants & Styles ---
 const CHART_COLORS = {
-    call: "#00f2fe", // Electric Cyan
-    put: "#f53d5a",  // Vibrant Rose
-    net: "#7000ff",  // Deep Neon Purple
-    grid: "rgba(255, 255, 255, 0.05)",
-    axis: "#64748b"
+    call: "#059669", // Emerald 600
+    put: "#dc2626",  // Red 600
+    net: "#7c3aed",  // Violet 600
+    grid: "#e2e8f0", // Slate 200
+    axis: "#64748b"  // Slate 500
 };
 
 const formatTime = (isoString: string) => {
@@ -172,6 +172,7 @@ const LiveData = () => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const result = await response.json();
+      console.log("HISTORY_API_RESULT:", result); // DEBUG
       if (!Array.isArray(result)) throw new Error("Invalid Format");
 
       const dataMap = new Map();
@@ -269,17 +270,16 @@ const LiveData = () => {
         const getTrend = (g: any) => {
             if (title !== "Vega") return null;
             const net = g[dataKeyNet];
-            if (net > 0.5) return { text: "Bearish", color: "text-red-500 font-bold" };
-            if (net < -0.5) return { text: "Bullish", color: "text-green-500 font-bold" };
-            return { text: "Sideways", color: "text-yellow-500 font-bold" };
+            if (net > 0.5) return { text: "Bearish", color: "text-[#ef4444]", bg: "bg-red-50" };
+            if (net < -0.5) return { text: "Bullish", color: "text-[#10b981]", bg: "bg-green-50" };
+            return { text: "Sideways", color: "text-[#f59e0b]", bg: "bg-orange-50" };
         };
 
         return (
             <div className="grid grid-cols-12 gap-6 lg:min-h-[600px] xl:min-h-[700px] h-auto mb-10">
-                <Card className="col-span-12 lg:col-span-9 border-white/5 bg-[#111115]/60 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.5)] ring-1 ring-white/10 flex flex-col min-h-[450px] lg:h-full overflow-hidden group relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                    <CardHeader className="py-4 px-6 border-b border-white/5 flex flex-row items-center justify-between z-10">
-                        <CardTitle className="flex items-center gap-3 text-sm font-semibold text-slate-100 uppercase tracking-widest">
+                <Card className="col-span-12 lg:col-span-9 border-slate-200 bg-white shadow-sm ring-1 ring-slate-100 flex flex-col min-h-[450px] lg:h-full overflow-hidden group relative">
+                    <CardHeader className="py-4 px-6 border-b border-slate-100 flex flex-row items-center justify-between z-10 bg-slate-50/50">
+                        <CardTitle className="flex items-center gap-3 text-sm font-bold text-slate-800 uppercase tracking-widest">
                             <Icon className={cn("w-5 h-5", colorNet.replace('text-', 'text-'))} /> 
                             {title} Analysis
                         </CardTitle>
@@ -291,11 +291,11 @@ const LiveData = () => {
                                     <LineChart data={data} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
                                         <defs>
                                             <linearGradient id={`gradient-call-${title}`} x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor={CHART_COLORS.call} stopOpacity={0.4}/>
+                                                <stop offset="5%" stopColor={CHART_COLORS.call} stopOpacity={0.1}/>
                                                 <stop offset="95%" stopColor={CHART_COLORS.call} stopOpacity={0}/>
                                             </linearGradient>
                                             <linearGradient id={`gradient-put-${title}`} x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor={CHART_COLORS.put} stopOpacity={0.4}/>
+                                                <stop offset="5%" stopColor={CHART_COLORS.put} stopOpacity={0.1}/>
                                                 <stop offset="95%" stopColor={CHART_COLORS.put} stopOpacity={0}/>
                                             </linearGradient>
                                         </defs>
@@ -303,7 +303,7 @@ const LiveData = () => {
                                         <XAxis 
                                             dataKey="timestamp" 
                                             tickFormatter={formatTime} 
-                                            tick={{fontSize: 11, fill: '#94a3b8', fontWeight: 500}} 
+                                            tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} 
                                             stroke={CHART_COLORS.grid}
                                             height={60}
                                             angle={-45}
@@ -313,22 +313,25 @@ const LiveData = () => {
                                             domain={yDomain} 
                                             ticks={yTicks}
                                             tickFormatter={(val) => val.toFixed(2)}
-                                            tick={{fontSize: 11, fill: '#94a3b8', fontWeight: 500}}
+                                            tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}}
                                             stroke={CHART_COLORS.grid}
                                             width={55}
                                         />
-                                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
+                                        <Tooltip 
+                                            content={<CustomTooltip />} 
+                                            cursor={{ stroke: 'rgba(0,0,0,0.05)', strokeWidth: 1 }} 
+                                        />
                                         <Legend 
                                             wrapperStyle={{paddingTop: '20px', fontSize: '11px', fontWeight: 600}} 
                                             iconType="circle" 
                                             verticalAlign="bottom"
                                         />
-                                        <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" strokeWidth={2} />
+                                        <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1} />
                                         <ReferenceLine 
                                             x={getStartRef()} 
-                                            stroke="rgba(255,255,255,0.2)" 
+                                            stroke="#cbd5e1" 
                                             strokeDasharray="4 4" 
-                                            label={{ value: '09:15', position: 'insideTopLeft', fill: '#64748b', fontSize: 10, fontWeight: 700 }} 
+                                            label={{ value: '09:15', position: 'insideTopLeft', fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} 
                                         />
                                         
                                         <Line 
@@ -336,9 +339,9 @@ const LiveData = () => {
                                             dataKey={`greeks.${dataKeyCall}`} 
                                             name={`Call ${title}`} 
                                             stroke={CHART_COLORS.call} 
-                                            strokeWidth={3} 
+                                            strokeWidth={2.5} 
                                             dot={false} 
-                                            activeDot={{ r: 6, strokeWidth: 0, fill: CHART_COLORS.call }}
+                                            activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.call }}
                                             animationDuration={1500}
                                         />
                                         <Line 
@@ -346,9 +349,9 @@ const LiveData = () => {
                                             dataKey={`greeks.${dataKeyPut}`} 
                                             name={`Put ${title}`} 
                                             stroke={CHART_COLORS.put} 
-                                            strokeWidth={3} 
+                                            strokeWidth={2.5} 
                                             dot={false} 
-                                            activeDot={{ r: 6, strokeWidth: 0, fill: CHART_COLORS.put }}
+                                            activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.put }}
                                             animationDuration={1500}
                                         />
                                         <Line 
@@ -356,8 +359,8 @@ const LiveData = () => {
                                             dataKey={`greeks.${dataKeyNet}`} 
                                             name={`Net ${title}`} 
                                             stroke={CHART_COLORS.net} 
-                                            strokeWidth={2} 
-                                            strokeDasharray="5 5" 
+                                            strokeWidth={1.5} 
+                                            strokeDasharray="4 4" 
                                             dot={false} 
                                             animationDuration={1500}
                                         />
@@ -368,32 +371,34 @@ const LiveData = () => {
                     </CardContent>
                 </Card>
 
-                <Card className="col-span-12 lg:col-span-3 border-white/5 bg-[#111115]/60 backdrop-blur-xl shadow-2xl flex flex-col h-[400px] lg:h-full overflow-hidden">
-                    <CardHeader className="py-4 px-6 border-b border-white/5 bg-white/[0.02]">
-                        <CardTitle className="text-xs font-bold uppercase text-slate-400 tracking-tighter">Live {title} Stream</CardTitle>
+                <Card className="col-span-12 lg:col-span-3 border-slate-200 bg-white shadow-sm flex flex-col h-[400px] lg:h-full overflow-hidden">
+                    <CardHeader className="py-4 px-6 border-b border-slate-100 bg-slate-50/50">
+                        <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-tighter">Live {title} Stream</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0 overflow-hidden flex-1">
                         <div className="overflow-y-auto h-full custom-scrollbar">
                             <Table>
-                                <TableHeader className="sticky top-0 bg-[#16161c] border-b border-white/5 z-10">
+                                <TableHeader className="sticky top-0 bg-white border-b border-slate-100 z-10">
                                     <TableRow className="text-[10px] uppercase border-none hover:bg-transparent">
                                         <TableHead className="pl-6 h-10">Time</TableHead>
-                                        <TableHead className="text-right text-[#00f2fe] h-10">Call</TableHead>
-                                        <TableHead className="text-right text-[#f53d5a] h-10">Put</TableHead>
-                                        <TableHead className="text-right font-bold text-slate-200 h-10 pr-6">Net</TableHead>
+                                        <TableHead className="text-right text-emerald-600 h-10">Call</TableHead>
+                                        <TableHead className="text-right text-red-600 h-10">Put</TableHead>
+                                        <TableHead className="text-right font-bold text-slate-700 h-10 pr-6">Net</TableHead>
                                         {title === "Vega" && <TableHead className="text-center text-slate-400 h-10">Trend</TableHead>}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {tableData.map((row, i) => (
-                                        <TableRow key={i} className="text-[11px] border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
-                                            <TableCell className="pl-6 font-mono text-slate-400">{formatTime(row.timestamp)}</TableCell>
-                                            <TableCell className="text-right font-mono text-[#00f2fe]/90">{fmtNum(row.greeks![dataKeyCall])}</TableCell>
-                                            <TableCell className="text-right font-mono text-[#f53d5a]/90">{fmtNum(row.greeks![dataKeyPut])}</TableCell>
+                                        <TableRow key={i} className="text-[11px] border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                                            <TableCell className="pl-6 font-mono text-slate-500">{formatTime(row.timestamp)}</TableCell>
+                                            <TableCell className="text-right font-mono text-emerald-600">{fmtNum(row.greeks![dataKeyCall])}</TableCell>
+                                            <TableCell className="text-right font-mono text-red-600">{fmtNum(row.greeks![dataKeyPut])}</TableCell>
                                             <TableCell className={cn("text-right font-mono font-bold pr-6", colorNet)}>{fmtNum(row.greeks![dataKeyNet])}</TableCell>
                                             {title === "Vega" && (
-                                                <TableCell className={cn("text-center", getTrend(row.greeks)?.color)}>
-                                                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px]">{getTrend(row.greeks)?.text}</span>
+                                                <TableCell className="text-center">
+                                                    <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold", getTrend(row.greeks)?.color, getTrend(row.greeks)?.bg)}>
+                                                        {getTrend(row.greeks)?.text}
+                                                    </span>
                                                 </TableCell>
                                             )}
                                         </TableRow>
@@ -423,19 +428,19 @@ const LiveData = () => {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-foreground font-inter flex flex-col">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-inter flex flex-col">
       <SEOHead title={`${selectedIndex} Live Market Intelligence | Vega Market Edge`} />
       <AuthenticatedNavbar />
       
-      <div className="w-[98%] max-w-[1920px] mx-auto py-4 space-y-6">
+      <div className="w-full max-w-[1920px] mx-auto py-6 px-4 space-y-6">
         
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 px-2">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent flex items-center gap-3">
-              Market Intelligence <span className="text-xs font-normal text-muted-foreground border border-border/50 px-2 py-0.5 rounded-full">{selectedIndex}</span>
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight text-[#00bcd4] flex items-center gap-3">
+              Market Intelligence <span className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded uppercase">{selectedIndex}</span>
             </h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
-               <Activity className="w-3 h-3" /> Live Pulse • Updated: {format(lastUpdated, "HH:mm:ss")}
+            <p className="text-[11px] text-slate-400 flex items-center gap-2">
+               <Activity className="w-3 h-3 text-slate-300" /> Live Pulse • Updated: {format(lastUpdated, "HH:mm:ss")}
             </p>
           </div>
 

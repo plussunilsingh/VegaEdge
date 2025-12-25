@@ -202,17 +202,17 @@ const AdminDashboard = () => {
     // (Old check removed, consolidated at top)
 
     return (
-        <div className="min-h-screen bg-gray-50 text-foreground">
+        <div className="min-h-screen bg-[#f8fafc] text-foreground">
             <AuthenticatedNavbar />
             <div className="container mx-auto py-8 px-4 space-y-8">
                 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                     <div>
-                        <h1 className="text-3xl font-bold flex items-center gap-2">
-                             <ShieldCheck className="w-8 h-8 text-primary" /> Admin Dashboard
+                        <h1 className="text-2xl font-bold flex items-center gap-2 text-[#00bcd4]">
+                             <ShieldCheck className="w-6 h-6 text-[#00bcd4]" /> Admin Dashboard
                         </h1>
-                        <p className="text-muted-foreground text-sm mt-1">Manage users, tokens, and system configuration.</p>
+                        <p className="text-slate-400 text-[11px] mt-1">Manage users, tokens, and system configuration.</p>
                     </div>
                 </div>
 
