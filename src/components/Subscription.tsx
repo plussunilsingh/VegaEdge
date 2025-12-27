@@ -73,31 +73,37 @@ const Subscription = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-4 perspective-container py-10 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 perspective-container py-10 px-8">
           {plans.map((plan, index) => (
             <div 
               key={plan.id}
               onClick={() => handlePlanClick(plan)}
               className="relative preserve-3d group cursor-pointer transition-all duration-700"
               style={{
-                transform: `rotateY(-25deg) translateZ(0)`,
+                transform: `rotateX(8deg) rotateY(5deg) translateZ(0)`,
                 zIndex: plan.recommended ? 20 : 10,
               } as any}
             >
+              {/* Card Thickness/Side (3D Look) */}
+              <div 
+                className="absolute top-0 -left-6 w-6 h-full bg-white/5 border-l-2 border-y-2 border-white/10 rounded-l-[40px] origin-right transform -rotate-y-90 preserve-3d"
+                style={{ background: `linear-gradient(to right, ${plan.color}30, transparent)` } as any}
+              />
+
               <div 
                 className="absolute inset-0 rounded-[40px] opacity-20 group-hover:opacity-40 transition-opacity duration-500"
                 style={{ 
                   background: plan.color,
-                  filter: 'blur(25px)',
-                  transform: 'translateZ(-50px)'
+                  filter: 'blur(30px)',
+                  transform: 'translateZ(-60px)'
                 }}
               />
               
-              <div className="relative bg-[#0f172a]/80 backdrop-blur-xl rounded-[40px] p-8 border-2 border-white/10 shadow-2xl transition-all duration-700 group-hover:rotate-y-0 group-hover:translate-z-20 group-hover:-translate-y-4 preserve-3d overflow-hidden"
-                   style={{ borderTopColor: plan.color, borderLeftColor: plan.color } as any}>
+              <div className="relative bg-[#0f172a]/90 backdrop-blur-2xl rounded-[40px] p-8 border-2 border-white/10 shadow-2xl transition-all duration-700 group-hover:rotate-y-0 group-hover:rotate-x-0 group-hover:translate-z-30 group-hover:-translate-y-6 preserve-3d overflow-hidden"
+                   style={{ borderTopColor: plan.color, borderRightColor: plan.color } as any}>
                 
                 {/* Gloss Effect */}
-                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                 {(plan as any).bestValue && (
                   <div className="absolute top-6 right-6 bg-[#EAB308]/20 border border-[#EAB308] text-[#EAB308] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
