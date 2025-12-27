@@ -137,7 +137,7 @@ const LiveData = () => {
             } as GreeksData;
         });
     },
-    enabled: !!token && isAuthenticated,
+    enabled: !!token && isAuthenticated && !!selectedExpiry,
     refetchInterval: isToday(selectedDate) ? 60000 : false, // Automatic polling for today's data
     staleTime: 30000 
   });
