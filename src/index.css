@@ -107,9 +107,9 @@ All colors MUST be HSL.
   background: #cbd5e1; /* Slate 300 */
 }
 
-/* Ensure body is light mode by default */
+/* Ensure body is white by default */
 body {
-  @apply bg-[#f8fafc] text-slate-900;
+  @apply bg-white text-slate-900;
   overflow-x: hidden;
 }
 

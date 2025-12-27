@@ -10,14 +10,12 @@ import Testimonials from "@/components/Testimonials";
 const Index = () => {
   return (
     <div className="min-h-screen">
-      <Navbar />
       <Hero />
       <Subscription />
       <About />
       <FAQ />
       <Team />
       <Testimonials />
-
     </div>
   );
 };
