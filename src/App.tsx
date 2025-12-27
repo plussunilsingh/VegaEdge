@@ -25,7 +25,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const LiveData = lazy(() => import("./pages/LiveData"));
 const AngleOneLiveData = lazy(() => import("./pages/AngleOneLiveData"));
-// const UpstoxToken = lazy(() => import("./pages/UpstoxToken")); // Keeping for now but features moved to Admin
+const PricingDetails = lazy(() => import("./pages/PricingDetails"));
 
 const queryClient = new QueryClient();
 
@@ -36,8 +36,6 @@ const LoadingFallback = () => (
 );
 
 import Footer from "@/components/Footer";
-
-// ... (lazy imports)
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -59,6 +57,7 @@ const App = () => (
                     <Route path="/about" element={<About />} />
                     <Route path="/disclaimer" element={<Disclaimer />} />
                     <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/pricing-details" element={<PricingDetails />} />
                     
                     {/* Protected Routes */}
                     <Route path="/my-account" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
