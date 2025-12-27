@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -32,11 +32,7 @@ interface GreeksData {
 }
 
 const getInitialDate = () => {
-    const today = new Date();
-    const day = today.getDay();
-    if (day === 0) return new Date(today.setDate(today.getDate() - 2)); 
-    if (day === 6) return new Date(today.setDate(today.getDate() - 1)); 
-    return today;
+    return new Date();
 };
 
 const AngleOneLiveData = () => {
@@ -75,10 +71,21 @@ const AngleOneLiveData = () => {
             headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Failed to fetch expiry list");
-        return res.json();
+        const list = await res.json();
+        const todayStr = format(new Date(), "yyyy-MM-dd");
+        return Array.isArray(list) ? list.filter(exp => exp >= todayStr) : [];
     },
     enabled: !!token && isAuthenticated
   });
+
+  // Auto-select closest future expiry
+  useEffect(() => {
+    if (expiryList.length > 0) {
+        if (!selectedExpiry || !expiryList.includes(selectedExpiry)) {
+            setSelectedExpiry(expiryList[0]);
+        }
+    }
+  }, [expiryList, selectedIndex, selectedExpiry]);
 
   // Query for History Data
   const { data: historyData = [], isFetching: loading } = useQuery({
@@ -175,7 +182,6 @@ const AngleOneLiveData = () => {
               onChange={(e) => setSelectedExpiry(e.target.value)}
               className="h-9 px-3 bg-background border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px]"
             >
-              <option value="">Select Expiry</option>
               {expiryList.map((exp: string) => <option key={exp} value={exp}>{exp}</option>)}
             </select>
 
