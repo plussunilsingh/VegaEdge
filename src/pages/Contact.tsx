@@ -1,6 +1,4 @@
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 import { endpoints } from "@/config";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,8 +57,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {isAuthenticated ? <AuthenticatedNavbar /> : <Navbar />}
+    <div className="min-h-screen flex flex-col bg-white">
       <main className="flex-1 py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-12">

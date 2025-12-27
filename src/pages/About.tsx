@@ -1,11 +1,8 @@
-import Navbar from "@/components/Navbar";
-
 import Team from "@/components/Team";
 
 const About = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
       <main className="flex-1">
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
@@ -73,7 +70,6 @@ const About = () => {
           </div>
         </section>
       </main>
-
     </div>
   );
 };

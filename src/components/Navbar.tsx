@@ -50,9 +50,11 @@ const Navbar = () => {
                 <User className="text-primary w-6 h-6" />
               </div>
               <div className="overflow-hidden">
-                <p className="text-white/50 text-[10px] uppercase font-bold tracking-widest leading-none mb-1">Welcome back,</p>
+                <p className="text-white/50 text-[10px] uppercase font-bold tracking-widest leading-none mb-1">
+                  {user && sessionTimeLeft > 0 ? "Welcome back," : "Guest User"}
+                </p>
                 <p className="text-white font-extrabold text-lg truncate whitespace-nowrap">
-                  {user ? user.name : "Guest User"}
+                  {user && sessionTimeLeft > 0 ? user.name : "Vega Greeks"}
                 </p>
               </div>
             </div>
@@ -60,26 +62,42 @@ const Navbar = () => {
 
           <div className="flex-1 overflow-y-auto p-6 space-y-2">
             <div className="space-y-1">
+              {/* Common Links (Home always first) */}
               <MenuLink to="/" icon={<LayoutDashboard size={18} />} label="Home" onClick={toggleMenu} />
-              {user?.role === 'ADMIN_USER' && (
-                <MenuLink to="/admin" icon={<Shield size={18} />} label="Admin Panel" onClick={toggleMenu} className="text-red-500 hover:bg-red-50" />
-              )}
-              <MenuLink to="/chart" icon={<LineChart size={18} />} label="Chart" onClick={toggleMenu} />
-              <MenuLink to="/live-data" icon={<History size={18} />} label="Live Data" onClick={toggleMenu} />
-              <MenuLink to="/my-account" icon={<User size={18} />} label="My Account" onClick={toggleMenu} />
-              <MenuLink to="/contact" icon={<Mail size={18} />} label="Contact Us" onClick={toggleMenu} />
-              
-              <div className="pt-4 mt-4 border-t border-gray-100">
-                <button 
-                  onClick={() => { logout(); toggleMenu(); }}
-                  className="flex items-center gap-4 w-full px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 font-extrabold transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-colors">
-                    <LogOut size={20} />
+
+              {/* Conditional Links for Authenticated Users with active session */}
+              {user && sessionTimeLeft > 0 ? (
+                <>
+                  {user.role === 'ADMIN_USER' && (
+                    <MenuLink to="/admin" icon={<Shield size={18} />} label="Admin Panel" onClick={toggleMenu} className="text-red-500 hover:bg-red-50" />
+                  )}
+                  <MenuLink to="/chart" icon={<LineChart size={18} />} label="Chart" onClick={toggleMenu} />
+                  <MenuLink to="/live-data" icon={<History size={18} />} label="Live Data" onClick={toggleMenu} />
+                  <MenuLink to="/my-account" icon={<User size={18} />} label="My Account" onClick={toggleMenu} />
+                  <MenuLink to="/contact" icon={<Mail size={18} />} label="Contact Us" onClick={toggleMenu} />
+                  
+                  <div className="pt-4 mt-4 border-t border-gray-100">
+                    <button 
+                      onClick={() => { logout(); toggleMenu(); }}
+                      className="flex items-center gap-4 w-full px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 font-extrabold transition-all group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-colors">
+                        <LogOut size={20} />
+                      </div>
+                      Logout
+                    </button>
                   </div>
-                  Logout
-                </button>
-              </div>
+                </>
+              ) : (
+                <>
+                  {/* Guest Links - Matching Desktop Navbar */}
+                  <MenuLink to="/about" icon={<User size={18} />} label="About Us" onClick={toggleMenu} />
+                  <MenuLink to="/contact" icon={<Mail size={18} />} label="Contact Us" onClick={toggleMenu} />
+                  <div className="pt-4 mt-4 border-t border-gray-100">
+                    <MenuLink to="/login" icon={<LogOut size={18} />} label="Login / Sign In" onClick={toggleMenu} className="text-primary hover:bg-primary/5" />
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Social Connectivity Branding */}

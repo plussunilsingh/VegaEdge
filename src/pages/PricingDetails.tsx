@@ -1,7 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2, ShieldCheck, CreditCard } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
 const PricingDetails = () => {
   const location = useLocation();
@@ -17,8 +16,6 @@ const PricingDetails = () => {
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
-      <Navbar />
-      
       <main className="flex-1 container mx-auto px-4 py-12">
         <Button 
           variant="ghost" 
