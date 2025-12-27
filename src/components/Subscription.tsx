@@ -6,7 +6,7 @@ const plans = [
   {
     id: "1-month",
     name: "1 Month",
-    price: "₹799",
+    price: "₹1,999",
     duration: "Per Month",
     features: ["Real-time Greeks", "Delta/Gamma Analysis", "Market Prediction", "Technical Support"],
     recommended: false,
@@ -14,7 +14,7 @@ const plans = [
   {
     id: "3-month",
     name: "3 Months",
-    price: "₹1,999",
+    price: "₹3,999",
     duration: "Per Quarter",
     features: ["Basic + Advanced Insights", "Multi-index Tracking", "Strategy Builder", "Priority Support"],
     recommended: true,
@@ -22,7 +22,7 @@ const plans = [
   {
     id: "6-month",
     name: "6 Months",
-    price: "₹3,499",
+    price: "₹5,999",
     duration: "Half Year",
     features: ["All Features Included", "Custom Alerts", "Data Export (CSV)", "Direct Expert Access"],
     recommended: false,
@@ -30,7 +30,7 @@ const plans = [
   {
     id: "12-month",
     name: "12 Months",
-    price: "₹5,999",
+    price: "₹9,999",
     duration: "Yearly",
     features: ["Ultimate Value Plan", "Beta Feature Access", "One-on-One Session", "Dedicated Manager"],
     recommended: false,
@@ -106,11 +106,6 @@ const Subscription = () => {
               </Button>
             </div>
           ))}
-        </div>
-
-        <div className="mt-20 text-center p-8 rounded-3xl bg-gray-50 border border-gray-100">
-           <h4 className="text-slate-900 text-xl font-bold mb-2">Lifetime Access Special</h4>
-           <p className="text-slate-500">Want unlimited access forever? Contact our support for the exclusive Enterprise License.</p>
         </div>
       </div>
     </section>
