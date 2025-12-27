@@ -45,7 +45,7 @@ const Chart = () => {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4">
           {/* User Welcome & Strategy Buttons */}
@@ -63,7 +63,7 @@ const Chart = () => {
                 }}
               />
               <div>
-                <p className="font-bold text-lg text-slate-800 tracking-tight">Welcome {user?.name}</p>
+                <p className="font-bold text-lg text-foreground tracking-tight">Welcome {user?.name}</p>
                 <p className="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded-full inline-block mt-1">
                    Partner Referral Program Active
                 </p>
@@ -79,13 +79,13 @@ const Chart = () => {
           </div>
 
           {/* Controls */}
-          <div className="flex flex-wrap gap-4 mb-6 items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="flex flex-wrap gap-4 mb-6 items-center bg-card p-4 rounded-2xl border border-border shadow-sm">
             <div className="flex-1 min-w-[200px]">
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Instrument Selection</label>
               <select 
                 value={selectedOption}
                 onChange={(e) => setSelectedOption(e.target.value)}
-                className="w-full max-w-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                className="w-full max-w-xs bg-background text-foreground border border-border rounded-xl px-4 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               >
                 <option value="1">Nifty 50</option>
                 <option value="2">BANKNIFTY</option>
@@ -110,7 +110,7 @@ const Chart = () => {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Chart Section */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 ring-1 ring-slate-50">
+              <div className="bg-card rounded-2xl p-6 shadow-sm border border-border ring-1 ring-border">
                 <div 
                   dangerouslySetInnerHTML={{ __html: latestData }}
                   className="mb-6"
@@ -124,7 +124,7 @@ const Chart = () => {
 
             {/* Table Section */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-24 ring-1 ring-slate-50">
+              <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden sticky top-24 ring-1 ring-border">
                 <div className="max-h-[800px] overflow-y-auto overflow-x-auto custom-scrollbar">
                   <table className="w-full text-xs">
                     <thead className="sticky top-0 bg-slate-50/80 backdrop-blur-md text-slate-500 z-10 border-b border-slate-100">

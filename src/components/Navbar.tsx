@@ -1,13 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Youtube, Instagram, Send, MessageCircle, Phone, Mail, Clock, LayoutDashboard, History, User, LogOut, Shield, LineChart } from "lucide-react";
+import { Menu, X, Youtube, Instagram, Send, MessageCircle, Phone, Mail, Clock, LayoutDashboard, History, User, LogOut, Shield, LineChart, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth, useSession } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
   const { sessionTimeLeft } = useSession();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -39,7 +41,7 @@ const Navbar = () => {
 
       {/* Unified Slide-out Menu Drawer - HIGHER Z-index than overlay */}
       <div 
-        className={`fixed top-0 left-0 h-full w-[280px] bg-white z-[110] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.15)] ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 h-full w-[280px] bg-card z-[110] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.15)] ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col h-full overflow-hidden">
@@ -163,8 +165,17 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Right Section: Launch/Login Button */}
-            <div className="flex items-center gap-4">
+            {/* Right Section: Launch/Login Button + Theme Toggle */}
+            <div className="flex items-center gap-2 sm:gap-4">
+               {/* Desktop Theme Toggle */}
+               <button
+                 onClick={toggleTheme}
+                 className="p-2 sm:p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                 aria-label="Toggle Theme"
+               >
+                 {theme === 'light' ? <Moon size={20} className="sm:w-[22px] sm:h-[22px]" /> : <Sun size={20} className="sm:w-[22px] sm:h-[22px]" />}
+               </button>
+
                {!user ? (
                  <Button asChild className="rounded-full px-5 sm:px-8 bg-primary hover:bg-primary/90 text-white font-bold h-9 sm:h-11 shadow-lg shadow-primary/20">
                    <Link to="/login">Login</Link>
@@ -195,7 +206,7 @@ const MenuLink = ({ to, icon, label, onClick, className = "" }: any) => (
   <Link 
     to={to} 
     onClick={onClick} 
-    className={`flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-100 font-extrabold text-slate-900 transition-all group ${className}`}
+    className={`flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-muted font-extrabold text-foreground transition-all group ${className}`}
   >
     <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center group-hover:scale-110 shadow-sm transition-transform">
       {icon}
@@ -211,7 +222,7 @@ const SocialIcon = ({ href, color, icon }: any) => {
         href={href} 
         target="_blank" 
         rel="noopener noreferrer" 
-        className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 hover:text-white transition-all hover:scale-110 shadow-sm border border-slate-200"
+        className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center text-foreground hover:text-white transition-all hover:scale-110 shadow-sm border border-border"
         style={isHovered ? { backgroundColor: color, borderColor: color } : {}}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

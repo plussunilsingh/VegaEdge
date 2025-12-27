@@ -62,7 +62,7 @@ const Openchart = () => {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
       {!user?.approved && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
           <p className="font-medium">Account Pending Approval</p>
@@ -85,7 +85,7 @@ const Openchart = () => {
               <select 
                 value={selectedOption}
                 onChange={(e) => setSelectedOption(e.target.value)}
-                className="w-full max-w-xs bg-card border border-border rounded-md px-4 py-2"
+                className="w-full max-w-xs bg-card text-foreground border border-border rounded-md px-4 py-2"
               >
                 <option value="1">Nifty 50</option>
                 <option value="2">BANKNIFTY</option>

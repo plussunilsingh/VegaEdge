@@ -150,16 +150,16 @@ const AngleOneLiveData = () => {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-inter flex flex-col">
+    <div className="min-h-screen bg-background text-foreground font-inter flex flex-col transition-colors duration-300">
       <SEOHead title={`${selectedIndex} AngleOne Analysis | Vega Market Edge`} />
       
       <div className="w-full max-w-[1920px] mx-auto py-6 px-4 space-y-6">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight text-[#00bcd4] flex items-center gap-3">
               AngleOne Intelligence <span className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded uppercase">{selectedIndex}</span>
             </h1>
-            <p className="text-[11px] text-slate-400 flex items-center gap-2">
+            <p className="text-[11px] text-muted-foreground flex items-center gap-2">
                <Activity className={cn("w-3 h-3", loading ? "animate-pulse text-primary" : "text-slate-300")} /> 
                {loading ? "Refreshing AngleOne..." : `Market Connected`}
             </p>
@@ -169,7 +169,7 @@ const AngleOneLiveData = () => {
             <select 
               value={selectedIndex}
               onChange={(e) => setSelectedIndex(e.target.value)}
-              className="h-9 px-3 bg-background border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[100px]"
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[100px]"
             >
               <option value="NIFTY">NIFTY</option>
               <option value="BANKNIFTY">BANKNIFTY</option>
@@ -180,7 +180,7 @@ const AngleOneLiveData = () => {
              <select 
               value={selectedExpiry}
               onChange={(e) => setSelectedExpiry(e.target.value)}
-              className="h-9 px-3 bg-background border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px]"
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px]"
             >
               {expiryList.map((exp: string) => <option key={exp} value={exp}>{exp}</option>)}
             </select>
