@@ -73,14 +73,14 @@ const Subscription = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 perspective-container py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-4 perspective-container py-10 px-4">
           {plans.map((plan, index) => (
             <div 
               key={plan.id}
               onClick={() => handlePlanClick(plan)}
-              className="relative preserve-3d group cursor-pointer"
+              className="relative preserve-3d group cursor-pointer transition-all duration-700"
               style={{
-                transform: `rotateY(${index % 2 === 0 ? '-10deg' : '10deg'}) translateZ(0)`,
+                transform: `rotateY(-25deg) translateZ(0)`,
                 zIndex: plan.recommended ? 20 : 10,
               } as any}
             >
@@ -93,7 +93,7 @@ const Subscription = () => {
                 }}
               />
               
-              <div className="relative bg-[#0f172a]/80 backdrop-blur-xl rounded-[40px] p-8 border-2 border-white/10 shadow-2xl transition-all duration-700 group-hover:translate-z-20 group-hover:-translate-y-4 preserve-3d overflow-hidden"
+              <div className="relative bg-[#0f172a]/80 backdrop-blur-xl rounded-[40px] p-8 border-2 border-white/10 shadow-2xl transition-all duration-700 group-hover:rotate-y-0 group-hover:translate-z-20 group-hover:-translate-y-4 preserve-3d overflow-hidden"
                    style={{ borderTopColor: plan.color, borderLeftColor: plan.color } as any}>
                 
                 {/* Gloss Effect */}
