@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
-import { endpoints, SESSION_TIMEOUT } from "@/config";
+import { endpoints, SESSION_TIMEOUT, BACKEND_API_BASE_URL } from "@/config";
 import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 import { toast } from "sonner";
 
@@ -172,54 +172,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Check if user is already logged in
   useEffect(() => {
-    const storedUser = localStorage.getItem('alphaedge_user');
     const sessionToken = localStorage.getItem('alphaedge_session');
-    
-    if (sessionToken) setToken(sessionToken);
-
-    if (storedUser && sessionToken) {
-      // First set from local storage for immediate UI
-      const userData = JSON.parse(storedUser);
-      setUser(userData);
-      
-      // Cache profile image URL
-      if (userData.profileImage) {
-         if (userData.profileImage.startsWith('http')) {
-            setProfileImageUrl(userData.profileImage);
-         } else {
-             // userData.profileImage is likely "user_images/..."
-             // We need to append it to backend base url.
-             // Import BACKEND_API_BASE_URL from config (it is not exported by default, checking config.ts)
-             // config.ts exports BACKEND_API_BASE_URL.
-             setProfileImageUrl(`${endpoints.auth.login.replace('/auth/login', '')}/${userData.profileImage}`);
-         }
-      }
-
-      // Then fetch fresh data from backend
-      fetch(endpoints.auth.me, {
-        headers: { 'Authorization': `Bearer ${sessionToken}` }
-      })
-      .then(res => {
-        if (res.ok) return res.json();
-        if (res.status === 401) {
-            setIsSessionExpired(true);
-            throw new Error('Session expired');
-        }
-        throw new Error('Failed to refresh user data');
-      })
-      .then(freshUserData => {
-         const mappedUser = mapUser(freshUserData);
-         setUser(mappedUser);
-         localStorage.setItem('alphaedge_user', JSON.stringify(mappedUser));
-      })
-      .catch(err => {
-        console.error("Error refreshing user data:", err);
-        // Do NOT auto logout here immediately, let session expiry handle it if 401
-      })
-      .finally(() => setIsLoading(false));
-    } else {
-        setIsLoading(false);
+    if (!sessionToken) {
+      setIsLoading(false);
+      return;
     }
+
+    setToken(sessionToken);
+    
+    // Attempt to load user from localStorage for immediate display
+    const storedUser = localStorage.getItem('alphaedge_user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        if (userData.profileImage) {
+          const imgUrl = userData.profileImage.startsWith('http') 
+            ? userData.profileImage 
+            : `${BACKEND_API_BASE_URL}/${userData.profileImage}`;
+          setProfileImageUrl(imgUrl);
+        }
+      } catch (e) {
+        console.error("Failed to parse stored user", e);
+      }
+    }
+
+    // Refresh user data from backend
+    fetch(endpoints.auth.me, {
+      headers: { 'Authorization': `Bearer ${sessionToken}` }
+    })
+    .then(res => {
+      if (res.ok) return res.json();
+      if (res.status === 401) {
+        setIsSessionExpired(true);
+        throw new Error('Session expired');
+      }
+      throw new Error('Refresh failed');
+    })
+    .then(freshUserData => {
+      const mappedUser = mapUser(freshUserData);
+      setUser(mappedUser);
+      localStorage.setItem('alphaedge_user', JSON.stringify(mappedUser));
+    })
+    .catch(err => {
+      console.error("Auth refresh error:", err);
+      // If we have a stored user, we've already set it, so we don't clear it unless it's a 401
+    })
+    .finally(() => setIsLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
