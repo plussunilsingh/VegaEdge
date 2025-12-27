@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -75,7 +74,6 @@ const Openchart = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {user ? <AuthenticatedNavbar /> : <Navbar />}
       
       {!user?.approved && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Table,
@@ -406,7 +405,6 @@ const LiveData = () => {
   if (error && !data.length) {
       return (
         <div className="min-h-screen bg-background text-foreground">
-            <AuthenticatedNavbar />
             <div className="container mx-auto py-20 text-center">
                  <h2 className="text-xl text-red-500">Error Loading Data</h2>
                  <Button onClick={() => selectedDate && fetchHistoryData(selectedDate)} className="mt-4">Retry</Button>
@@ -420,7 +418,6 @@ const LiveData = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-inter flex flex-col">
       <SEOHead title={`${selectedIndex} Live Market Intelligence | Vega Market Edge`} />
-      <AuthenticatedNavbar />
       
       <div className="w-full max-w-[1920px] mx-auto py-6 px-4 space-y-6">
         

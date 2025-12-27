@@ -77,57 +77,65 @@ const Navbar = () => {
         </div>
 
         {/* Unified Slide-out Menu Drawer - Left Aligned */}
-        <div className={`fixed top-0 left-0 h-full w-[300px] sm:w-[400px] bg-white border-r border-gray-100 z-[65] transform transition-transform duration-300 ease-in-out shadow-2xl ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div 
+          className={`fixed top-0 left-0 h-full w-[280px] bg-white border-r border-gray-100 z-[65] transform transition-transform duration-300 ease-in-out shadow-2xl ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex flex-col h-full p-8 pt-24">
-            <div className="space-y-6 flex-1 overflow-y-auto">
-              <Link to="/" onClick={toggleMenu} className="block text-2xl font-bold text-slate-900 hover:text-primary transition-colors">
+            <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
+              <Link to="/" onClick={toggleMenu} className="block text-xl font-bold text-slate-900 hover:text-primary transition-colors">
                 Home
               </Link>
-              <Link to="/live-data" onClick={toggleMenu} className="block text-2xl font-bold text-slate-900 hover:text-primary transition-colors">
-                Live Data
-              </Link>
-              {user?.role === 'ADMIN_USER' && (
-                <Link to="/admin" onClick={toggleMenu} className="block text-2xl font-bold text-slate-900 hover:text-primary transition-colors">
-                  Admin Panel
-                </Link>
-              )}
-              {user ? (
-                 <Link to="/my-account" onClick={toggleMenu} className="block text-2xl font-bold text-slate-900 hover:text-primary transition-colors">
-                   My Account
-                 </Link>
-              ) : (
+              
+              {user && (
                 <>
-                  <Link to="/register" onClick={toggleMenu} className="block text-2xl font-bold text-slate-900 hover:text-primary transition-colors">
-                    Create Account
-                  </Link>
-                  <Link to="/login" onClick={toggleMenu} className="block text-2xl font-bold text-slate-900 hover:text-primary transition-colors">
-                    Sign In
-                  </Link>
+                  <div className="pt-4 pb-2">
+                    <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-3">Analysis Tools</h3>
+                    <div className="space-y-3 pl-2 border-l-2 border-slate-50">
+                      <Link to="/live-data" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Live Data (Upstox) </Link>
+                      <Link to="/angleone-live-data" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> AngleOne Live </Link>
+                      <Link to="/chart" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Premium Charts </Link>
+                      <Link to="/openchart" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Backtest Charts </Link>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 pb-2">
+                    <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-3">Account</h3>
+                    <div className="space-y-3 pl-2 border-l-2 border-slate-50">
+                      <Link to="/my-account" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Profile Details </Link>
+                      <Link to="/change-password" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Change Password </Link>
+                      {user?.role === 'ADMIN_USER' && (
+                        <Link to="/admin" onClick={toggleMenu} className="block text-sm font-semibold text-[#00bcd4] hover:text-[#00acc1] transition-colors"> Admin Panel </Link>
+                      )}
+                    </div>
+                  </div>
                 </>
               )}
-              <Link to="/contact" onClick={toggleMenu} className="block text-2xl font-bold text-slate-900 hover:text-primary transition-colors">
-                Support
-              </Link>
-              <Link to="/about" onClick={toggleMenu} className="block text-2xl font-bold text-slate-900 hover:text-primary transition-colors">
-                About
-              </Link>
+
+              <div className="pt-4">
+                <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-3">Information</h3>
+                <div className="space-y-3 pl-2 border-l-2 border-slate-50">
+                  <Link to="/about" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> About Us </Link>
+                  <Link to="/contact" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Contact Support </Link>
+                </div>
+              </div>
             </div>
 
             {/* Connect With Us Section */}
-            <div className="mt-auto pt-8 border-t border-gray-100">
-              <h3 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-6">Connect With Us</h3>
-              <div className="grid grid-cols-4 gap-4">
-                <a href="https://wa.me/something" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#25D366] hover:text-white transition-all hover:scale-110">
-                  <MessageCircle className="w-6 h-6" />
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4">Connect With Us</h3>
+              <div className="grid grid-cols-4 gap-3">
+                <a href="https://wa.me/918700583733" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#25D366] hover:text-white transition-all hover:scale-110 shadow-sm">
+                  <MessageCircle className="w-5 h-5" />
                 </a>
-                <a href="#" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#0088cc] hover:text-white transition-all hover:scale-110">
-                  <Send className="w-6 h-6" />
+                <a href="https://t.me/vegagreeks" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#0088cc] hover:text-white transition-all hover:scale-110 shadow-sm">
+                  <Send className="w-5 h-5" />
                 </a>
-                <a href="#" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#E1306C] hover:text-white transition-all hover:scale-110">
-                  <Instagram className="w-6 h-6" />
+                <a href="https://instagram.com/vegagreeks" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#E1306C] hover:text-white transition-all hover:scale-110 shadow-sm">
+                  <Instagram className="w-5 h-5" />
                 </a>
-                <a href="#" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#FF0000] hover:text-white transition-all hover:scale-110">
-                  <Youtube className="w-6 h-6" />
+                <a href="https://youtube.com/@vegagreeks" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#FF0000] hover:text-white transition-all hover:scale-110 shadow-sm">
+                  <Youtube className="w-5 h-5" />
                 </a>
               </div>
             </div>

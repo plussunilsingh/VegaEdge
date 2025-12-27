@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,8 +53,6 @@ const Chart = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
-      <AuthenticatedNavbar />
-      
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4">
           {/* User Welcome & Strategy Buttons */}

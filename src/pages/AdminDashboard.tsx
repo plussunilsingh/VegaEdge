@@ -3,7 +3,6 @@ import { endpoints } from "@/config";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, Key, RefreshCw, CheckCircle, Search, ChevronLeft, ChevronRight, Hash } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -203,7 +202,6 @@ const AdminDashboard = () => {
 
     return (
         <div className="min-h-screen bg-[#f8fafc] text-foreground">
-            <AuthenticatedNavbar />
             <div className="container mx-auto py-8 px-4 space-y-8">
                 
                 {/* Header */}
