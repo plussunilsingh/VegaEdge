@@ -1,14 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Youtube, Instagram, Send, MessageCircle } from "lucide-react";
+import { Menu, X, Youtube, Instagram, Send, MessageCircle, Phone, Mail, Clock, LayoutDashboard, History, User, LogOut, Shield, LineChart } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, useSession } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { sessionTimeLeft } = useSession();
+  const navigate = useNavigate();
 
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Close menu on escape key
   useEffect(() => {
@@ -21,129 +29,178 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Overlay Backdrop - Fix visibility and clickoutside */}
+      {/* Overlay Backdrop - High Z-Index to cover everything EXCEPT the drawer */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300"
+          className="fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+      {/* Unified Slide-out Menu Drawer - HIGHER Z-index than overlay */}
+      <div 
+        className={`fixed top-0 left-0 h-full w-[280px] bg-white z-[110] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.15)] ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col h-full overflow-hidden">
+          {/* Menu Header with User Greeting */}
+          <div className="bg-[#0f172a] p-8 pt-12">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/50 overflow-hidden">
+                <User className="text-primary w-6 h-6" />
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-white/50 text-[10px] uppercase font-bold tracking-widest leading-none mb-1">Welcome back,</p>
+                <p className="text-white font-extrabold text-lg truncate whitespace-nowrap">
+                  {user ? user.name : "Guest User"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-2">
+            <div className="space-y-1">
+              <MenuLink to="/" icon={<LayoutDashboard size={18} />} label="Home" onClick={toggleMenu} />
+              {user?.role === 'ADMIN_USER' && (
+                <MenuLink to="/admin" icon={<Shield size={18} />} label="Admin Panel" onClick={toggleMenu} className="text-red-500 hover:bg-red-50" />
+              )}
+              <MenuLink to="/chart" icon={<LineChart size={18} />} label="Chart" onClick={toggleMenu} />
+              <MenuLink to="/live-data" icon={<History size={18} />} label="Live Data" onClick={toggleMenu} />
+              <MenuLink to="/my-account" icon={<User size={18} />} label="My Account" onClick={toggleMenu} />
+              <MenuLink to="/contact" icon={<Mail size={18} />} label="Contact Us" onClick={toggleMenu} />
+              
+              <div className="pt-4 mt-4 border-t border-gray-100">
+                <button 
+                  onClick={() => { logout(); toggleMenu(); }}
+                  className="flex items-center gap-4 w-full px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 font-extrabold transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-colors">
+                    <LogOut size={20} />
+                  </div>
+                  Logout
+                </button>
+              </div>
+            </div>
+
+            {/* Social Connectivity Branding */}
+            <div className="mt-8">
+               <p className="text-slate-900 text-[10px] font-black uppercase tracking-widest px-4 mb-4">Connect With Us</p>
+               <div className="grid grid-cols-4 gap-3 px-2">
+                  <SocialIcon href="https://wa.me/918700583733" color="#25D366" icon={<MessageCircle size={20} />} />
+                  <SocialIcon href="https://t.me/vegagreeks" color="#0088cc" icon={<Send size={20} />} />
+                  <SocialIcon href="https://instagram.com/vegagreeks" color="#E1306C" icon={<Instagram size={20} />} />
+                  <SocialIcon href="https://youtube.com/@vegagreeks" color="#FF0000" icon={<Youtube size={20} />} />
+               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Info Bar (Black Scalp) */}
+      <div className="bg-black text-white py-2 border-b border-white/10 relative z-[55]">
+        <div className="container mx-auto px-4 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-[10px] sm:text-xs font-medium tracking-wider gap-2">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <a href="tel:7830175650" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Phone className="h-3 w-3" /> 7830175650
+            </a>
+            <a href="mailto:contact@vegagreeks.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Mail className="h-3 w-3" /> contact@vegagreeks.com
+            </a>
+          </div>
+          <div className="flex items-center gap-2 text-primary font-bold">
+            <Clock className="h-3 w-3" /> Session: {formatTime(sessionTimeLeft)}
+          </div>
+        </div>
+      </div>
+
+      <nav className="bg-[#0f172a] border-b border-white/5 sticky top-0 z-50 shadow-lg">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-16 sm:h-20">
             
             {/* Left Section: Hamburger + Logo */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <button 
                 onClick={toggleMenu} 
-                className="text-slate-900 p-2 hover:bg-gray-100 rounded-full transition-colors focus:outline-none z-[70]"
+                className="text-white p-2 hover:bg-white/10 rounded-full transition-colors focus:outline-none z-[70]"
                 aria-label="Toggle Menu"
               >
-                {isOpen ? <X className="h-8 w-8 text-primary" /> : <Menu className="h-8 w-8" />}
+                {isOpen ? <X className="h-7 w-7 sm:h-8 sm:w-8 text-primary" /> : <Menu className="h-7 w-7 sm:h-8 sm:w-8" />}
               </button>
               
               <Link to="/" className="flex items-center">
-                <h1 className="text-primary text-xl font-bold flex items-center gap-2">
-                  <img src="/img/logo.png" alt="Logo" className="h-10 w-auto object-contain" /> 
-                  <span className="hidden sm:inline">Vega Greeks</span>
+                <h1 className="text-white text-lg sm:text-xl font-bold flex items-center gap-2">
+                  <img src="/img/logo.png" alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" /> 
+                  <span className="hidden xs:inline">Vega Greeks</span>
                 </h1>
               </Link>
             </div>
 
             {/* Middle Section: Desktop Horizontal Navigation */}
             <div className="hidden lg:flex items-center gap-8">
-              <Link to="/" className="text-slate-700 hover:text-primary transition-colors font-semibold">Home</Link>
-              <Link to="/about" className="text-slate-700 hover:text-primary transition-colors font-semibold">About Us</Link>
-              <Link to="/contact" className="text-slate-700 hover:text-primary transition-colors font-semibold">Contact</Link>
+              <Link to="/" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Home</Link>
+              <Link to="/about" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">About Us</Link>
+              <Link to="/contact" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Contact</Link>
               {user && (
-                <Link to="/live-data" className="text-slate-700 hover:text-primary transition-colors font-semibold">Dashboard</Link>
+                <Link to="/live-data" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Dashboard</Link>
               )}
             </div>
 
             {/* Right Section: Launch/Login Button */}
             <div className="flex items-center gap-4">
                {!user ? (
-                 <Button asChild className="rounded-full px-6 bg-primary hover:bg-primary/90 text-white font-bold h-11">
+                 <Button asChild className="rounded-full px-5 sm:px-8 bg-primary hover:bg-primary/90 text-white font-bold h-9 sm:h-11 shadow-lg shadow-primary/20">
                    <Link to="/login">Login</Link>
                  </Button>
                ) : (
-                 <Link to="/my-account" className="hidden sm:block text-slate-700 hover:text-primary font-semibold">
-                   My Account
-                 </Link>
+                 <div className="flex items-center gap-4">
+                    <Link to="/my-account" className="hidden sm:inline-block text-white/80 hover:text-white font-semibold text-sm border-r border-white/20 pr-4">
+                      My Account
+                    </Link>
+                    <button 
+                      onClick={logout}
+                      className="text-white/80 hover:text-red-400 font-semibold text-sm transition-colors"
+                    >
+                      Logout
+                    </button>
+                 </div>
                )}
-            </div>
-          </div>
-        </div>
-
-        {/* Unified Slide-out Menu Drawer - Left Aligned */}
-        <div 
-          className={`fixed top-0 left-0 h-full w-[280px] bg-white border-r border-gray-100 z-[65] transform transition-transform duration-300 ease-in-out shadow-2xl ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex flex-col h-full p-8 pt-24">
-            <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
-              <Link to="/" onClick={toggleMenu} className="block text-xl font-bold text-slate-900 hover:text-primary transition-colors">
-                Home
-              </Link>
-              
-              {user && (
-                <>
-                  <div className="pt-4 pb-2">
-                    <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-3">Analysis Tools</h3>
-                    <div className="space-y-3 pl-2 border-l-2 border-slate-50">
-                      <Link to="/live-data" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Live Data (Upstox) </Link>
-                      <Link to="/angleone-live-data" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> AngleOne Live </Link>
-                      <Link to="/chart" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Premium Charts </Link>
-                      <Link to="/openchart" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Backtest Charts </Link>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 pb-2">
-                    <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-3">Account</h3>
-                    <div className="space-y-3 pl-2 border-l-2 border-slate-50">
-                      <Link to="/my-account" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Profile Details </Link>
-                      <Link to="/change-password" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Change Password </Link>
-                      {user?.role === 'ADMIN_USER' && (
-                        <Link to="/admin" onClick={toggleMenu} className="block text-sm font-semibold text-[#00bcd4] hover:text-[#00acc1] transition-colors"> Admin Panel </Link>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div className="pt-4">
-                <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-3">Information</h3>
-                <div className="space-y-3 pl-2 border-l-2 border-slate-50">
-                  <Link to="/about" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> About Us </Link>
-                  <Link to="/contact" onClick={toggleMenu} className="block text-sm font-semibold text-slate-700 hover:text-primary transition-colors"> Contact Support </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Connect With Us Section */}
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4">Connect With Us</h3>
-              <div className="grid grid-cols-4 gap-3">
-                <a href="https://wa.me/918700583733" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#25D366] hover:text-white transition-all hover:scale-110 shadow-sm">
-                  <MessageCircle className="w-5 h-5" />
-                </a>
-                <a href="https://t.me/vegagreeks" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#0088cc] hover:text-white transition-all hover:scale-110 shadow-sm">
-                  <Send className="w-5 h-5" />
-                </a>
-                <a href="https://instagram.com/vegagreeks" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#E1306C] hover:text-white transition-all hover:scale-110 shadow-sm">
-                  <Instagram className="w-5 h-5" />
-                </a>
-                <a href="https://youtube.com/@vegagreeks" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-slate-600 hover:bg-[#FF0000] hover:text-white transition-all hover:scale-110 shadow-sm">
-                  <Youtube className="w-5 h-5" />
-                </a>
-              </div>
             </div>
           </div>
         </div>
       </nav>
     </>
   );
+};
+
+// Helper Components for Cleaner Sidebar
+const MenuLink = ({ to, icon, label, onClick, className = "" }: any) => (
+  <Link 
+    to={to} 
+    onClick={onClick} 
+    className={`flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-100 font-extrabold text-slate-900 transition-all group ${className}`}
+  >
+    <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center group-hover:scale-110 shadow-sm transition-transform">
+      {icon}
+    </div>
+    <span className="text-base tracking-tight">{label}</span>
+  </Link>
+);
+
+const SocialIcon = ({ href, color, icon }: any) => {
+    const [isHovered, setIsHovered] = useState(false);
+    return (
+      <a 
+        href={href} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 hover:text-white transition-all hover:scale-110 shadow-sm border border-slate-200"
+        style={isHovered ? { backgroundColor: color, borderColor: color } : {}}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {icon}
+      </a>
+    );
 };
 
 export default Navbar;
