@@ -217,7 +217,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({ email, password })
       });
       
-      if (!response.ok) throw new Error('Login failed');
+      if (!response.ok) {
+        let errorMsg = 'Login failed';
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.detail || errorData.error || errorMsg;
+        } catch (e) {
+          // Fallback if response is not JSON
+        }
+        throw new Error(errorMsg);
+      }
 
       const data = await response.json();
       
@@ -241,12 +250,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
            setStatus(AuthStatus.AUTHENTICATED);
            
            return true;
+        } else {
+            throw new Error("Failed to retrieve user profile");
         }
       }
       return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      return false;
+      throw error; // Propagate error for UI feedback
     }
   }, []);
 

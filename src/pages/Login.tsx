@@ -25,13 +25,14 @@ const Login = () => {
         toast({
           title: "Login Successful",
           description: "Welcome back to Vega Greeks!",
+          className: "bg-green-500 text-white border-none",
         });
         navigate("/my-account");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
+        description: error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
