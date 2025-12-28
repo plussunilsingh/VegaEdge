@@ -27,7 +27,7 @@ const Disclaimer = () => {
               <section>
                 <h2 className="text-2xl font-bold text-foreground mb-4">No Financial Advice</h2>
                 <p>
-                  The information provided on this platform is for educational and informational purposes only and should not be construed as financial advice. Vega Greeks does not provide investment advice, and any information shared should not be considered as recommendations to buy or sell any financial instrument.
+                  The information provided on this platform is for educational and informational purposes only and should not be construed as financial advice. Vega Greeks Calculator does not provide investment advice, and any information shared should not be considered as recommendations to buy or sell any financial instrument.
                 </p>
               </section>
 
@@ -41,21 +41,21 @@ const Disclaimer = () => {
               <section>
                 <h2 className="text-2xl font-bold text-foreground mb-4">Third-Party Content</h2>
                 <p>
-                  Vega Greeks may display content from third-party sources. We do not control, endorse, or adopt any third-party content and shall have no responsibility for the accuracy or completeness of such content.
+                  Vega Greeks Calculator may display content from third-party sources. We do not control, endorse, or adopt any third-party content and shall have no responsibility for the accuracy or completeness of such content.
                 </p>
               </section>
 
               <section>
                 <h2 className="text-2xl font-bold text-foreground mb-4">Liability Limitation</h2>
                 <p>
-                  Vega Greeks and its affiliates will not be liable for any losses or damages in connection with the use of this platform. This includes, but is not limited to, loss of profits, trading losses, or any other damages resulting from the use or inability to use our services.
+                  Vega Greeks Calculator and its affiliates will not be liable for any losses or damages in connection with the use of this platform. This includes, but is not limited to, loss of profits, trading losses, or any other damages resulting from the use or inability to use our services.
                 </p>
               </section>
             </div>
 
             <div className="mt-12 p-6 bg-primary/10 rounded-xl">
               <p className="text-center font-semibold">
-                By using Vega Greeks, you acknowledge that you have read, understood, and agree to this disclaimer.
+                By using Vega Greeks Calculator, you acknowledge that you have read, understood, and agree to this disclaimer.
               </p>
             </div>
           </div>

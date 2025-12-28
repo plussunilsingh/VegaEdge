@@ -89,8 +89,8 @@ const AuthenticatedNavbar = () => {
           <div className="flex items-center justify-between h-20">
             <Link to="/my-account" className="flex items-center gap-3">
               <h1 className="text-primary text-xl font-bold flex items-center gap-2">
-                <img src="/img/logo.png" alt="Vega Greeks" className="h-10 w-auto object-contain" />
-                <span className="text-white">Vega Greeks</span>
+                <img src="/img/logo.png" alt="Vega Greeks Calculator" className="h-10 w-auto object-contain" />
+                <span className="text-white">Vega Greeks Calculator</span>
               </h1>
             </Link>
 

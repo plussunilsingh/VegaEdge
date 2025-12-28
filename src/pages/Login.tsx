@@ -24,7 +24,7 @@ const Login = () => {
       if (success) {
         toast({
           title: "Login Successful",
-          description: "Welcome back to Vega Greeks!",
+          description: "Welcome back to Vega Greeks Calculator!",
           className: "bg-green-500 text-white border-none",
         });
         navigate("/my-account");

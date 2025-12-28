@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 
 const Testimonials = () => {
   const testimonials = [
-    { name: "Apeksha Sharma", review: "Vega Greeks has completely transformed my trading strategy. The live Greeks data is incredibly accurate and helps me spot market reversals before they happen." },
+    { name: "Apeksha Sharma", review: "Vega Greeks Calculator has completely transformed my trading strategy. The live Greeks data is incredibly accurate and helps me spot market reversals before they happen." },
     { name: "Pranjal Koar", review: "The visualization of Vega trends is a game-changer. I used to struggle with option pricing, but this platform makes it crystal clear." },
     { name: "Santosh Jha", review: "I've tried multiple platforms, but the speed and reliability of Vega Market Edge are unmatched. The admin support is also fantastic!" },
     { name: "Vinay Avasthi", review: "Event-driven strategies have never been easier to execute. The historical data analysis helps me backtest effectively on weekends." }

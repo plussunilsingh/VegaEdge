@@ -62,7 +62,7 @@ const Navbar = () => {
                   {showAuthLinks ? "Welcome back," : "Guest User"}
                 </p>
                 <p className="text-white font-extrabold text-lg truncate whitespace-nowrap">
-                  {showAuthLinks ? user.name : "Vega Greeks"}
+                  {showAuthLinks ? user.name : "Vega Greeks Calculator"}
                 </p>
               </div>
             </div>
@@ -174,7 +174,7 @@ const Navbar = () => {
               <Link to="/" className="flex items-center">
                 <h1 className="text-white text-lg sm:text-xl font-bold flex items-center gap-2">
                   <img src="/img/logo.png" alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" /> 
-                  <span className="hidden xs:inline">Vega Greeks</span>
+                  <span className="hidden xs:inline">Vega Greeks Calculator</span>
                 </h1>
               </Link>
             </div>

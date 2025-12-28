@@ -71,7 +71,7 @@ const Register = () => {
         if (loginSuccess) {
           toast({
             title: "Registration Successful",
-            description: "Welcome to Vega Greeks!",
+            description: "Welcome to Vega Greeks Calculator!",
           });
           navigate("/my-account");
         }
