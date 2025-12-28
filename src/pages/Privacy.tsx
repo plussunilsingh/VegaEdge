@@ -1,5 +1,5 @@
 import { ShieldAlert } from "lucide-react";
-import { COMPANY_NAME } from "@/config";
+import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
 
 
 const Privacy = () => {
@@ -76,8 +76,8 @@ const Privacy = () => {
                   If you have any questions about this Privacy Policy, please contact us at:
                 </p>
                 <p className="font-semibold text-foreground">
-                  Email: contact@vegagreeks.com<br />
-                  Phone: 7830175650
+                  Email: {COMPANY_EMAIL}<br />
+                  Phone: {COMPANY_PHONE}
                 </p>
               </section>
 

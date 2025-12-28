@@ -10,6 +10,8 @@ export const CHART_API_BASE_URL = import.meta.env.VITE_CHART_API_BASE_URL || "ht
 export const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL || "http://127.0.0.1:8000";
 
 export const COMPANY_NAME = "Vega Greeks Calculator";
+export const COMPANY_EMAIL = "contact@vegagreeks.com";
+export const COMPANY_PHONE = "7830175650";
 
 // Helper to construct URLs
 export const endpoints = {

@@ -1,13 +1,25 @@
 import { useState } from "react";
-import { endpoints } from "@/config";
+import { endpoints, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, Globe } from "lucide-react";
+import { Phone, Mail, Globe, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
+const ContactInfo = ({ icon, title, content }: { icon: React.ReactNode, title: string, content: string }) => (
+  <div className="flex items-start gap-4">
+    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+      {icon}
+    </div>
+    <div>
+      <h3 className="font-bold mb-1">{title}</h3>
+      <p className="text-muted-foreground">{content}</p>
+    </div>
+  </div>
+);
 
 const Contact = () => {
   const { isAuthenticated } = useAuth();
@@ -24,8 +36,6 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-        // Backend expects { name, email, message }. We are appending subject to message for now as backend schema is fixed.
-        // Actually I can update the backend controller to accept subject if I want, but let's just append it.
         const payload = {
             name: formData.name,
             email: formData.email,
@@ -130,33 +140,26 @@ const Contact = () => {
               <div className="bg-card rounded-2xl p-8 shadow-lg">
                 <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
                 <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold mb-1">Phone</h3>
-                      <p className="text-muted-foreground">7830175650</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold mb-1">Email</h3>
-                      <p className="text-muted-foreground">contact@vegagreeks.com</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Globe className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold mb-1">Website</h3>
-                      <p className="text-muted-foreground">www.vegagreeks.com</p>
-                    </div>
-                  </div>
+                  <ContactInfo 
+                    icon={<Mail className="w-6 h-6 text-primary" />}
+                    title="Email Us"
+                    content={COMPANY_EMAIL}
+                  />
+                  <ContactInfo 
+                    icon={<Phone className="w-6 h-6 text-primary" />}
+                    title="Call Us"
+                    content={`+91 ${COMPANY_PHONE}`}
+                  />
+                  <ContactInfo 
+                    icon={<MapPin className="w-6 h-6 text-primary" />}
+                    title="Location"
+                    content="New Delhi, India"
+                  />
+                  <ContactInfo 
+                    icon={<Globe className="w-6 h-6 text-primary" />}
+                    title="Website"
+                    content="www.vegagreeks.com"
+                  />
                 </div>
               </div>
 

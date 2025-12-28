@@ -1,7 +1,7 @@
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { COMPANY_NAME } from "@/config";
+import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
 
 const Footer = () => {
   const [apiVersion, setApiVersion] = useState<string>("Loading...");
@@ -70,8 +70,8 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold mb-4">Contact Info</h4>
             <ul className="space-y-3 text-gray-400">
-              <li>contact@vegagreeks.com</li>
-              <li>7830175650</li>
+              <li>{COMPANY_EMAIL}</li>
+              <li>{COMPANY_PHONE}</li>
               <li>www.vegagreeks.com</li>
             </ul>
           </div>

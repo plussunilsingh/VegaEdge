@@ -4,7 +4,7 @@ import { Menu, X, Youtube, Instagram, Send, MessageCircle, Phone, Mail, Clock, L
 import { useState, useEffect } from "react";
 import { useAuth, useSession, AuthStatus } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { COMPANY_NAME } from "@/config";
+import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -132,11 +132,11 @@ const Navbar = () => {
       <div className="bg-black text-white py-2 border-b border-white/10 relative z-[55]">
         <div className="container mx-auto px-4 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-[10px] sm:text-xs font-medium tracking-wider gap-2">
           <div className="flex items-center gap-4 sm:gap-6">
-            <a href="tel:7830175650" className="flex items-center gap-2 hover:text-primary transition-colors">
-              <Phone className="h-3 w-3" /> 7830175650
+            <a href={`tel:${COMPANY_PHONE}`} className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Phone className="h-3 w-3" /> {COMPANY_PHONE}
             </a>
-            <a href="mailto:contact@vegagreeks.com" className="flex items-center gap-2 hover:text-primary transition-colors">
-              <Mail className="h-3 w-3" /> contact@vegagreeks.com
+            <a href={`mailto:${COMPANY_EMAIL}`} className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Mail className="h-3 w-3" /> {COMPANY_EMAIL}
             </a>
           </div>
 
