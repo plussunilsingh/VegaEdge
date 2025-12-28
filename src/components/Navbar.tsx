@@ -8,7 +8,7 @@ import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout, status } = useAuth();
+  const { user, logout, status, profileImageUrl } = useAuth();
   const { sessionTimeLeft } = useSession();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -56,7 +56,17 @@ const Navbar = () => {
           <div className="bg-[#0f172a] p-8 pt-12">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/50 overflow-hidden">
-                <User className="text-primary w-6 h-6" />
+                <img 
+                  src={profileImageUrl || "/img/default_user.png"} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src.includes("/img/default_user.png")) return;
+                    target.src = "/img/default_user.png";
+                  }}
+                />
               </div>
               <div className="overflow-hidden">
                 <p className="text-white/50 text-[10px] uppercase font-bold tracking-widest leading-none mb-1">
@@ -203,7 +213,20 @@ const Navbar = () => {
                  </Button>
                ) : (
                  <div className="flex items-center gap-4">
-                    <Link to="/my-account" className="hidden sm:inline-block text-white/80 hover:text-white font-semibold text-sm border-r border-white/20 pr-4">
+                    <Link to="/my-account" className="flex items-center gap-2 hidden sm:inline-flex text-white/80 hover:text-white font-semibold text-sm border-r border-white/20 pr-4">
+                      <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20">
+                        <img 
+                          src={profileImageUrl || "/img/default_user.png"} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (target.src.includes("/img/default_user.png")) return;
+                            target.src = "/img/default_user.png";
+                          }}
+                        />
+                      </div>
                       My Account
                     </Link>
                     <button 
