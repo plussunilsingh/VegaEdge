@@ -248,6 +248,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
            localStorage.setItem('alphaedge_user', JSON.stringify(mappedUser));
            localStorage.setItem('alphaedge_session', sessionToken);
            
+           // Set profile image url
+           if (mappedUser.profileImage) {
+              const imgUrl = mappedUser.profileImage.startsWith('http') 
+                ? mappedUser.profileImage 
+                : `${BACKEND_API_BASE_URL}/${mappedUser.profileImage}`;
+              setProfileImageUrl(imgUrl);
+            } else {
+              setProfileImageUrl("/img/default_user.png");
+            }
+           
            setLastActivity(Date.now());
            setSessionTimeLeft(SESSION_TIMEOUT);
            setStatus(AuthStatus.AUTHENTICATED);
