@@ -91,9 +91,6 @@ const Strategies = () => {
         <div className="bg-card rounded-2xl shadow-xl overflow-hidden border border-border">
             <div className="p-6 bg-primary/5 border-b border-border flex justify-between items-center">
                 <h2 className="text-2xl font-bold capitalize">{activeTab} Strategies</h2>
-                 <a href="#" className="hidden sm:inline-block text-xs font-bold text-primary hover:underline bg-white/80 px-3 py-1 rounded-full shadow-sm">
-                    10 DAYS BACKTEST AVAILABLE CLICK HERE
-                </a>
             </div>
             
             <div className="overflow-x-auto">
@@ -123,11 +120,6 @@ const Strategies = () => {
                         ))}
                     </tbody>
                 </table>
-            </div>
-            <div className="p-4 text-center sm:hidden bg-muted/20">
-                 <a href="#" className="text-xs font-bold text-primary hover:underline">
-                    10 DAYS BACKTEST AVAILABLE CLICK HERE
-                </a>
             </div>
         </div>
       </div>
