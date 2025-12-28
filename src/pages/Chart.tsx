@@ -51,26 +51,6 @@ const Chart = () => {
         <div className="container mx-auto px-4">
           {/* User Welcome & Strategy Buttons */}
           <div className="grid md:grid-cols-2 gap-4 mb-8">
-            <div className="flex items-center gap-4">
-              <img 
-                src={profileImageUrl || "/img/default_user.png"}
-                alt="Profile"
-                className="w-20 h-20 rounded-full object-cover shadow-md border-2 border-white"
-                loading="lazy"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  if (target.src.includes("/img/default_user.png")) return;
-                  target.src = "/img/default_user.png";
-                }}
-              />
-              <div>
-                <p className="font-bold text-lg text-foreground tracking-tight">Welcome {user?.name}</p>
-                <p className="text-xs text-muted-foreground font-medium bg-muted px-2 py-0.5 rounded-full inline-block mt-1">
-                   Partner Referral Program Active
-                </p>
-              </div>
-            </div>
-
             <div className="flex flex-wrap gap-2 items-center justify-end">
               <Link to="/strategies"><Button size="sm" className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-extrabold rounded-full border-none shadow-sm px-5">Event-Driven</Button></Link>
               <Link to="/strategies"><Button size="sm" variant="outline" className="text-foreground font-extrabold rounded-full shadow-sm px-5">Neutral Market</Button></Link>
