@@ -58,29 +58,30 @@ const PricingDetails = () => {
 
           {/* Right Side: Payment QR */}
           <div className="flex flex-col items-center">
-            <div className="bg-white p-8 rounded-[40px] shadow-[0_0_80px_rgba(255,255,255,0.05)] mb-8 max-w-md w-full">
-              <div className="text-center mb-6">
-                 <div className="bg-gray-100 p-2 rounded-2xl inline-block mb-4">
-                   <CreditCard className="w-8 h-8 text-black" />
+            <div className="bg-white p-10 rounded-[40px] shadow-[0_20px_100px_rgba(255,255,255,0.08)] mb-8 max-w-md w-full border border-gray-100 transform hover:scale-[1.01] transition-transform duration-500">
+              <div className="text-center mb-8">
+                 <div className="bg-primary/10 p-3 rounded-2xl inline-block mb-4">
+                   <ShieldCheck className="w-10 h-10 text-primary" />
                  </div>
-                 <h2 className="text-2xl font-bold text-black">Scan to Pay</h2>
-                 <p className="text-gray-500">Fast & Secure UPI Payment</p>
+                 <h2 className="text-3xl font-black text-black tracking-tight">Scan to Pay</h2>
+                 <p className="text-gray-500 font-medium mt-1">Fast & Secure UPI Payment</p>
               </div>
               
-              <div className="aspect-square bg-gray-50 rounded-3xl overflow-hidden border-2 border-dashed border-gray-200 p-6 flex items-center justify-center">
+              <div className="aspect-square bg-white rounded-[32px] overflow-hidden border-2 border-dashed border-primary/30 p-8 flex items-center justify-center animate-scan-pulse relative">
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent pointer-events-none" />
                 <img 
                   src={plan.upiImage || "/dinesh_QR.jpeg"} 
                   alt="UPI QR Code" 
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain relative z-10"
                 />
               </div>
 
-              <div className="mt-8 pt-8 border-t border-gray-100 text-center">
-                <p className="font-bold text-lg text-black">Account Name: Dinesh Tarkar</p>
-                <div className="flex justify-center gap-4 mt-6">
-                    <img src="https://logowik.com/content/uploads/images/google-pay8390.jpg" alt="GPAY" className="h-6 w-auto grayscale group-hover:grayscale-0" />
-                    <img src="https://logowik.com/content/uploads/images/phonepe-india6391.jpg" alt="PhonePe" className="h-6 w-auto grayscale" />
-                    <img src="https://logowik.com/content/uploads/images/paytm6054.jpg" alt="Paytm" className="h-6 w-auto grayscale" />
+              <div className="mt-10 pt-8 border-t border-gray-100 text-center">
+                <p className="font-extrabold text-xl text-black mb-6">Account Name: Dinesh Tarkar</p>
+                <div className="flex justify-center items-center gap-6 opacity-80 hover:opacity-100 transition-opacity">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPAY" className="h-6 w-auto" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo.png" alt="UPI" className="h-5 w-auto" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/Paytm_Logo.ro.svg" alt="Paytm" className="h-5 w-auto" />
                 </div>
               </div>
             </div>

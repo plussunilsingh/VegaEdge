@@ -67,51 +67,65 @@ const PricingCard = ({ plan, onClick }: { plan: Plan; onClick: () => void }) => 
   return (
     <div 
       onClick={onClick}
-      className="relative preserve-3d group cursor-pointer transition-all duration-700"
+      className="relative preserve-3d group cursor-pointer transition-all duration-1000 animate-float"
       style={{
-        transform: `rotateX(5deg) rotateY(5deg) translateZ(0)`,
         zIndex: plan.recommended ? 20 : 10,
       } as any}
     >
-      {/* Card Thickness/Side (3D Look) */}
+      {/* 3D Glass Lid Layering (Refraction Look) */}
+      <div className="absolute inset-x-0 -top-4 bottom-4 bg-white/5 backdrop-blur-3xl rounded-[40px] border-t border-x border-white/20 transform translate-z-20 preserve-3d" />
+      
+      {/* Side Refraction Edge */}
       <div 
         className="absolute top-0 -left-6 w-6 h-full bg-white/5 border-l-2 border-y-2 border-white/10 rounded-l-[40px] origin-right transform -rotate-y-90 preserve-3d"
-        style={{ background: `linear-gradient(to right, ${plan.color}40, transparent)` } as any}
+        style={{ background: `linear-gradient(to right, ${plan.color}20, transparent)` } as any}
       >
-        <div className="absolute top-0 right-0 w-[1px] h-full bg-white/30" />
+        <div className="absolute top-0 right-0 w-[1px] h-full bg-white/40" />
       </div>
 
+      {/* Internal Diamond Glow */}
       <div 
-        className="absolute inset-0 rounded-[40px] opacity-25 group-hover:opacity-45 transition-opacity duration-500 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)]"
+        className="absolute inset-8 rounded-full opacity-30 animate-diamond-glow pointer-events-none"
+        style={{ 
+          background: `radial-gradient(circle, ${plan.color} 0%, transparent 70%)`,
+          filter: 'blur(30px)',
+          transform: 'translateZ(-20px)'
+        }}
+      />
+      
+      {/* Outer Halo Glow */}
+      <div 
+        className="absolute inset-0 rounded-[40px] opacity-20 group-hover:opacity-40 transition-opacity duration-1000"
         style={{ 
           background: plan.color,
-          filter: 'blur(40px)',
+          filter: 'blur(60px)',
           transform: 'translateZ(-80px) translateY(20px)'
         }}
       />
       
-      {/* Floor Shadow */}
+      {/* Ground Shadow */}
       <div 
-        className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-[80%] h-8 bg-black/40 blur-2xl rounded-[100%] transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none"
+        className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[90%] h-12 bg-black/40 blur-3xl rounded-[100%] transition-opacity duration-1000 opacity-50 group-hover:opacity-80 pointer-events-none"
         style={{ transform: 'rotateX(90deg)' }}
       />
 
-      <div className="relative bg-[#0f172a]/90 backdrop-blur-2xl rounded-[40px] p-8 border-2 border-white/10 shadow-2xl transition-all duration-700 group-hover:rotate-y-0 group-hover:rotate-x-0 group-hover:translate-z-60 group-hover:-translate-y-10 preserve-3d overflow-hidden"
+      {/* Main Glass Body */}
+      <div className="relative bg-slate-950/80 backdrop-blur-2xl rounded-[40px] p-8 border-2 border-white/10 shadow-2xl transition-all duration-1000 group-hover:rotate-y-0 group-hover:rotate-x-0 group-hover:translate-z-80 group-hover:-translate-y-12 preserve-3d overflow-hidden"
            style={{ borderTopColor: plan.color, borderRightColor: plan.color } as any}>
         
-        {/* Gloss Effect */}
-        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-        <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-[45deg] -translate-x-full group-hover:animate-gloss-sweep pointer-events-none" />
+        {/* Surface Gloss Sweep */}
+        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-[45deg] -translate-x-full group-hover:animate-gloss-sweep pointer-events-none" />
 
         {plan.bestValue && (
-          <div className="absolute top-8 right-8 bg-[#EAB308] text-black text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-transform duration-700 group-hover:translate-z-100"
+          <div className="absolute top-8 right-8 bg-[#EAB308] text-black text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_25px_rgba(234,179,8,0.5)] transition-transform duration-1000 group-hover:translate-z-100"
                style={{ transform: 'translateZ(40px)' }}>
-            Best Value
+            Diamond Class
           </div>
         )}
         
         <div className="relative preserve-3d">
-          <div className="mb-8 transform transition-transform duration-700 group-hover:translate-z-40">
+          <div className="mb-8 transform transition-transform duration-1000 group-hover:translate-z-40">
             <h3 className="text-2xl font-black text-white mb-2">{plan.name}</h3>
             <div className="flex items-baseline gap-1" style={{ transform: 'translateZ(60px)' }}>
               <span className="text-5xl font-black text-white tracking-tight">{plan.price}</span>
@@ -119,25 +133,24 @@ const PricingCard = ({ plan, onClick }: { plan: Plan; onClick: () => void }) => 
             </div>
           </div>
 
-          <div className="space-y-4 mb-10 transform transition-transform duration-700 group-hover:translate-z-20">
+          <div className="space-y-4 mb-10 transform transition-transform duration-1000 group-hover:translate-z-20">
             {plan.features.map((feature, i) => (
               <div key={i} className="flex items-center gap-3 text-white/70">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: plan.color }} />
-                <span className="text-sm font-medium tracking-wide">{feature}</span>
+                <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: plan.color, boxShadow: `0 0 10px ${plan.color}` }} />
+                <span className="text-sm font-semibold tracking-wide">{feature}</span>
               </div>
             ))}
           </div>
 
           <button 
-            className="w-full py-5 rounded-2xl font-black text-lg uppercase tracking-widest transition-all duration-500 active:scale-95 shadow-lg transform group-hover:translate-z-80"
+            className="w-full py-5 rounded-2xl font-black text-lg uppercase tracking-widest transition-all duration-500 active:scale-95 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] transform group-hover:translate-z-80 group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]"
             style={{ 
               backgroundColor: plan.color,
               color: '#000',
-              boxShadow: `0 0-30px ${plan.color}40`,
               transform: 'translateZ(20px)'
             }}
           >
-            Start Plan
+            Unlock Access
           </button>
         </div>
       </div>
