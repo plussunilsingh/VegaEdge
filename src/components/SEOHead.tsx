@@ -11,8 +11,7 @@ interface SEOHeadProps {
 
 export const SEOHead = ({ 
   title = "Vega Greeks Calculator - Market Direction Prediction",
-  description = "Predict market direction with the help of VEGA. Vega Greeks Calculator
- provides advanced trading analysis, stock market insights, and real-time data for traders.",
+  description = "Predict market direction with the help of VEGA. Vega Greeks Calculator provides advanced trading analysis, stock market insights, and real-time data for traders.",
   name = "Vega Greeks Calculator",
   type = "website",
   url = "https://ibzd.com",
