@@ -267,11 +267,14 @@ const AdminDashboard = () => {
                                                                           src={u.profile_image.startsWith('http') ? u.profile_image : `${endpoints.auth.login.replace('/auth/login', '')}/${u.profile_image}`} 
                                                                           alt="" 
                                                                           className="w-8 h-8 rounded-full object-cover border border-border" 
+                                                                          onError={(e) => e.currentTarget.src = "/img/default_user.png"}
                                                                         />
                                                                     ) : (
-                                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                                                            {(u.username || u.email || "??").slice(0,2).toUpperCase()}
-                                                                        </div>
+                                                                        <img 
+                                                                          src="/img/default_user.png" 
+                                                                          alt="" 
+                                                                          className="w-8 h-8 rounded-full object-cover border border-border" 
+                                                                        />
                                                                     )}
                                                                     <div>
                                                                         <div className="font-medium text-foreground">{u.username}</div>

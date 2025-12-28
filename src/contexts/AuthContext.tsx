@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number>(SESSION_TIMEOUT);
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>("/img/default_user.png");
   const [token, setToken] = useState<string | null>(null);
   const [status, setStatus] = useState<AuthStatus>(AuthStatus.LOADING);
   
@@ -179,6 +179,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             ? userData.profileImage 
             : `${BACKEND_API_BASE_URL}/${userData.profileImage}`;
           setProfileImageUrl(imgUrl);
+        } else {
+          setProfileImageUrl("/img/default_user.png");
         }
       } catch (e) {
         console.error("Failed to parse stored user", e);
@@ -276,7 +278,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Logout API call failed:", error);
     } finally {
       setUser(null);
-      setProfileImageUrl(null);
+      setProfileImageUrl("/img/default_user.png");
       setToken(null);
       localStorage.removeItem('alphaedge_user');
       localStorage.removeItem('alphaedge_session');

@@ -52,14 +52,14 @@ const Chart = () => {
           <div className="grid md:grid-cols-2 gap-4 mb-8">
             <div className="flex items-center gap-4">
               <img 
-                src={profileImageUrl || "/img/user.jpg"}
+                src={profileImageUrl || "/img/default_user.png"}
                 alt="Profile"
                 className="w-20 h-20 rounded-full object-cover shadow-md border-2 border-white"
                 loading="lazy"
                 onError={(e) => {
                   const target = e.currentTarget;
-                  if (target.src.includes("/img/user.jpg")) return;
-                  target.src = "/img/user.jpg";
+                  if (target.src.includes("/img/default_user.png")) return;
+                  target.src = "/img/default_user.png";
                 }}
               />
               <div>
