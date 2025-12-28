@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-import { endpoints } from "@/config";
+import { COMPANY_NAME, endpoints } from "@/config";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -71,7 +71,7 @@ const Register = () => {
         if (loginSuccess) {
           toast({
             title: "Registration Successful",
-            description: "Welcome to Vega Greeks Calculator!",
+            description: `Welcome to ${COMPANY_NAME}!`,
           });
           navigate("/my-account");
         }

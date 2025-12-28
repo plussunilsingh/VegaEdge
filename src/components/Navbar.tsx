@@ -4,6 +4,7 @@ import { Menu, X, Youtube, Instagram, Send, MessageCircle, Phone, Mail, Clock, L
 import { useState, useEffect } from "react";
 import { useAuth, useSession, AuthStatus } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { COMPANY_NAME } from "@/config";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -62,7 +63,7 @@ const Navbar = () => {
                   {showAuthLinks ? "Welcome back," : "Guest User"}
                 </p>
                 <p className="text-white font-extrabold text-lg truncate whitespace-nowrap">
-                  {showAuthLinks ? user.name : "Vega Greeks Calculator"}
+                  {showAuthLinks ? user.name : COMPANY_NAME}
                 </p>
               </div>
             </div>
@@ -174,7 +175,7 @@ const Navbar = () => {
               <Link to="/" className="flex items-center">
                 <h1 className="text-white text-lg sm:text-xl font-bold flex items-center gap-2">
                   <img src="/img/logo.png" alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" /> 
-                  <span className="hidden xs:inline">Vega Greeks Calculator</span>
+                  <span className="hidden xs:inline">{COMPANY_NAME}</span>
                 </h1>
               </Link>
             </div>

@@ -4,6 +4,7 @@ import { useAuth, useSession } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { COMPANY_NAME } from "@/config";
 
 const AuthenticatedNavbar = () => {
   const { logout, user, validateSession } = useAuth();
@@ -89,8 +90,8 @@ const AuthenticatedNavbar = () => {
           <div className="flex items-center justify-between h-20">
             <Link to="/my-account" className="flex items-center gap-3">
               <h1 className="text-primary text-xl font-bold flex items-center gap-2">
-                <img src="/img/logo.png" alt="Vega Greeks Calculator" className="h-10 w-auto object-contain" />
-                <span className="text-white">Vega Greeks Calculator</span>
+                <img src="/img/logo.png" alt={COMPANY_NAME} className="h-10 w-auto object-contain" />
+                <span className="text-white">{COMPANY_NAME}</span>
               </h1>
             </Link>
 

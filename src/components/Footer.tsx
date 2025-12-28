@@ -1,6 +1,7 @@
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { COMPANY_NAME } from "@/config";
 
 const Footer = () => {
   const [apiVersion, setApiVersion] = useState<string>("Loading...");
@@ -24,7 +25,7 @@ const Footer = () => {
             <Link to="/" className="flex items-center mb-4">
               <h1 className="text-white text-xl font-bold flex items-center gap-2">
                 <img src="/img/logo.png" alt="Logo" className="h-10 w-auto object-contain" />
-                <span>Vega Greeks Calculator</span>
+                <span>{COMPANY_NAME}</span>
               </h1>
             </Link>
             <p className="text-gray-400 mb-6">
@@ -80,7 +81,7 @@ const Footer = () => {
       <div className="border-t border-gray-800">
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-gray-400">
-            <span>© Vega Greeks Calculator, All right reserved.</span>
+            <span>© {COMPANY_NAME}, All right reserved.</span>
             <div className="text-xs mt-2 text-gray-600">
                 UI: v{uiVersion} | API: v{apiVersion}
             </div>

@@ -1,4 +1,5 @@
 import { ShieldAlert } from "lucide-react";
+import { COMPANY_NAME } from "@/config";
 
 
 const Privacy = () => {
@@ -13,7 +14,7 @@ const Privacy = () => {
               <section>
                 <h2 className="text-2xl font-bold text-foreground mb-4">Information We Collect</h2>
                 <p>
-                  At Vega Greeks Calculator, we collect information that you provide directly to us, including your name, email address, phone number, and any other information you choose to provide. We also automatically collect certain information about your device when you use our platform, including IP address, browser type, and usage data.
+                  At {COMPANY_NAME}, we collect information that you provide directly to us, including your name, email address, phone number, and any other information you choose to provide. We also automatically collect certain information about your device when you use our platform, including IP address, browser type, and usage data.
                 </p>
               </section>
 
@@ -38,7 +39,7 @@ const Privacy = () => {
                 <ul className="list-disc pl-6 space-y-2">
                   <li>With your consent</li>
                   <li>To comply with legal obligations</li>
-                  <li>To protect the rights and safety of Vega Greeks Calculator and our users</li>
+                  <li>To protect the rights and safety of {COMPANY_NAME} and our users</li>
                   <li>With service providers who assist in our operations</li>
                 </ul>
               </section>
