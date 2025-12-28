@@ -15,7 +15,7 @@ export const SEOHead = ({
   name = "Vega Greeks",
   type = "website",
   url = "https://ibzd.com",
-  image = "/img/logo_red.png"
+  image = "/img/logo.png"
 }: SEOHeadProps) => {
   return (
     <Helmet>

@@ -23,7 +23,7 @@ const Footer = () => {
           <div>
             <Link to="/" className="flex items-center mb-4">
               <h1 className="text-white text-xl font-bold flex items-center gap-2">
-                <img src="/img/logo_red.png" alt="Logo" className="h-10 w-auto object-contain" /> 
+                <img src="/img/logo.png" alt="Logo" className="h-10 w-auto object-contain" />
                 <span>Vega Greeks</span>
               </h1>
             </Link>
