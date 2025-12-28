@@ -107,26 +107,36 @@ const PricingDetails = () => {
 
               <div className="mt-10 pt-8 border-t border-gray-100 text-center">
                 <p className="font-black text-2xl text-black mb-8 tracking-tight">Account: Dinesh Tarkar</p>
-                <div className="grid grid-cols-3 gap-6 items-center px-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 items-center px-4 mt-8">
                     <div className="flex flex-col items-center gap-2">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPAY" className="h-6 w-auto" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">G-Pay</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo.png" alt="UPI" className="h-4 w-auto" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Official UPI</span>
+                        <div className="h-8 flex items-center">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPAY" className="h-4 w-auto object-contain" />
+                        </div>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">G-Pay</span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-5 w-auto" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Paytm</span>
+                        <div className="h-8 flex items-center">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo.png/512px-UPI-Logo.png" alt="UPI" className="h-5 w-auto object-contain" />
+                        </div>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">UPI</span>
                     </div>
-                    <div className="flex flex-col items-center gap-2 mt-4">
-                        <img src="https://logowik.com/content/uploads/images/phonepe-india6391.jpg" alt="PhonePe" className="h-6 w-auto" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">PhonePe</span>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="h-8 flex items-center">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-5 w-auto object-contain" />
+                        </div>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">Paytm</span>
                     </div>
-                    <div className="flex flex-col items-center gap-2 mt-4">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/73/BharatPe_logo.png" alt="BharatPe" className="h-5 w-auto" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">BharatPe</span>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="h-8 flex items-center">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.svg/512px-PhonePe_Logo.svg.png" alt="PhonePe" className="h-5 w-auto object-contain" />
+                        </div>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">PhonePe</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="h-8 flex items-center">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/BharatPe_logo.png/512px-BharatPe_logo.png" alt="BharatPe" className="h-5 w-auto object-contain" />
+                        </div>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">BharatPe</span>
                     </div>
                 </div>
               </div>
