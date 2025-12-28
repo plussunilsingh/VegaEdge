@@ -128,7 +128,7 @@ const PricingDetails = () => {
                     </div>
                     <div className="flex flex-col items-center gap-2">
                         <div className="h-8 flex items-center">
-                          <img src="/img/phonepe-logo.png" alt="PhonePe" className="h-5 w-auto object-contain" />
+                          <img src="/img/PhonePe-01.svg" alt="PhonePe" className="h-5 w-auto object-contain" />
                         </div>
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">PhonePe</span>
                     </div>
