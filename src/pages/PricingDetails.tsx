@@ -69,7 +69,7 @@ const PricingDetails = () => {
               
               <div className="aspect-square bg-gray-50 rounded-3xl overflow-hidden border-2 border-dashed border-gray-200 p-6 flex items-center justify-center">
                 <img 
-                  src="/dinesh_QR.jpeg" 
+                  src={plan.upiImage || "/dinesh_QR.jpeg"} 
                   alt="UPI QR Code" 
                   className="w-full h-full object-contain"
                 />
