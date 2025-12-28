@@ -1,6 +1,7 @@
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
 
 const Footer = () => {
   const [apiVersion, setApiVersion] = useState<string>("Loading...");
@@ -23,8 +24,8 @@ const Footer = () => {
           <div>
             <Link to="/" className="flex items-center mb-4">
               <h1 className="text-white text-xl font-bold flex items-center gap-2">
-                <img src="/img/logo_red.png" alt="Logo" className="h-10 w-auto object-contain" /> 
-                <span>Vega Greeks</span>
+                <img src="/img/logo.png" alt="Logo" className="h-10 w-auto object-contain" />
+                <span>{COMPANY_NAME}</span>
               </h1>
             </Link>
             <p className="text-gray-400 mb-6">
@@ -69,8 +70,8 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold mb-4">Contact Info</h4>
             <ul className="space-y-3 text-gray-400">
-              <li>contact@vegagreeks.com</li>
-              <li>7830175650</li>
+              <li>{COMPANY_EMAIL}</li>
+              <li>{COMPANY_PHONE}</li>
               <li>www.vegagreeks.com</li>
             </ul>
           </div>
@@ -80,7 +81,7 @@ const Footer = () => {
       <div className="border-t border-gray-800">
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-gray-400">
-            <span>© Vega Greeks, All right reserved.</span>
+            <span>© {COMPANY_NAME}, All right reserved.</span>
             <div className="text-xs mt-2 text-gray-600">
                 UI: v{uiVersion} | API: v{apiVersion}
             </div>

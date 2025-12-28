@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+
+import { COMPANY_NAME } from "@/config";
+import { endpoints } from "@/config";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -25,14 +27,15 @@ const Login = () => {
       if (success) {
         toast({
           title: "Login Successful",
-          description: "Welcome back to Vega Greeks!",
+          description: `Welcome back to ${COMPANY_NAME}!`,
+          className: "bg-green-500 text-white border-none",
         });
         navigate("/my-account");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
+        description: error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -41,8 +44,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-white">
       <main className="flex-1 py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto bg-card rounded-2xl p-8 shadow-lg">

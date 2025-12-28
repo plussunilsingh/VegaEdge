@@ -4,6 +4,7 @@ import { useAuth, useSession } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
 
 const AuthenticatedNavbar = () => {
   const { logout, user, validateSession } = useAuth();
@@ -63,13 +64,13 @@ const AuthenticatedNavbar = () => {
       <div className="bg-white border-b border-border px-4 lg:px-8 py-2 hidden lg:flex">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-6 text-sm">
-            <a href="tel:7830175650" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+            <a href={`tel:${COMPANY_PHONE}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
               <Phone className="w-4 h-4 text-primary" />
-              7830175650
+              {COMPANY_PHONE}
             </a>
-            <a href="mailto:contact@vegagreeks.com" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+            <a href={`mailto:${COMPANY_EMAIL}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
               <Mail className="w-4 h-4 text-primary" />
-              contact@vegagreeks.com
+              {COMPANY_EMAIL}
             </a>
           </div>
             {sessionTimeLeft > 0 && (
@@ -89,8 +90,8 @@ const AuthenticatedNavbar = () => {
           <div className="flex items-center justify-between h-20">
             <Link to="/my-account" className="flex items-center gap-3">
               <h1 className="text-primary text-xl font-bold flex items-center gap-2">
-                <img src="/img/logo_red.png" alt="Vega Greeks" className="h-10 w-auto object-contain" /> 
-                <span className="text-white">Vega Greeks</span>
+                <img src="/img/logo.png" alt={COMPANY_NAME} className="h-10 w-auto object-contain" />
+                <span className="text-white">{COMPANY_NAME}</span>
               </h1>
             </Link>
 

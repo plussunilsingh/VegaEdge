@@ -107,13 +107,54 @@ All colors MUST be HSL.
   background: #cbd5e1; /* Slate 300 */
 }
 
-/* Ensure body is light mode by default */
+/* Ensure body is white by default in light mode, but respects --background */
 body {
-  @apply bg-[#f8fafc] text-slate-900;
+  @apply bg-background text-foreground;
   overflow-x: hidden;
 }
 
-/* Smooth transitions for theme changes */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+/* 3D Premium Utilities */
+.perspective-container {
+  perspective: 2000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+@keyframes gloss-sweep {
+  0% { transform: translateX(-100%) skewX(-45deg); }
+  50%, 100% { transform: translateX(100%) skewX(-45deg); }
+}
+
+.animate-gloss-sweep {
+  animation: gloss-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotateX(5deg) rotateY(5deg); }
+  50% { transform: translateY(-20px) rotateX(5deg) rotateY(5deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes diamond-glow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.animate-diamond-glow {
+  animation: diamond-glow 4s ease-in-out infinite;
+}
+
+@keyframes scan-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.animate-scan-pulse {
+  animation: scan-pulse 3s ease-in-out infinite;
 }

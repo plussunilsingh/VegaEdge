@@ -1,11 +1,9 @@
-import Navbar from "@/components/Navbar";
-
 import Team from "@/components/Team";
+import { COMPANY_NAME } from "@/config";
 
 const About = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
       <main className="flex-1">
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
@@ -13,7 +11,7 @@ const About = () => {
               <h4 className="text-primary text-xl font-bold mb-4">About Us</h4>
               <h1 className="text-4xl font-bold mb-6">Who We Are</h1>
               <p className="text-muted-foreground text-lg">
-                Vega Greeks is a leading financial markets platform providing real-time data, quotes, charts, and breaking news analysis. We help traders and investors make informed decisions with cutting-edge VEGA prediction technology.
+                {COMPANY_NAME} is a leading financial markets platform providing real-time data, quotes, charts, and breaking news analysis. We help traders and investors make informed decisions with cutting-edge VEGA prediction technology.
               </p>
             </div>
 
@@ -48,7 +46,7 @@ const About = () => {
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold mb-8 text-center">Why Choose Vega Greeks?</h2>
+              <h2 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500">Why Choose {COMPANY_NAME}?</h2>
               <div className="space-y-6">
                 <div className="bg-card rounded-xl p-6 shadow">
                   <h3 className="text-xl font-bold mb-3">Advanced VEGA Technology</h3>
@@ -73,7 +71,6 @@ const About = () => {
           </div>
         </section>
       </main>
-
     </div>
   );
 };
