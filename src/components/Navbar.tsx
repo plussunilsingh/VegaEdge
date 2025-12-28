@@ -138,6 +138,20 @@ const Navbar = () => {
               <Mail className="h-3 w-3" /> contact@vegagreeks.com
             </a>
           </div>
+
+          {/* ADDED: WhatsApp Join Channel Button */}
+          <div className="flex-1 flex justify-center">
+            <a 
+              href="https://wa.me/918700583733" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white px-4 py-1.5 rounded-full font-bold text-[10px] sm:text-xs transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(37,211,102,0.4)] animate-pulse hover:animate-none"
+            >
+              <MessageCircle size={14} className="animate-bounce group-hover:animate-none" />
+              JOIN CHANNEL
+            </a>
+          </div>
+
           <div className={`flex items-center gap-2 font-bold ${isExpired ? 'text-red-500 animate-pulse' : 'text-primary'}`}>
             <Clock className="h-3 w-3" /> {isExpired ? "Session Expired" : `Session: ${formatTime(sessionTimeLeft)}`}
           </div>

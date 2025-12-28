@@ -54,7 +54,7 @@ const Subscription = () => {
   };
 
   return (
-    <section id="pricing" className="py-24 bg-[#020617] relative overflow-hidden text-white font-inter">
+    <section id="pricing" className="py-24 bg-background relative overflow-hidden text-foreground font-inter">
       {/* Background decoration */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/20 blur-[150px] rounded-full -translate-y-1/2 opacity-30" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/20 blur-[150px] rounded-full translate-y-1/2 opacity-30" />
@@ -63,12 +63,12 @@ const Subscription = () => {
         <div className="text-center max-w-3xl mx-auto mb-20">
           <div className="flex justify-center items-center gap-2 mb-6">
              <img src="/img/logo.png" alt="Logo" className="h-10 w-10" />
-             <h4 className="text-white text-2xl font-black tracking-tighter uppercase">Option <span className="text-primary">Greeks</span> <span className="text-slate-500">Lab</span></h4>
+             <h4 className="text-foreground text-2xl font-black tracking-tighter uppercase">Option <span className="text-primary">Greeks</span> <span className="text-muted-foreground">Lab</span></h4>
           </div>
           <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight leading-tight">
             Elevate Your <span className="text-primary italic">Intelligence</span>
           </h2>
-          <p className="text-slate-400 text-lg font-medium">
+          <p className="text-muted-foreground text-lg font-medium">
              Unlock the power of deep volatility data and Greeks analysis for explosive trading performance.
           </p>
         </div>

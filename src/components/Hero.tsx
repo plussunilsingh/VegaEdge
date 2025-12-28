@@ -18,7 +18,7 @@ const Hero = () => {
           backgroundPosition: 'center',
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-white via-white/40 to-transparent z-10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent z-10" />
 
       {/* Hero Content */}
       <div className="relative container mx-auto px-4 z-20">
@@ -26,10 +26,10 @@ const Hero = () => {
           <h4 className="text-primary text-xl font-bold uppercase mb-4 tracking-[0.2em] animate-fade-in-up">
             Visualize Your Option Greeks in Real Time
           </h4>
-          <h1 className="text-slate-900 text-4xl md:text-7xl font-extrabold uppercase mb-6 leading-tight animate-fade-in-up delay-100">
+          <h1 className="text-foreground text-4xl md:text-7xl font-extrabold uppercase mb-6 leading-tight animate-fade-in-up delay-100">
             Delta, Gamma, Theta, Vega - <span className="text-primary">sab ek hi smart dashboard par.</span>
           </h1>
-          <p className="text-slate-600 text-lg md:text-xl mb-10 max-w-2xl animate-fade-in-up delay-200">
+          <p className="text-muted-foreground text-lg md:text-xl mb-10 max-w-2xl animate-fade-in-up delay-200">
             The ultimate tool for traders to predict market direction with precision. Experience the power of real-time data visualization.
           </p>
 
@@ -41,7 +41,7 @@ const Hero = () => {
               </Link>
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-full px-8 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold h-14 transition-all">
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-full px-8 border-foreground text-foreground hover:bg-foreground hover:text-background font-bold h-14 transition-all">
               <a href="https://wa.me/something" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5" />
                 Join Channel
@@ -50,7 +50,7 @@ const Hero = () => {
 
             <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
               <DialogTrigger asChild>
-                <Button variant="ghost" size="lg" className="w-full sm:w-auto rounded-full px-8 text-slate-900 hover:bg-slate-100 font-bold h-14">
+                <Button variant="ghost" size="lg" className="w-full sm:w-auto rounded-full px-8 text-foreground hover:bg-muted font-bold h-14">
                   <div className="flex items-center gap-2">
                     <PlayCircle className="w-5 h-5 text-primary" />
                     View Demo
