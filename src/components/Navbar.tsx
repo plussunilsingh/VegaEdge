@@ -214,21 +214,7 @@ const Navbar = () => {
                ) : (
                  <div className="flex items-center gap-4">
                     <Link to="/my-account" className="flex items-center gap-2 hidden sm:inline-flex text-white/80 hover:text-white font-semibold text-sm border-r border-white/20 pr-4">
-                      <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20">
-                        <img 
-                          src={profileImageUrl || "/img/default_user.png"} 
-                          alt="Profile" 
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            if (target.src.includes("/img/default_user.png")) return;
-                            target.src = "/img/default_user.png";
-                          }}
-                        />
-                      </div>
-                      My Account
-                    </Link>
+                      My Account  </Link>
                     <button 
                       onClick={logout}
                       className="text-white/80 hover:text-red-400 font-semibold text-sm transition-colors"
