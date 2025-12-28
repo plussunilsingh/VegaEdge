@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,10 +72,10 @@ const Chart = () => {
             </div>
 
             <div className="flex flex-wrap gap-2 items-center justify-end">
-              <Button size="sm" className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-extrabold rounded-full border-none shadow-sm px-5">Event-Driven</Button>
-              <Button size="sm" variant="outline" className="text-foreground font-extrabold rounded-full shadow-sm px-5">Neutral Market</Button>
-              <Button size="sm" className="bg-[#10b981] hover:bg-[#059669] text-white font-extrabold rounded-full border-none shadow-sm px-5">Bearish</Button>
-              <Button size="sm" className="bg-[#e11d48] hover:bg-[#be123c] text-white font-extrabold rounded-full border-none shadow-sm px-5">Bullish</Button>
+              <Link to="/strategies"><Button size="sm" className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-extrabold rounded-full border-none shadow-sm px-5">Event-Driven</Button></Link>
+              <Link to="/strategies"><Button size="sm" variant="outline" className="text-foreground font-extrabold rounded-full shadow-sm px-5">Neutral Market</Button></Link>
+              <Link to="/strategies"><Button size="sm" className="bg-[#10b981] hover:bg-[#059669] text-white font-extrabold rounded-full border-none shadow-sm px-5">Bearish</Button></Link>
+              <Link to="/strategies"><Button size="sm" className="bg-[#e11d48] hover:bg-[#be123c] text-white font-extrabold rounded-full border-none shadow-sm px-5">Bullish</Button></Link>
             </div>
           </div>
 

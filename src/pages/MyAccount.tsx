@@ -68,18 +68,26 @@ const MyAccount = () => {
         <div className="container mx-auto px-4">
           {/* Strategy Buttons */}
           <div className="flex flex-wrap gap-4 justify-center mb-10">
-            <Button className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
-              Event-Driven Strategies
-            </Button>
-            <Button variant="secondary" className="bg-muted hover:bg-muted/80 text-foreground font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
-              Neutral Market Strategies
-            </Button>
-            <Button className="bg-[#10b981] hover:bg-[#059669] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
-              Bearish Market Strategies
-            </Button>
-            <Button className="bg-[#e11d48] hover:bg-[#be123c] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
-              Bullish Market Strategies
-            </Button>
+            <Link to="/strategies">
+              <Button className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+                Event-Driven Strategies
+              </Button>
+            </Link>
+            <Link to="/strategies">
+              <Button variant="secondary" className="bg-muted hover:bg-muted/80 text-foreground font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+                Neutral Market Strategies
+              </Button>
+            </Link>
+            <Link to="/strategies">
+              <Button className="bg-[#10b981] hover:bg-[#059669] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+                Bearish Market Strategies
+              </Button>
+            </Link>
+            <Link to="/strategies">
+              <Button className="bg-[#e11d48] hover:bg-[#be123c] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+                Bullish Market Strategies
+              </Button>
+            </Link>
           </div>
 
           <div className="max-w-6xl mx-auto">

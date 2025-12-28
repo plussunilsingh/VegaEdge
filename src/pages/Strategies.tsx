@@ -2,8 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useState } from "react";
 
 const Strategies = () => {
@@ -38,9 +36,7 @@ const Strategies = () => {
   const currentStrategies = strategies[activeTab as keyof typeof strategies] || [];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans text-foreground">
-      <Navbar />
-
+    <>
       {/* Hero Section */}
       <div className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 -z-10 transform -skew-y-2 origin-top-left scale-110"></div>
@@ -135,9 +131,7 @@ const Strategies = () => {
             </div>
         </div>
       </div>
-
-      <Footer />
-    </div>
+    </>
   );
 };
 

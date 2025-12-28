@@ -62,6 +62,7 @@ const App = () => (
                     <Route path="/disclaimer" element={<Disclaimer />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/pricing-details" element={<PricingDetails />} />
+                    <Route path="/strategies" element={<Strategies />} />
                     
                     {/* Protected Routes */}
                     <Route path="/my-account" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
@@ -69,7 +70,6 @@ const App = () => (
                     <Route path="/openchart" element={<ProtectedRoute><Openchart /></ProtectedRoute>} />
                     <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                    <Route path="/strategies" element={<ProtectedRoute><Strategies /></ProtectedRoute>} />
                     <Route path="/live-data" element={<ProtectedRoute><LiveData /></ProtectedRoute>} />
                     <Route path="/angleone-live-data" element={<ProtectedRoute><AngleOneLiveData /></ProtectedRoute>} />
                     
