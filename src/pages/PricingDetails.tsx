@@ -110,31 +110,31 @@ const PricingDetails = () => {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 items-center px-4 mt-8">
                     <div className="flex flex-col items-center gap-2">
                         <div className="h-8 flex items-center">
-                          <img src="/img/gpay-logo.svg" alt="GPAY" className="h-5 w-auto object-contain" />
+                          <img src="/payment_mode/gpay-logo.svg" alt="GPAY" className="h-5 w-auto object-contain" />
                         </div>
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">G-Pay</span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
                         <div className="h-8 flex items-center">
-                          <img src="/img/upi-logo.png" alt="UPI" className="h-5 w-auto object-contain" />
+                          <img src="/payment_mode/upi-logo.png" alt="UPI" className="h-5 w-auto object-contain" />
                         </div>
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">UPI</span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
                         <div className="h-8 flex items-center">
-                          <img src="/img/paytm-logo.svg" alt="Paytm" className="h-5 w-auto object-contain" />
+                          <img src="/payment_mode/paytm-logo.svg" alt="Paytm" className="h-5 w-auto object-contain" />
                         </div>
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">Paytm</span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
                         <div className="h-8 flex items-center">
-                          <img src="/img/PhonePe-01.svg" alt="PhonePe" className="h-5 w-auto object-contain" />
+                          <img src="/payment_mode/phonepe.svg" alt="PhonePe" className="h-5 w-auto object-contain" />
                         </div>
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">PhonePe</span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
                         <div className="h-8 flex items-center">
-                          <img src="/img/bharatpe-logo.png" alt="BharatPe" className="h-5 w-auto object-contain" />
+                          <img src="/payment_mode/bharatpe-logo.png" alt="BharatPe" className="h-5 w-auto object-contain" />
                         </div>
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">BharatPe</span>
                     </div>
