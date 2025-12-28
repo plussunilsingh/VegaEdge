@@ -82,6 +82,7 @@ const Navbar = () => {
                   )}
                   <MenuLink to="/chart" icon={<LineChart size={18} />} label="Chart" onClick={toggleMenu} />
                   <MenuLink to="/live-data" icon={<History size={18} />} label="Live Data" onClick={toggleMenu} />
+                  <MenuLink to="/strategies" icon={<LayoutDashboard size={18} />} label="Strategies" onClick={toggleMenu} />
                   <MenuLink to="/my-account" icon={<User size={18} />} label="My Account" onClick={toggleMenu} />
                   <MenuLink to="/contact" icon={<Mail size={18} />} label="Contact Us" onClick={toggleMenu} />
                   
@@ -140,18 +141,6 @@ const Navbar = () => {
             </a>
           </div>
 
-          {/* ADDED: WhatsApp Join Channel Button */}
-          <div className="flex-1 flex justify-center">
-            <a 
-              href="https://wa.me/918700583733" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="group flex items-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white px-4 py-1.5 rounded-full font-bold text-[10px] sm:text-xs transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(37,211,102,0.4)] animate-pulse hover:animate-none"
-            >
-              <MessageCircle size={14} className="animate-bounce group-hover:animate-none" />
-              JOIN CHANNEL
-            </a>
-          </div>
 
           <div className={`flex items-center gap-2 font-bold ${isExpired ? 'text-red-500 animate-pulse' : 'text-primary'}`}>
             <Clock className="h-3 w-3" /> {isExpired ? "Session Expired" : `Session: ${formatTime(sessionTimeLeft)}`}
@@ -185,8 +174,18 @@ const Navbar = () => {
               <Link to="/about" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">About Us</Link>
               <Link to="/contact" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Contact</Link>
               {showAuthLinks && (
-                <Link to="/live-data" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Dashboard</Link>
-              )}
+                  <Link to="/chart" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Chart</Link>
+                )}
+            {showAuthLinks && (
+                    <Link to="/live-data" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Dashboard</Link>
+                    )}
+            <a href="https://wa.me/918700583733"
+                target="_blank"
+                 rel="noopener noreferrer"
+                     className="group flex items-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white px-4 py-1.5 rounded-full font-bold text-xs transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(37,211,102,0.4)] animate-pulse hover:animate-none">
+               <MessageCircle size={14} className="animate-bounce group-hover:animate-none" />
+                          JOIN CHANNEL
+               </a>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4">

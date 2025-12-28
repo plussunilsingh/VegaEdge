@@ -24,6 +24,7 @@ const Openchart = lazy(() => import("./pages/Openchart"));
 // const GreeksAnalysis = lazy(() => import("./pages/GreeksAnalysis")); // DELETED
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Strategies = lazy(() => import("./pages/Strategies"));
 const LiveData = lazy(() => import("./pages/LiveData"));
 const AngleOneLiveData = lazy(() => import("./pages/AngleOneLiveData"));
 const PricingDetails = lazy(() => import("./pages/PricingDetails"));
@@ -68,6 +69,7 @@ const App = () => (
                     <Route path="/openchart" element={<ProtectedRoute><Openchart /></ProtectedRoute>} />
                     <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                    <Route path="/strategies" element={<ProtectedRoute><Strategies /></ProtectedRoute>} />
                     <Route path="/live-data" element={<ProtectedRoute><LiveData /></ProtectedRoute>} />
                     <Route path="/angleone-live-data" element={<ProtectedRoute><AngleOneLiveData /></ProtectedRoute>} />
                     
