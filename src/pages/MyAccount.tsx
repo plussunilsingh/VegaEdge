@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const MyAccount = () => {
-  const { user, profileImageUrl } = useAuth();
+  const { user, profileImageUrl, updateUserImage } = useAuth();
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -43,14 +43,17 @@ const MyAccount = () => {
         
         const data = await response.json();
         
+        // Update context immediately
+        if (data.path) {
+            updateUserImage(data.path);
+        }
+
         toast({
-          title: "Profile Updated",
-          description: "Your profile picture has been updated. Refreshing...",
+          title: "Success",
+          description: "Profile image uploaded successfully!",
+          className: "bg-green-500 text-white border-none",
         });
         
-        // Force reload or update context
-        window.location.reload(); 
-
     } catch (error: any) {
         toast({
             variant: "destructive",

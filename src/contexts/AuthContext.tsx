@@ -43,6 +43,7 @@ interface AuthContextType {
   isLoading: boolean;
   isSessionExpired: boolean;
   validateSession: () => boolean;
+  updateUserImage: (url: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,7 +78,7 @@ const mapUser = (userData: any): User => ({
     approved: true,
     role: userData.role || UserRole.NORMAL_USER,
     is_subscribed: userData.is_subscribed || false,
-    profileImage: userData.profileImage 
+    profileImage: userData.profile_image
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -287,6 +288,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [token]);
 
+  const updateUserImage = useCallback((url: string) => {
+    setProfileImageUrl(url);
+    if (user) {
+        const updatedUser = { ...user, profileImage: url };
+        setUser(updatedUser);
+        localStorage.setItem('alphaedge_user', JSON.stringify(updatedUser)); // Persist locally
+    }
+  }, [user]);
+
   const authContextValue = useMemo(() => ({ 
     user, 
     status,
@@ -297,6 +307,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     token,
     isLoading,
     isSessionExpired,
+    updateUserImage,
     validateSession: () => {
       if (status === AuthStatus.EXPIRED || status === AuthStatus.GUEST) {
         setStatus(AuthStatus.EXPIRED);
