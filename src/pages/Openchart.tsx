@@ -125,7 +125,7 @@ const Openchart = () => {
               <div className="bg-card rounded-2xl shadow-lg overflow-hidden sticky top-24">
                 <div className="max-h-[800px] overflow-y-auto">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-black text-white z-10">
+                    <thead className="sticky top-0 bg-muted text-muted-foreground z-10 border-b border-border">
                       <tr>
                         <th className="px-4 py-3 text-left">Time</th>
                         <th className="px-4 py-3 text-left">Call Vega</th>

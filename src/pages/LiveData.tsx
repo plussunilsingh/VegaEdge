@@ -153,10 +153,10 @@ const LiveData = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight text-[#00bcd4] flex items-center gap-3">
-              Market Intelligence <span className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded uppercase">{selectedIndex}</span>
+              Market Intelligence <span className="text-[10px] font-bold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded uppercase">{selectedIndex}</span>
             </h1>
             <p className="text-[11px] text-muted-foreground flex items-center gap-2">
-               <Activity className={cn("w-3 h-3", loading ? "animate-pulse text-primary" : "text-slate-300")} /> 
+               <Activity className={cn("w-3 h-3", loading ? "animate-pulse text-primary" : "text-muted-foreground/40")} /> 
                {loading ? "Refreshing Intelligence..." : `Live Pulse • Connected`}
             </p>
           </div>

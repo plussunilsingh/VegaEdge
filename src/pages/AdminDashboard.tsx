@@ -201,16 +201,16 @@ const AdminDashboard = () => {
     // (Old check removed, consolidated at top)
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] text-foreground">
+        <div className="min-h-screen bg-background text-foreground">
             <div className="container mx-auto py-8 px-4 space-y-8">
                 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-xl border border-border shadow-sm">
                     <div>
                         <h1 className="text-2xl font-bold flex items-center gap-2 text-[#00bcd4]">
                              <ShieldCheck className="w-6 h-6 text-[#00bcd4]" /> Admin Dashboard
                         </h1>
-                        <p className="text-slate-400 text-[11px] mt-1">Manage users, tokens, and system configuration.</p>
+                        <p className="text-muted-foreground text-[11px] mt-1">Manage users, tokens, and system configuration.</p>
                     </div>
                 </div>
 
@@ -248,7 +248,7 @@ const AdminDashboard = () => {
                                     <>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-sm text-left">
-                                                <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
+                                                <thead className="bg-muted text-muted-foreground uppercase text-xs">
                                                     <tr>
                                                         <th className="px-6 py-3">User</th>
                                                         <th className="px-6 py-3">Role</th>
@@ -257,16 +257,16 @@ const AdminDashboard = () => {
                                                         <th className="px-6 py-3 text-right">Actions</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-gray-100">
+                                                <tbody className="divide-y divide-border">
                                                     {paginatedUsers.map((u: User) => (
-                                                        <tr key={u.id} className="hover:bg-gray-50/50">
+                                                        <tr key={u.id} className="hover:bg-muted/30">
                                                             <td className="px-6 py-3">
                                                                 <div className="flex items-center gap-3">
                                                                     {u.profile_image ? (
                                                                         <img 
                                                                           src={u.profile_image.startsWith('http') ? u.profile_image : `${endpoints.auth.login.replace('/auth/login', '')}/${u.profile_image}`} 
                                                                           alt="" 
-                                                                          className="w-8 h-8 rounded-full object-cover border" 
+                                                                          className="w-8 h-8 rounded-full object-cover border border-border" 
                                                                         />
                                                                     ) : (
                                                                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
@@ -274,13 +274,13 @@ const AdminDashboard = () => {
                                                                         </div>
                                                                     )}
                                                                     <div>
-                                                                        <div className="font-medium text-gray-900">{u.username}</div>
-                                                                        <div className="text-gray-500 text-xs">{u.email}</div>
+                                                                        <div className="font-medium text-foreground">{u.username}</div>
+                                                                        <div className="text-muted-foreground text-xs">{u.email}</div>
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-3">
-                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.role === 'ADMIN_USER' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.role === 'ADMIN_USER' ? 'bg-purple-500/10 text-purple-500' : 'bg-muted text-muted-foreground'}`}>
                                                                     {u.role}
                                                                 </span>
                                                             </td>
@@ -288,11 +288,11 @@ const AdminDashboard = () => {
                                                                  {u.email_sent ? (
                                                                      <CheckCircle className="w-4 h-4 text-green-500 mx-auto" />
                                                                  ) : (
-                                                                     <div className="w-2 h-2 rounded-full bg-gray-300 mx-auto" />
+                                                                     <div className="w-2 h-2 rounded-full bg-muted mx-auto" />
                                                                  )}
                                                             </td>
                                                             <td className="px-6 py-3 text-center">
-                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.is_subscribed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.is_subscribed ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                                                                     {u.is_subscribed ? 'Yes' : 'No'}
                                                                 </span>
                                                             </td>
@@ -324,7 +324,7 @@ const AdminDashboard = () => {
                                                 >
                                                     <ChevronLeft className="w-4 h-4" />
                                                 </Button>
-                                                <span className="text-sm text-gray-600">
+                                                <span className="text-sm text-muted-foreground">
                                                     Page {currentPage} of {totalPages}
                                                 </span>
                                                 <Button 
