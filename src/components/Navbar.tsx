@@ -2,19 +2,25 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Youtube, Instagram, Send, MessageCircle, Phone, Mail, Clock, LayoutDashboard, History, User, LogOut, Shield, LineChart, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useAuth, useSession } from "@/contexts/AuthContext";
+import { useAuth, useSession, AuthStatus } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, status } = useAuth();
   const { sessionTimeLeft } = useSession();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  // Pattern: Centralized status flags
+  const isAuthenticated = status === AuthStatus.AUTHENTICATED;
+  const isExpired = status === AuthStatus.EXPIRED;
+  const showAuthLinks = isAuthenticated && user;
+
   const formatTime = (seconds: number) => {
+    if (isExpired) return "00:00";
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -31,7 +37,7 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Overlay Backdrop - High Z-Index to cover everything EXCEPT the drawer */}
+      {/* Overlay Backdrop */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300"
@@ -39,7 +45,7 @@ const Navbar = () => {
         />
       )}
 
-      {/* Unified Slide-out Menu Drawer - HIGHER Z-index than overlay */}
+      {/* Unified Slide-out Menu Drawer */}
       <div 
         className={`fixed top-0 left-0 h-full w-[280px] bg-card z-[110] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.15)] ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         onClick={(e) => e.stopPropagation()}
@@ -53,10 +59,10 @@ const Navbar = () => {
               </div>
               <div className="overflow-hidden">
                 <p className="text-white/50 text-[10px] uppercase font-bold tracking-widest leading-none mb-1">
-                  {user && sessionTimeLeft > 0 ? "Welcome back," : "Guest User"}
+                  {showAuthLinks ? "Welcome back," : "Guest User"}
                 </p>
                 <p className="text-white font-extrabold text-lg truncate whitespace-nowrap">
-                  {user && sessionTimeLeft > 0 ? user.name : "Vega Greeks"}
+                  {showAuthLinks ? user.name : "Vega Greeks"}
                 </p>
               </div>
             </div>
@@ -64,11 +70,11 @@ const Navbar = () => {
 
           <div className="flex-1 overflow-y-auto p-6 space-y-2">
             <div className="space-y-1">
-              {/* Common Links (Home always first) */}
+              {/* Common Links */}
               <MenuLink to="/" icon={<LayoutDashboard size={18} />} label="Home" onClick={toggleMenu} />
 
-              {/* Conditional Links for Authenticated Users with active session */}
-              {user && sessionTimeLeft > 0 ? (
+              {/* Conditional Links based on AuthStatus */}
+              {showAuthLinks ? (
                 <>
                   {user.role === 'ADMIN_USER' && (
                     <MenuLink to="/admin" icon={<Shield size={18} />} label="Admin Panel" onClick={toggleMenu} className="text-red-500 hover:bg-red-50" />
@@ -92,17 +98,22 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  {/* Guest Links - Matching Desktop Navbar */}
                   <MenuLink to="/about" icon={<User size={18} />} label="About Us" onClick={toggleMenu} />
                   <MenuLink to="/contact" icon={<Mail size={18} />} label="Contact Us" onClick={toggleMenu} />
                   <div className="pt-4 mt-4 border-t border-gray-100">
-                    <MenuLink to="/login" icon={<LogOut size={18} />} label="Login / Sign In" onClick={toggleMenu} className="text-primary hover:bg-primary/5" />
+                    <MenuLink 
+                      to="/login" 
+                      icon={<LogOut size={18} />} 
+                      label={isExpired ? "Login (Session Expired)" : "Login / Sign In"} 
+                      onClick={toggleMenu} 
+                      className="text-primary hover:bg-primary/5" 
+                    />
                   </div>
                 </>
               )}
             </div>
 
-            {/* Social Connectivity Branding */}
+            {/* Social Connectivity */}
             <div className="mt-8">
                <p className="text-slate-900 text-[10px] font-black uppercase tracking-widest px-4 mb-4">Connect With Us</p>
                <div className="grid grid-cols-4 gap-3 px-2">
@@ -116,7 +127,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Top Info Bar (Black Scalp) */}
+      {/* Top Info Bar */}
       <div className="bg-black text-white py-2 border-b border-white/10 relative z-[55]">
         <div className="container mx-auto px-4 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-[10px] sm:text-xs font-medium tracking-wider gap-2">
           <div className="flex items-center gap-4 sm:gap-6">
@@ -127,8 +138,8 @@ const Navbar = () => {
               <Mail className="h-3 w-3" /> contact@vegagreeks.com
             </a>
           </div>
-          <div className="flex items-center gap-2 text-primary font-bold">
-            <Clock className="h-3 w-3" /> Session: {formatTime(sessionTimeLeft)}
+          <div className={`flex items-center gap-2 font-bold ${isExpired ? 'text-red-500 animate-pulse' : 'text-primary'}`}>
+            <Clock className="h-3 w-3" /> {isExpired ? "Session Expired" : `Session: ${formatTime(sessionTimeLeft)}`}
           </div>
         </div>
       </div>
@@ -137,7 +148,6 @@ const Navbar = () => {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             
-            {/* Left Section: Hamburger + Logo */}
             <div className="flex items-center gap-3 sm:gap-4">
               <button 
                 onClick={toggleMenu} 
@@ -155,19 +165,16 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Middle Section: Desktop Horizontal Navigation */}
             <div className="hidden lg:flex items-center gap-8">
               <Link to="/" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Home</Link>
               <Link to="/about" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">About Us</Link>
               <Link to="/contact" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Contact</Link>
-              {user && (
+              {showAuthLinks && (
                 <Link to="/live-data" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Dashboard</Link>
               )}
             </div>
 
-            {/* Right Section: Launch/Login Button + Theme Toggle */}
             <div className="flex items-center gap-2 sm:gap-4">
-               {/* Desktop Theme Toggle */}
                <button
                  onClick={toggleTheme}
                  className="p-2 sm:p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -176,9 +183,9 @@ const Navbar = () => {
                  {theme === 'light' ? <Moon size={20} className="sm:w-[22px] sm:h-[22px]" /> : <Sun size={20} className="sm:w-[22px] sm:h-[22px]" />}
                </button>
 
-               {!user ? (
+               {!isAuthenticated ? (
                  <Button asChild className="rounded-full px-5 sm:px-8 bg-primary hover:bg-primary/90 text-white font-bold h-9 sm:h-11 shadow-lg shadow-primary/20">
-                   <Link to="/login">Login</Link>
+                   <Link to="/login">{isExpired ? "Login" : "Login"}</Link>
                  </Button>
                ) : (
                  <div className="flex items-center gap-4">

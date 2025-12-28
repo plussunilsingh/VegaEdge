@@ -44,41 +44,41 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <ThemeProvider>
-        <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<LoadingFallback />}>
-              <MainLayout>
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<Index />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/disclaimer" element={<Disclaimer />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/pricing-details" element={<PricingDetails />} />
-                  
-                  {/* Protected Routes */}
-                  <Route path="/my-account" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
-                  <Route path="/chart" element={<ProtectedRoute><Chart /></ProtectedRoute>} />
-                  <Route path="/openchart" element={<ProtectedRoute><Openchart /></ProtectedRoute>} />
-                  <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
-                  <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                  <Route path="/live-data" element={<ProtectedRoute><LiveData /></ProtectedRoute>} />
-                  <Route path="/angleone-live-data" element={<ProtectedRoute><AngleOneLiveData /></ProtectedRoute>} />
-                  
-                  {/* Catch-all */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </MainLayout>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Suspense fallback={<LoadingFallback />}>
+                <MainLayout>
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/disclaimer" element={<Disclaimer />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/pricing-details" element={<PricingDetails />} />
+                    
+                    {/* Protected Routes */}
+                    <Route path="/my-account" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
+                    <Route path="/chart" element={<ProtectedRoute><Chart /></ProtectedRoute>} />
+                    <Route path="/openchart" element={<ProtectedRoute><Openchart /></ProtectedRoute>} />
+                    <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                    <Route path="/live-data" element={<ProtectedRoute><LiveData /></ProtectedRoute>} />
+                    <Route path="/angleone-live-data" element={<ProtectedRoute><AngleOneLiveData /></ProtectedRoute>} />
+                    
+                    {/* Catch-all */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </MainLayout>
+              </Suspense>
+            </TooltipProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ThemeProvider>
     </HelmetProvider>
   </QueryClientProvider>
