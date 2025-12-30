@@ -4,7 +4,7 @@ import { Menu, X, Youtube, Instagram, Send, MessageCircle, Phone, Mail, Clock, L
 import { useState, useEffect } from "react";
 import { useAuth, useSession, AuthStatus } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
+import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE, COMPANY_WHATSAPP, COMPANY_TELEGRAM, COMPANY_INSTAGRAM, COMPANY_YOUTUBE_CHANNEL } from "@/config";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -129,10 +129,10 @@ const Navbar = () => {
             <div className="mt-8">
                <p className="text-slate-900 text-[10px] font-black uppercase tracking-widest px-4 mb-4">Connect With Us</p>
                <div className="grid grid-cols-4 gap-3 px-2">
-                  <SocialIcon href="https://wa.me/918700583733" color="#25D366" icon={<MessageCircle size={20} />} />
-                  <SocialIcon href="https://t.me/vegagreeks" color="#0088cc" icon={<Send size={20} />} />
-                  <SocialIcon href="https://instagram.com/vegagreeks" color="#E1306C" icon={<Instagram size={20} />} />
-                  <SocialIcon href="https://youtube.com/@vegagreeks" color="#FF0000" icon={<Youtube size={20} />} />
+                  <SocialIcon href={COMPANY_WHATSAPP} color="#25D366" icon={<MessageCircle size={20} />} />
+                  <SocialIcon href={COMPANY_TELEGRAM} color="#0088cc" icon={<Send size={20} />} />
+                  <SocialIcon href={COMPANY_INSTAGRAM} color="#E1306C" icon={<Instagram size={20} />} />
+                  <SocialIcon href={COMPANY_YOUTUBE_CHANNEL} color="#FF0000" icon={<Youtube size={20} />} />
                </div>
             </div>
           </div>
@@ -189,7 +189,7 @@ const Navbar = () => {
             {showAuthLinks && (
                     <Link to="/live-data" className="text-white/80 hover:text-white transition-colors font-semibold text-sm">Dashboard</Link>
                     )}
-            <a href="https://wa.me/918700583733"
+            <a href={COMPANY_WHATSAPP}
                 target="_blank"
                  rel="noopener noreferrer"
                      className="group flex items-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white px-4 py-1.5 rounded-full font-bold text-xs transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(37,211,102,0.4)] animate-pulse hover:animate-none">

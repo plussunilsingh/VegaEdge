@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { MessageCircle, PlayCircle, Rocket } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { COMPANY_YOUTUBE_VIDEO_ID, COMPANY_WHATSAPP } from "@/config";
 
 const Hero = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -42,7 +43,7 @@ const Hero = () => {
             </Button>
             
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-full px-8 border-foreground text-foreground hover:bg-foreground hover:text-background font-bold h-14 transition-all">
-              <a href="https://wa.me/something" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+              <a href={COMPANY_WHATSAPP} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5" />
                 Join Channel
               </a>
@@ -62,7 +63,7 @@ const Hero = () => {
                   <iframe 
                     width="100%" 
                     height="100%" 
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0" 
+                    src={`https://www.youtube.com/embed/${COMPANY_YOUTUBE_VIDEO_ID}?autoplay=0`}
                     title="YouTube video player" 
                     frameBorder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 

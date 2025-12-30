@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Lightbulb, Heart, Phone } from "lucide-react";
+import { COMPANY_PHONE } from "@/config";
 
 const About = () => {
   return (
@@ -49,7 +50,7 @@ const About = () => {
                 <Phone className="w-8 h-8 text-primary" />
                 <div>
                   <h4 className="font-bold">Call Us</h4>
-                  <p className="text-lg tracking-wide">7830175650</p>
+                  <p className="text-lg tracking-wide">{COMPANY_PHONE}</p>
                 </div>
               </div>
             </div>

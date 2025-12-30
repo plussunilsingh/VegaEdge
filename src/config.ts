@@ -11,7 +11,13 @@ export const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL ||
 
 export const COMPANY_NAME = "Vega Greeks Calculator";
 export const COMPANY_EMAIL = "contact@vegagreeks.com";
-export const COMPANY_PHONE = "7830175650";
+export const COMPANY_PHONE = "9759315703";
+export const COMPANY_WHATSAPP = "https://whatsapp.com/channel/0029Vb6nCyIA89MrcMkbGL2M";
+export const COMPANY_YOUTUBE_VIDEO = "https://www.youtube.com/watch?v=ZvXN0TcZLfQ";
+export const COMPANY_YOUTUBE_VIDEO_ID = "ZvXN0TcZLfQ";
+export const COMPANY_YOUTUBE_CHANNEL = "https://youtube.com/@vegagreeks";
+export const COMPANY_INSTAGRAM = "https://instagram.com/vegagreeks";
+export const COMPANY_TELEGRAM = "https://t.me/vegagreeks";
 
 // Helper to construct URLs
 export const endpoints = {

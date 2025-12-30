@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2, ShieldCheck, CreditCard } from "lucide-react";
+import { COMPANY_PHONE } from "@/config";
 
 const PricingDetails = () => {
   const location = useLocation();
@@ -78,7 +79,7 @@ const PricingDetails = () => {
                     Activation Protocol:
                   </h4>
                   <p className="text-gray-300 font-medium leading-relaxed relative z-10">
-                    After successful payment, screenshot your receipt and send to <span className="text-white font-black text-lg">+91 7830175650</span>. Your institutional-grade dashboard will be live in <span className="text-primary italic font-black">30 mins</span>.
+                    After successful payment, screenshot your receipt and send to <span className="text-white font-black text-lg">+91 {COMPANY_PHONE}</span>. Your institutional-grade dashboard will be live in <span className="text-primary italic font-black">30 mins</span>.
                   </p>
                 </div>
               </div>
