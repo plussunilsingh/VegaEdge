@@ -29,6 +29,10 @@ interface GreeksData {
     diff_theta: number;
   } | null;
   baseline_diff?: any;
+  trendDisplay?: {
+    label: string;
+    className: string;
+  } | null;
 }
 
 const getInitialDate = () => {
@@ -133,6 +137,7 @@ const LiveData = () => {
           timestamp: slotTime.toISOString(),
           greeks,
           baseline_diff: existingData?.baseline_diff || null,
+          trendDisplay: existingData?.trendDisplay || null,
         } as GreeksData;
       });
     },
