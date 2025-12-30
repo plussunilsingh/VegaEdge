@@ -52,24 +52,24 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="email">Email Address</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
+                <Input
+                  id="email"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email" 
+                  placeholder="Enter your email"
                   className="mt-2"
                   required
                 />
               </div>
               <div>
                 <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
+                <Input
+                  id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password" 
+                  placeholder="Enter your password"
                   className="mt-2"
                   required
                 />
@@ -79,32 +79,31 @@ const Login = () => {
                   <input type="checkbox" className="rounded" />
                   Remember me
                 </label>
-                <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
+                <a href="#" className="text-sm text-primary hover:underline">
+                  Forgot password?
+                </a>
               </div>
-              <Button 
-                type="submit" 
-                className="w-full rounded-full" 
-                size="lg"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full rounded-full" size="lg" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
-            
+
             {/* Session Timeout Notice */}
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
               <p className="text-xs text-center text-blue-700 dark:text-blue-300">
                 🔒 Sessions expire after <strong>10 minutes</strong> of inactivity for security
               </p>
             </div>
-            
+
             <p className="text-center mt-6 text-muted-foreground">
-              Don't have an account? <a href="/register" className="text-primary hover:underline">Register here</a>
+              Don't have an account?{" "}
+              <a href="/register" className="text-primary hover:underline">
+                Register here
+              </a>
             </p>
           </div>
         </div>
       </main>
-
     </div>
   );
 };

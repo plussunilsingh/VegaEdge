@@ -22,46 +22,45 @@ const MyAccount = () => {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) return;
-    
+
     const formData = new FormData();
     formData.append("file", selectedFile);
-    
+
     try {
-        const token = localStorage.getItem('alphaedge_session'); // Or use useAuth().token
-        const response = await fetch(endpoints.user.image, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
+      const token = localStorage.getItem("alphaedge_session"); // Or use useAuth().token
+      const response = await fetch(endpoints.user.image, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.detail || "Upload failed");
-        }
-        
-        const data = await response.json();
-        
-        // Update context immediately
-        if (data.path) {
-            updateUserImage(data.path);
-        }
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "Upload failed");
+      }
 
-        toast({
-          title: "Success",
-          description: "Profile image uploaded successfully!",
-          className: "bg-green-500 text-white border-none",
-        });
-        
+      const data = await response.json();
+
+      // Update context immediately
+      if (data.path) {
+        updateUserImage(data.path);
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile image uploaded successfully!",
+        className: "bg-green-500 text-white border-none",
+      });
     } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Upload Failed",
-            description: error.message
-        });
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: error.message,
+      });
     } finally {
-        setSelectedFile(null);
+      setSelectedFile(null);
     }
   };
 
@@ -77,7 +76,10 @@ const MyAccount = () => {
               </Button>
             </Link>
             <Link to="/strategies">
-              <Button variant="secondary" className="bg-muted hover:bg-muted/80 text-foreground font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+              <Button
+                variant="secondary"
+                className="bg-muted hover:bg-muted/80 text-foreground font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none"
+              >
                 Neutral Market Strategies
               </Button>
             </Link>
@@ -99,8 +101,8 @@ const MyAccount = () => {
               <div className="bg-card rounded-2xl p-8 shadow-lg">
                 <div className="flex flex-col items-center">
                   <div className="w-64 h-64 rounded-full overflow-hidden mb-6 bg-muted">
-                    <img 
-                      src={profileImageUrl || "/img/user.jpg"} 
+                    <img
+                      src={profileImageUrl || "/img/user.jpg"}
                       alt="Profile"
                       className="w-full h-full object-cover"
                       loading="lazy"
@@ -113,7 +115,7 @@ const MyAccount = () => {
                       }}
                     />
                   </div>
-                  
+
                   <form onSubmit={handleUpdateProfile} className="w-full text-center">
                     <Input
                       type="file"
@@ -121,8 +123,8 @@ const MyAccount = () => {
                       onChange={handleFileChange}
                       className="mb-4"
                     />
-                     <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="bg-[#f0a0a0] hover:bg-[#e09090] text-white font-bold w-full rounded-full transition-transform hover:scale-[1.02] border-none"
                       disabled={!selectedFile}
                     >
@@ -140,8 +142,8 @@ const MyAccount = () => {
                       <span className="text-white text-[10px] font-bold">✓</span>
                     </div>
                     <div className="flex items-center gap-2">
-                       <span className="font-bold text-slate-800 min-w-[60px]">Name:</span>
-                       <span className="text-slate-600 font-medium">{user?.name || "User"}</span>
+                      <span className="font-bold text-slate-800 min-w-[60px]">Name:</span>
+                      <span className="text-slate-600 font-medium">{user?.name || "User"}</span>
                     </div>
                   </div>
 
@@ -150,8 +152,10 @@ const MyAccount = () => {
                       <span className="text-white text-[10px] font-bold">✓</span>
                     </div>
                     <div className="flex items-center gap-2">
-                       <span className="font-bold text-slate-800 min-w-[60px]">Email:</span>
-                       <span className="text-slate-600 font-medium break-all">{user?.email || ""}</span>
+                      <span className="font-bold text-slate-800 min-w-[60px]">Email:</span>
+                      <span className="text-slate-600 font-medium break-all">
+                        {user?.email || ""}
+                      </span>
                     </div>
                   </div>
 
@@ -160,8 +164,8 @@ const MyAccount = () => {
                       <span className="text-white text-[10px] font-bold">✓</span>
                     </div>
                     <div className="flex items-center gap-2">
-                       <span className="font-bold text-slate-800 min-w-[60px]">Phone:</span>
-                       <span className="text-slate-600 font-medium">{user?.phone || ""}</span>
+                      <span className="font-bold text-slate-800 min-w-[60px]">Phone:</span>
+                      <span className="text-slate-600 font-medium">{user?.phone || ""}</span>
                     </div>
                   </div>
 
@@ -170,10 +174,15 @@ const MyAccount = () => {
                       <span className="text-white text-[10px] font-bold">✓</span>
                     </div>
                     <div className="flex items-center gap-2">
-                       <span className="font-bold text-slate-800 min-w-[100px]">Subscription:</span>
-                       <span className={cn("font-bold text-sm", user?.is_subscribed ? "text-[#10b981]" : "text-red-500")}>
-                         {user?.is_subscribed ? "Active" : "Inactive"}
-                       </span>
+                      <span className="font-bold text-slate-800 min-w-[100px]">Subscription:</span>
+                      <span
+                        className={cn(
+                          "font-bold text-sm",
+                          user?.is_subscribed ? "text-[#10b981]" : "text-red-500"
+                        )}
+                      >
+                        {user?.is_subscribed ? "Active" : "Inactive"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -181,16 +190,16 @@ const MyAccount = () => {
                 <div className="space-y-4 pt-4 border-t border-slate-50">
                   {user?.is_subscribed ? (
                     <Link to="/live-data">
-                        <Button className="w-full bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full py-6 text-lg transition-transform hover:scale-[1.02] shadow-md border-none">
+                      <Button className="w-full bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full py-6 text-lg transition-transform hover:scale-[1.02] shadow-md border-none">
                         Explore Our Vega Charts
-                        </Button>
+                      </Button>
                     </Link>
                   ) : (
-                    <Button 
-                        disabled 
-                        className="w-full bg-slate-200 text-slate-400 cursor-not-allowed rounded-full py-6 text-lg border-none"
+                    <Button
+                      disabled
+                      className="w-full bg-slate-200 text-slate-400 cursor-not-allowed rounded-full py-6 text-lg border-none"
                     >
-                        Chart Access Restricted (Contact Admin)
+                      Chart Access Restricted (Contact Admin)
                     </Button>
                   )}
 
@@ -205,8 +214,6 @@ const MyAccount = () => {
           </div>
         </div>
       </main>
-
-
     </div>
   );
 };
