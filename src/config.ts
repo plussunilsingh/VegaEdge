@@ -16,7 +16,7 @@ export const COMPANY_WHATSAPP = "https://whatsapp.com/channel/0029Vb6nCyIA89MrcM
 export const COMPANY_YOUTUBE_VIDEO = "https://www.youtube.com/watch?v=ZvXN0TcZLfQ";
 export const COMPANY_YOUTUBE_VIDEO_ID = "ZvXN0TcZLfQ";
 export const COMPANY_YOUTUBE_CHANNEL = "https://youtube.com/@vegagreeks";
-export const COMPANY_INSTAGRAM = "https://instagram.com/vegagreeks";
+export const COMPANY_INSTAGRAM = "https://instagram.com/dine_shkumar4852/?igsh=MTNzNGNhN2RqNmJ0";
 export const COMPANY_TELEGRAM = "https://t.me/vegagreeks";
 
 // Helper to construct URLs
