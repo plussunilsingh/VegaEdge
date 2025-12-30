@@ -44,12 +44,22 @@ export const GreeksTable = ({
 }: GreeksTableProps) => {
   const tableData = [...data].filter((r) => r.greeks !== null).reverse();
 
-  const getTrend = (g: any) => {
-    if (title !== "Vega") return null;
-    const net = g[dataKeyNet];
-    if (net > 0.5) return { text: "Bearish", color: "text-[#ef4444]", bg: "bg-red-50" };
-    if (net < -0.5) return { text: "Bullish", color: "text-[#10b981]", bg: "bg-green-50" };
-    return { text: "Sideways", color: "text-[#f59e0b]", bg: "bg-orange-50" };
+  // Map backend trend labels to Tailwind classes (required for JIT compiler)
+  const getTrendClasses = (label: string) => {
+    switch (label) {
+      case "Bullish":
+        return "text-green-600 bg-green-100";
+      case "Bearish":
+        return "text-red-600 bg-red-100";
+      case "Sideways Bullish":
+        return "text-emerald-500 bg-emerald-50";
+      case "Sideways Bearish":
+        return "text-yellow-600 bg-yellow-100";
+      case "Sideways":
+        return "text-yellow-500 bg-yellow-50";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -91,16 +101,15 @@ export const GreeksTable = ({
                   <TableCell className={cn("text-right font-mono font-bold pr-6", colorNet)}>
                     {fmtNum(row.greeks![dataKeyNet])}
                   </TableCell>
-                  {title === "Vega" && (
+                  {title === "Vega" && row.trendDisplay && (
                     <TableCell className="text-center">
                       <span
                         className={cn(
                           "px-2 py-0.5 rounded text-[10px] font-bold",
-                          getTrend(row.greeks)?.color,
-                          getTrend(row.greeks)?.bg
+                          getTrendClasses(row.trendDisplay.label)
                         )}
                       >
-                        {getTrend(row.greeks)?.text}
+                        {row.trendDisplay.label}
                       </span>
                     </TableCell>
                   )}
