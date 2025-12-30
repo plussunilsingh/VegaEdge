@@ -11,7 +11,7 @@ const Hero = () => {
   return (
     <div className="relative min-h-[85vh] flex items-center overflow-hidden">
       {/* Dynamic Background Image */}
-      <div 
+      <div
         className="absolute inset-0 z-0 scale-105 animate-slow-zoom"
         style={{
           backgroundImage: 'url("/img/home_bg.jpeg")',
@@ -41,7 +41,7 @@ const Hero = () => {
                 Launch Dashboard
               </Link>
             </Button>
-            
+
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-full px-8 border-foreground text-foreground hover:bg-foreground hover:text-background font-bold h-14 transition-all">
               <a href={COMPANY_WHATSAPP} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5" />
@@ -60,13 +60,13 @@ const Hero = () => {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[800px] p-0 bg-black border-none">
                 <div className="aspect-video w-full">
-                  <iframe 
-                    width="100%" 
-                    height="100%" 
+                  <iframe
+                    width="100%"
+                    height="100%"
                     src={`https://www.youtube.com/embed/${COMPANY_YOUTUBE_VIDEO_ID}?autoplay=0`}
-                    title="YouTube video player" 
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   ></iframe>
                 </div>

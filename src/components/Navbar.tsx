@@ -40,14 +40,14 @@ const Navbar = () => {
     <>
       {/* Overlay Backdrop */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Unified Slide-out Menu Drawer */}
-      <div 
+      <div
         className={`fixed top-0 left-0 h-full w-[280px] bg-card z-[110] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.15)] ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -56,9 +56,9 @@ const Navbar = () => {
           <div className="bg-[#0f172a] p-8 pt-12">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/50 overflow-hidden">
-                <img 
-                  src={profileImageUrl || "/img/default_user.png"} 
-                  alt="Profile" 
+                <img
+                  src={profileImageUrl || "/img/default_user.png"}
+                  alt="Profile"
                   className="w-full h-full object-cover"
                   loading="lazy"
                   onError={(e) => {
@@ -95,9 +95,9 @@ const Navbar = () => {
                   <MenuLink to="/strategies" icon={<LayoutDashboard size={18} />} label="Strategies" onClick={toggleMenu} />
                   <MenuLink to="/my-account" icon={<User size={18} />} label="My Account" onClick={toggleMenu} />
                   <MenuLink to="/contact" icon={<Mail size={18} />} label="Contact Us" onClick={toggleMenu} />
-                  
+
                   <div className="pt-4 mt-4 border-t border-gray-100">
-                    <button 
+                    <button
                       onClick={() => { logout(); toggleMenu(); }}
                       className="flex items-center gap-4 w-full px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 font-extrabold transition-all group"
                     >
@@ -113,12 +113,12 @@ const Navbar = () => {
                   <MenuLink to="/about" icon={<User size={18} />} label="About Us" onClick={toggleMenu} />
                   <MenuLink to="/contact" icon={<Mail size={18} />} label="Contact Us" onClick={toggleMenu} />
                   <div className="pt-4 mt-4 border-t border-gray-100">
-                    <MenuLink 
-                      to="/login" 
-                      icon={<LogOut size={18} />} 
-                      label={isExpired ? "Login (Session Expired)" : "Login / Sign In"} 
-                      onClick={toggleMenu} 
-                      className="text-primary hover:bg-primary/5" 
+                    <MenuLink
+                      to="/login"
+                      icon={<LogOut size={18} />}
+                      label={isExpired ? "Login (Session Expired)" : "Login / Sign In"}
+                      onClick={toggleMenu}
+                      className="text-primary hover:bg-primary/5"
                     />
                   </div>
                 </>
@@ -161,19 +161,19 @@ const Navbar = () => {
       <nav className="bg-[#0f172a] border-b border-white/5 sticky top-0 z-50 shadow-lg">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            
+
             <div className="flex items-center gap-3 sm:gap-4">
-              <button 
-                onClick={toggleMenu} 
+              <button
+                onClick={toggleMenu}
                 className="text-white p-2 hover:bg-white/10 rounded-full transition-colors focus:outline-none z-[70]"
                 aria-label="Toggle Menu"
               >
                 {isOpen ? <X className="h-7 w-7 sm:h-8 sm:w-8 text-primary" /> : <Menu className="h-7 w-7 sm:h-8 sm:w-8" />}
               </button>
-              
+
               <Link to="/" className="flex items-center">
                 <h1 className="text-white text-lg sm:text-xl font-bold flex items-center gap-2">
-                  <img src="/img/logo.png" alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" /> 
+                  <img src="/img/logo.png" alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" />
                   <span className="hidden xs:inline">{COMPANY_NAME}</span>
                 </h1>
               </Link>
@@ -215,7 +215,7 @@ const Navbar = () => {
                  <div className="flex items-center gap-4">
                     <Link to="/my-account" className="flex items-center gap-2 hidden sm:inline-flex text-white/80 hover:text-white font-semibold text-sm border-r border-white/20 pr-4">
                       My Account  </Link>
-                    <button 
+                    <button
                       onClick={logout}
                       className="text-white/80 hover:text-red-400 font-semibold text-sm transition-colors"
                     >
@@ -233,9 +233,9 @@ const Navbar = () => {
 
 // Helper Components for Cleaner Sidebar
 const MenuLink = ({ to, icon, label, onClick, className = "" }: any) => (
-  <Link 
-    to={to} 
-    onClick={onClick} 
+  <Link
+    to={to}
+    onClick={onClick}
     className={`flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-muted font-extrabold text-foreground transition-all group ${className}`}
   >
     <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center group-hover:scale-110 shadow-sm transition-transform">
@@ -248,10 +248,10 @@ const MenuLink = ({ to, icon, label, onClick, className = "" }: any) => (
 const SocialIcon = ({ href, color, icon }: any) => {
     const [isHovered, setIsHovered] = useState(false);
     return (
-      <a 
-        href={href} 
-        target="_blank" 
-        rel="noopener noreferrer" 
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
         className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center text-foreground hover:text-white transition-all hover:scale-110 shadow-sm border border-border"
         style={isHovered ? { backgroundColor: color, borderColor: color } : {}}
         onMouseEnter={() => setIsHovered(true)}
