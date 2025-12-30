@@ -15,7 +15,7 @@ export const SEOHead = ({
   name = "Vega Greeks",
   type = "website",
   url = "https://ibzd.com",
-  image = "https://lovable.dev/opengraph-image-p98pqg.png"
+  image = "/img/logo_red.png"
 }: SEOHeadProps) => {
   return (
     <Helmet>

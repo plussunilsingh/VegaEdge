@@ -24,6 +24,7 @@ const Openchart = lazy(() => import("./pages/Openchart"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const LiveData = lazy(() => import("./pages/LiveData"));
+const AngleOneLiveData = lazy(() => import("./pages/AngleOneLiveData"));
 // const UpstoxToken = lazy(() => import("./pages/UpstoxToken")); // Keeping for now but features moved to Admin
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ const App = () => (
                     <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                     <Route path="/live-data" element={<ProtectedRoute><LiveData /></ProtectedRoute>} />
+                    <Route path="/angleone-live-data" element={<ProtectedRoute><AngleOneLiveData /></ProtectedRoute>} />
                     
                     {/* Catch-all */}
                     <Route path="*" element={<NotFound />} />
