@@ -9,11 +9,11 @@ const Footer = () => {
 
   useEffect(() => {
     fetch("http://localhost:8000/system/version")
-      .then(res => res.json())
-      .then(data => setApiVersion(data.version))
-      .catch(e => {
-          console.error("Failed to fetch API version", e);
-          setApiVersion("Offline");
+      .then((res) => res.json())
+      .then((data) => setApiVersion(data.version))
+      .catch((e) => {
+        console.error("Failed to fetch API version", e);
+        setApiVersion("Offline");
       });
   }, []);
 
@@ -29,19 +29,32 @@ const Footer = () => {
               </h1>
             </Link>
             <p className="text-gray-400 mb-6">
-              Tickertape provides data, information & content for Indian stocks, mutual funds, ETFs & indices.
+              Tickertape provides data, information & content for Indian stocks, mutual funds, ETFs
+              & indices.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary transition-colors flex items-center justify-center">
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary transition-colors flex items-center justify-center"
+              >
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary transition-colors flex items-center justify-center">
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary transition-colors flex items-center justify-center"
+              >
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary transition-colors flex items-center justify-center">
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary transition-colors flex items-center justify-center"
+              >
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary transition-colors flex items-center justify-center">
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full bg-primary/20 hover:bg-primary transition-colors flex items-center justify-center"
+              >
                 <Linkedin className="w-5 h-5" />
               </a>
             </div>
@@ -50,20 +63,55 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold mb-4">Overview</h4>
             <ul className="space-y-2">
-              <li><Link to="/disclaimer" className="text-gray-400 hover:text-primary transition-colors">Disclaimer</Link></li>
-              <li><Link to="/privacy" className="text-gray-400 hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><a href="#" className="text-gray-400 hover:text-primary transition-colors">Markets</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-primary transition-colors">Customers</a></li>
+              <li>
+                <Link
+                  to="/disclaimer"
+                  className="text-gray-400 hover:text-primary transition-colors"
+                >
+                  Disclaimer
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-gray-400 hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+                  Markets
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+                  Customers
+                </a>
+              </li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-lg font-bold mb-4">Company</h4>
             <ul className="space-y-2">
-              <li><Link to="/about" className="text-gray-400 hover:text-primary transition-colors">About</Link></li>
-              <li><a href="#" className="text-gray-400 hover:text-primary transition-colors">Blog</a></li>
-              <li><a href="#faq" className="text-gray-400 hover:text-primary transition-colors">FAQ</a></li>
-              <li><Link to="/contact" className="text-gray-400 hover:text-primary transition-colors">Contact</Link></li>
+              <li>
+                <Link to="/about" className="text-gray-400 hover:text-primary transition-colors">
+                  About
+                </Link>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a href="#faq" className="text-gray-400 hover:text-primary transition-colors">
+                  FAQ
+                </a>
+              </li>
+              <li>
+                <Link to="/contact" className="text-gray-400 hover:text-primary transition-colors">
+                  Contact
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -83,7 +131,7 @@ const Footer = () => {
           <div className="text-center text-gray-400">
             <span>© {COMPANY_NAME}, All right reserved.</span>
             <div className="text-xs mt-2 text-gray-600">
-                UI: v{uiVersion} | API: v{apiVersion}
+              UI: v{uiVersion} | API: v{apiVersion}
             </div>
           </div>
         </div>

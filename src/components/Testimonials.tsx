@@ -3,10 +3,25 @@ import { COMPANY_NAME } from "@/config";
 
 const Testimonials = () => {
   const testimonials = [
-    { name: "Apeksha Sharma", review: `${COMPANY_NAME} has completely transformed my trading strategy. The live Greeks data is incredibly accurate and helps me spot market reversals before they happen.` },
-    { name: "Pranjal Koar", review: "The visualization of Vega trends is a game-changer. I used to struggle with option pricing, but this platform makes it crystal clear." },
-    { name: "Santosh Jha", review: "I've tried multiple platforms, but the speed and reliability of Vega Market Edge are unmatched. The admin support is also fantastic!" },
-    { name: "Vinay Avasthi", review: "Event-driven strategies have never been easier to execute. The historical data analysis helps me backtest effectively on weekends." }
+    {
+      name: "Apeksha Sharma",
+      review: `${COMPANY_NAME} has completely transformed my trading strategy. The live Greeks data is incredibly accurate and helps me spot market reversals before they happen.`,
+    },
+    {
+      name: "Pranjal Koar",
+      review:
+        "The visualization of Vega trends is a game-changer. I used to struggle with option pricing, but this platform makes it crystal clear.",
+    },
+    {
+      name: "Santosh Jha",
+      review:
+        "I've tried multiple platforms, but the speed and reliability of Vega Market Edge are unmatched. The admin support is also fantastic!",
+    },
+    {
+      name: "Vinay Avasthi",
+      review:
+        "Event-driven strategies have never been easier to execute. The historical data analysis helps me backtest effectively on weekends.",
+    },
   ];
 
   return (
@@ -22,7 +37,11 @@ const Testimonials = () => {
             <div key={index} className="bg-card rounded-2xl p-6 shadow-lg relative">
               <div className="text-6xl text-primary/20 absolute top-4 left-4">"</div>
               <div className="relative z-10">
-                <img src={`/img/testimonial-${index + 1}.jpg`} className="w-16 h-16 rounded-full object-cover mx-auto mb-4 mt-8" alt={testimonial.name} />
+                <img
+                  src={`/img/testimonial-${index + 1}.jpg`}
+                  className="w-16 h-16 rounded-full object-cover mx-auto mb-4 mt-8"
+                  alt={testimonial.name}
+                />
                 <p className="text-sm text-muted-foreground mb-4 text-center">
                   {testimonial.review}
                 </p>

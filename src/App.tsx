@@ -63,16 +63,65 @@ const App = () => (
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/pricing-details" element={<PricingDetails />} />
                     <Route path="/strategies" element={<Strategies />} />
-                    
+
                     {/* Protected Routes */}
-                    <Route path="/my-account" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
-                    <Route path="/chart" element={<ProtectedRoute><Chart /></ProtectedRoute>} />
-                    <Route path="/openchart" element={<ProtectedRoute><Openchart /></ProtectedRoute>} />
-                    <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
-                    <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                    <Route path="/live-data" element={<ProtectedRoute><LiveData /></ProtectedRoute>} />
-                    <Route path="/angleone-live-data" element={<ProtectedRoute><AngleOneLiveData /></ProtectedRoute>} />
-                    
+                    <Route
+                      path="/my-account"
+                      element={
+                        <ProtectedRoute>
+                          <MyAccount />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/chart"
+                      element={
+                        <ProtectedRoute>
+                          <Chart />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/openchart"
+                      element={
+                        <ProtectedRoute>
+                          <Openchart />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/change-password"
+                      element={
+                        <ProtectedRoute>
+                          <ChangePassword />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute>
+                          <AdminDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/live-data"
+                      element={
+                        <ProtectedRoute>
+                          <LiveData />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/angleone-live-data"
+                      element={
+                        <ProtectedRoute>
+                          <AngleOneLiveData />
+                        </ProtectedRoute>
+                      }
+                    />
+
                     {/* Catch-all */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
