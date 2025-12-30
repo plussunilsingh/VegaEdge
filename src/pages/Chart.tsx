@@ -78,7 +78,7 @@ const Chart = () => {
 
             <div className="ml-auto">
                <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1 text-right">Reference Date</label>
-              <Input 
+              <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}

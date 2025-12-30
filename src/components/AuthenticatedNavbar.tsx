@@ -11,7 +11,7 @@ const AuthenticatedNavbar = () => {
   const { sessionTimeLeft } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  
+
   const toggleMenu = () => setIsOpen(!isOpen);
 
 // ... (formatTime helper remains same)
@@ -27,7 +27,7 @@ const AuthenticatedNavbar = () => {
                     });
                     if (!resp.ok) throw new Error(`Status ${resp.status}`);
                     const data = await resp.json();
-                    
+
                     if (data.url) {
                         toast({
                         title: 'Redirecting to Upstox...',
@@ -51,7 +51,7 @@ const AuthenticatedNavbar = () => {
                   Connect Upstox
                 </Button>
               </div>
-  
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;

@@ -37,8 +37,8 @@ const AdminDashboard = () => {
                     </div>
                     <h2 className="text-2xl font-bold tracking-tight">Access Restricted</h2>
                     <p className="text-muted-foreground">
-                        {isSessionExpired 
-                            ? "Your session has expired for security. Please re-login to access the administrative console." 
+                        {isSessionExpired
+                            ? "Your session has expired for security. Please re-login to access the administrative console."
                             : "You do not have the required permissions to view this secure page."}
                     </p>
                     <Button onClick={() => window.location.href = '/login'} className="w-full">
@@ -266,14 +266,14 @@ const AdminDashboard = () => {
                                                                         <img 
                                                                           src={u.profile_image.startsWith('http') ? u.profile_image : `${endpoints.auth.login.replace('/auth/login', '')}/${u.profile_image}`} 
                                                                           alt="" 
-                                                                          className="w-8 h-8 rounded-full object-cover border border-border" 
+                                                                          className="w-8 h-8 rounded-full object-cover border border-border"
                                                                           onError={(e) => e.currentTarget.src = "/img/default_user.png"}
                                                                         />
                                                                     ) : (
-                                                                        <img 
-                                                                          src="/img/default_user.png" 
-                                                                          alt="" 
-                                                                          className="w-8 h-8 rounded-full object-cover border border-border" 
+                                                                        <img
+                                                                          src="/img/default_user.png"
+                                                                          alt=""
+                                                                          className="w-8 h-8 rounded-full object-cover border border-border"
                                                                         />
                                                                     )}
                                                                     <div>

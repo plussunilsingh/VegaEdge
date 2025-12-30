@@ -88,11 +88,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>("/img/default_user.png");
   const [token, setToken] = useState<string | null>(null);
   const [status, setStatus] = useState<AuthStatus>(AuthStatus.LOADING);
-  
+
   const location = useLocation();
 
-  const isPublicRoute = useMemo(() => 
-    PUBLIC_ROUTES.includes(location.pathname), 
+  const isPublicRoute = useMemo(() =>
+    PUBLIC_ROUTES.includes(location.pathname),
   [location.pathname]);
 
   // Derived flags for legacy support if needed
@@ -141,16 +141,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.fetch = async (...args) => {
         const urlString = typeof args[0] === 'string' ? args[0] : (args[0] as Request).url;
         const url = new URL(urlString, window.location.origin);
-        
+
         // Strategy: Use whitelisted set for performance lookup
         const isAllowed = Array.from(PUBLIC_ENDPOINT_WHITELIST).some(p => url.pathname.includes(p));
-        
+
         if (!isAllowed) {
             console.warn(`[Session Guard] Blocking API call: ${url.pathname}`);
             toast.error("Session expired. Action blocked.");
-            return new Response(JSON.stringify({ error: "Session Expired" }), { 
-                status: 401, 
-                statusText: "Unauthorized" 
+            return new Response(JSON.stringify({ error: "Session Expired" }), {
+                status: 401,
+                statusText: "Unauthorized"
             });
         }
         return originalFetch(...args);
@@ -168,7 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setToken(sessionToken);
-    
+
     // Quick local restore
     const storedUser = localStorage.getItem('alphaedge_user');
     if (storedUser) {
@@ -176,8 +176,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userData = JSON.parse(storedUser);
         setUser(userData);
         if (userData.profileImage) {
-          const imgUrl = userData.profileImage.startsWith('http') 
-            ? userData.profileImage 
+          const imgUrl = userData.profileImage.startsWith('http')
+            ? userData.profileImage
             : `${BACKEND_API_BASE_URL}/${userData.profileImage}`;
           setProfileImageUrl(imgUrl);
         } else {
@@ -247,11 +247,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
            setToken(sessionToken);
            localStorage.setItem('alphaedge_user', JSON.stringify(mappedUser));
            localStorage.setItem('alphaedge_session', sessionToken);
-           
+
            // Set profile image url
            if (mappedUser.profileImage) {
-              const imgUrl = mappedUser.profileImage.startsWith('http') 
-                ? mappedUser.profileImage 
+              const imgUrl = mappedUser.profileImage.startsWith('http')
+                ? mappedUser.profileImage
                 : `${BACKEND_API_BASE_URL}/${mappedUser.profileImage}`;
               setProfileImageUrl(imgUrl);
             } else {
@@ -310,7 +310,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const authContextValue = useMemo(() => ({ 
     user, 
     status,
-    login, 
+    login,
     logout, 
     isAuthenticated,
     profileImageUrl,
@@ -332,9 +332,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       <AuthContext.Provider value={authContextValue}>
         {children}
         {/* Pattern: Only show modal on protected routes when expired */}
-        <SessionExpiredModal 
-          open={status === AuthStatus.EXPIRED && !isPublicRoute} 
-          onOpenChange={(open) => !open && setStatus(AuthStatus.EXPIRED)} 
+        <SessionExpiredModal
+          open={status === AuthStatus.EXPIRED && !isPublicRoute}
+          onOpenChange={(open) => !open && setStatus(AuthStatus.EXPIRED)}
         />
       </AuthContext.Provider>
     </SessionContext.Provider>
