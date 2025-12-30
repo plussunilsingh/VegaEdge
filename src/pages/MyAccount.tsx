@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 import { endpoints } from "@/config";
 
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const MyAccount = () => {
-  const { user, profileImageUrl } = useAuth();
+  const { user, profileImageUrl, updateUserImage } = useAuth();
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -44,14 +43,17 @@ const MyAccount = () => {
         
         const data = await response.json();
         
+        // Update context immediately
+        if (data.path) {
+            updateUserImage(data.path);
+        }
+
         toast({
-          title: "Profile Updated",
-          description: "Your profile picture has been updated. Refreshing...",
+          title: "Success",
+          description: "Profile image uploaded successfully!",
+          className: "bg-green-500 text-white border-none",
         });
         
-        // Force reload or update context
-        window.location.reload(); 
-
     } catch (error: any) {
         toast({
             variant: "destructive",
@@ -64,25 +66,31 @@ const MyAccount = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
-      <AuthenticatedNavbar />
-      
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4">
           {/* Strategy Buttons */}
           <div className="flex flex-wrap gap-4 justify-center mb-10">
-            <Button className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
-              Event-Driven Strategies
-            </Button>
-            <Button className="bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#1e293b] font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
-              Neutral Market Strategies
-            </Button>
-            <Button className="bg-[#10b981] hover:bg-[#059669] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
-              Bearish Market Strategies
-            </Button>
-            <Button className="bg-[#e11d48] hover:bg-[#be123c] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
-              Bullish Market Strategies
-            </Button>
+            <Link to="/strategies">
+              <Button className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+                Event-Driven Strategies
+              </Button>
+            </Link>
+            <Link to="/strategies">
+              <Button variant="secondary" className="bg-muted hover:bg-muted/80 text-foreground font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+                Neutral Market Strategies
+              </Button>
+            </Link>
+            <Link to="/strategies">
+              <Button className="bg-[#10b981] hover:bg-[#059669] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+                Bearish Market Strategies
+              </Button>
+            </Link>
+            <Link to="/strategies">
+              <Button className="bg-[#e11d48] hover:bg-[#be123c] text-white font-bold rounded-full px-6 py-2 transition-transform hover:scale-105 shadow-sm border-none">
+                Bullish Market Strategies
+              </Button>
+            </Link>
           </div>
 
           <div className="max-w-6xl mx-auto">

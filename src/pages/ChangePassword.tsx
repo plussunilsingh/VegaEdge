@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,8 +44,6 @@ const ChangePassword = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <AuthenticatedNavbar />
-      
       <main className="flex-1 py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto bg-card rounded-2xl p-8 shadow-lg">

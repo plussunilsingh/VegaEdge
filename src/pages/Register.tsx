@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-import { endpoints } from "@/config";
+import { COMPANY_NAME, endpoints } from "@/config";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -72,7 +71,7 @@ const Register = () => {
         if (loginSuccess) {
           toast({
             title: "Registration Successful",
-            description: "Welcome to Vega Greeks!",
+            description: `Welcome to ${COMPANY_NAME}!`,
           });
           navigate("/my-account");
         }
@@ -92,8 +91,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-white">
       <main className="flex-1 py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto bg-card rounded-2xl p-8 shadow-lg">

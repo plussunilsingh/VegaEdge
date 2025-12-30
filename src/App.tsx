@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { HelmetProvider } from "react-helmet-async";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 // Lazy load pages
 const Index = lazy(() => import("./pages/Index"));
@@ -23,9 +24,10 @@ const Openchart = lazy(() => import("./pages/Openchart"));
 // const GreeksAnalysis = lazy(() => import("./pages/GreeksAnalysis")); // DELETED
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Strategies = lazy(() => import("./pages/Strategies"));
 const LiveData = lazy(() => import("./pages/LiveData"));
 const AngleOneLiveData = lazy(() => import("./pages/AngleOneLiveData"));
-// const UpstoxToken = lazy(() => import("./pages/UpstoxToken")); // Keeping for now but features moved to Admin
+const PricingDetails = lazy(() => import("./pages/PricingDetails"));
 
 const queryClient = new QueryClient();
 
@@ -37,19 +39,19 @@ const LoadingFallback = () => (
 
 import Footer from "@/components/Footer";
 
-// ... (lazy imports)
+import MainLayout from "@/components/MainLayout";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<LoadingFallback />}>
-              <div className="flex flex-col min-h-screen">
-                <main className="flex-1">
+      <ThemeProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Suspense fallback={<LoadingFallback />}>
+                <MainLayout>
                   <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<Index />} />
@@ -59,6 +61,8 @@ const App = () => (
                     <Route path="/about" element={<About />} />
                     <Route path="/disclaimer" element={<Disclaimer />} />
                     <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/pricing-details" element={<PricingDetails />} />
+                    <Route path="/strategies" element={<Strategies />} />
                     
                     {/* Protected Routes */}
                     <Route path="/my-account" element={<ProtectedRoute><MyAccount /></ProtectedRoute>} />
@@ -72,13 +76,12 @@ const App = () => (
                     {/* Catch-all */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                </main>
-                <Footer />
-              </div>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+                </MainLayout>
+              </Suspense>
+            </TooltipProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </HelmetProvider>
   </QueryClientProvider>
 );

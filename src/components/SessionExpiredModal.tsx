@@ -18,6 +18,10 @@ export const SessionExpiredModal = ({ open, onOpenChange }: SessionExpiredModalP
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Don't show modal on login or register pages
+  const isAuthPage = window.location.pathname === "/login" || window.location.pathname === "/register";
+  const shouldShow = open && !isAuthPage;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -40,7 +44,7 @@ export const SessionExpiredModal = ({ open, onOpenChange }: SessionExpiredModalP
   // Callback to proactively check if session is live (requested by user)
   // This handles cases where user might have logged in in another tab
   useEffect(() => {
-    if (!open) return;
+    if (!shouldShow) return;
 
     const checkInterval = setInterval(() => {
         const storedUser = localStorage.getItem('alphaedge_user');
@@ -53,10 +57,10 @@ export const SessionExpiredModal = ({ open, onOpenChange }: SessionExpiredModalP
     }, 5000); // Check every 5 seconds
 
     return () => clearInterval(checkInterval);
-  }, [open, onOpenChange]);
+  }, [shouldShow, onOpenChange]);
 
   return (
-    <Dialog open={open} onOpenChange={(val) => !val && onOpenChange(val)}> 
+    <Dialog open={shouldShow} onOpenChange={(val) => !val && onOpenChange(val)}> 
       {/* Prevent closing by clicking outside if strict enforcement needed, but allow for now */}
       <DialogContent className="sm:max-w-[425px] border-red-500/20 shadow-2xl">
         <DialogHeader>

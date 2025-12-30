@@ -1,10 +1,10 @@
-import Navbar from "@/components/Navbar";
+import { ShieldAlert } from "lucide-react";
+import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
 
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-background">
       <main className="flex-1 py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto bg-card rounded-2xl p-8 md:p-12 shadow-lg">
@@ -14,7 +14,7 @@ const Privacy = () => {
               <section>
                 <h2 className="text-2xl font-bold text-foreground mb-4">Information We Collect</h2>
                 <p>
-                  At Vega Greeks, we collect information that you provide directly to us, including your name, email address, phone number, and any other information you choose to provide. We also automatically collect certain information about your device when you use our platform, including IP address, browser type, and usage data.
+                  At {COMPANY_NAME}, we collect information that you provide directly to us, including your name, email address, phone number, and any other information you choose to provide. We also automatically collect certain information about your device when you use our platform, including IP address, browser type, and usage data.
                 </p>
               </section>
 
@@ -39,7 +39,7 @@ const Privacy = () => {
                 <ul className="list-disc pl-6 space-y-2">
                   <li>With your consent</li>
                   <li>To comply with legal obligations</li>
-                  <li>To protect the rights and safety of Vega Greeks and our users</li>
+                  <li>To protect the rights and safety of {COMPANY_NAME} and our users</li>
                   <li>With service providers who assist in our operations</li>
                 </ul>
               </section>
@@ -76,8 +76,8 @@ const Privacy = () => {
                   If you have any questions about this Privacy Policy, please contact us at:
                 </p>
                 <p className="font-semibold text-foreground">
-                  Email: contact@vegagreeks.com<br />
-                  Phone: 7830175650
+                  Email: {COMPANY_EMAIL}<br />
+                  Phone: {COMPANY_PHONE}
                 </p>
               </section>
 

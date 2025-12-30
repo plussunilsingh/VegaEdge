@@ -1,34 +1,17 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
+
+import { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, isToday } from "date-fns";
-import { Calendar as CalendarIcon, Activity, Waves, Zap, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { BACKEND_API_BASE_URL, endpoints } from "@/config";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer,
-  ReferenceLine
-} from 'recharts';
+import { endpoints } from "@/config";
+import { SEOHead } from "@/components/SEOHead";
+import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
+import { cn } from "@/lib/utils";
 
 interface GreeksData {
   timestamp: string;
@@ -49,83 +32,22 @@ interface GreeksData {
   baseline_diff?: any;
 }
 
-import { SEOHead } from "@/components/SEOHead";
-
-// --- Pure Helper Functions ---
-
 const getInitialDate = () => {
-    const today = new Date();
-    const day = today.getDay();
-    if (day === 0) return new Date(today.setDate(today.getDate() - 2)); // Sunday -> Friday
-    if (day === 6) return new Date(today.setDate(today.getDate() - 1)); // Saturday -> Friday
-    return today;
-};
-
-// --- Constants & Styles ---
-const CHART_COLORS = {
-    call: "#059669", // Emerald 600
-    put: "#dc2626",  // Red 600
-    net: "#7c3aed",  // Violet 600
-    grid: "#e2e8f0", // Slate 200
-    axis: "#64748b"  // Slate 500
-};
-
-const formatTime = (isoString: string) => {
-    try {
-        return format(new Date(isoString), "HH:mm");
-    } catch (e) {
-        return "";
-    }
-};
-
-const fmtNum = (val: any, digits = 2) => {
-    if (val === null || val === undefined) return "-";
-    const num = Number(val);
-    if (isNaN(num)) return "-";
-    return num.toFixed(digits);
-};
-
-// --- Sub-components ---
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-        return (
-            <div className="bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3 shadow-xl text-xs">
-                <p className="font-medium mb-2 text-muted-foreground">{formatTime(label)}</p>
-                {payload.map((entry: any, index: number) => (
-                    entry.value !== undefined && entry.value !== null && (
-                        <div key={index} className="flex items-center gap-2 mb-1">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                            <span className="text-foreground">{entry.name}:</span>
-                            <span className="font-mono font-medium">{fmtNum(entry.value)}</span>
-                        </div>
-                    )
-                ))}
-            </div>
-        );
-    }
-    return null;
+    return new Date();
 };
 
 const LiveData = () => {
-  const { token, isAuthenticated, isSessionExpired, validateSession } = useAuth();
-  
-  // State
+  const { token, isAuthenticated, validateSession } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date>(getInitialDate());
-  const [expiryList, setExpiryList] = useState<string[]>([]);
-  const [selectedExpiry, setSelectedExpiry] = useState<string>("");
-  const [data, setData] = useState<GreeksData[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [selectedExpiry, setSelectedExpiry] = useState<string>("");
 
   // Helper to generate full day time slots (09:15 to 15:30)
-  const generateTimeSlots = useCallback((baseDate: Date) => {
+  const timeSlots = useMemo(() => {
       const slots = [];
-      const start = new Date(baseDate);
+      const start = new Date(selectedDate);
       start.setHours(9, 15, 0, 0);
-      const end = new Date(baseDate);
+      const end = new Date(selectedDate);
       end.setHours(15, 30, 0, 0);
 
       let current = start;
@@ -134,311 +56,116 @@ const LiveData = () => {
           current = new Date(current.getTime() + 60000);
       }
       return slots;
-  }, []);
+  }, [selectedDate]);
 
-  // Fetch Expiry List
+  // Fetch Expiry List via useQuery for automatic caching and deduplication
+  const { data: expiryList = [] } = useQuery({
+    queryKey: ['expiry-list', selectedIndex],
+    queryFn: async () => {
+        const res = await fetch(endpoints.market.expiryList, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Failed to fetch expiry list");
+        const list = await res.json();
+        const todayStr = format(new Date(), "yyyy-MM-dd");
+        return Array.isArray(list) ? list.filter(exp => exp >= todayStr) : [];
+    },
+    enabled: !!token && isAuthenticated
+  });
+
+  // Auto-select closest future expiry
   useEffect(() => {
-     if (isAuthenticated) {
-        fetch(endpoints.market.expiryList, {
-             headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(val => {
-            if (Array.isArray(val)) {
-                 setExpiryList(val);
-                 if (val.length > 0 && !selectedExpiry) setSelectedExpiry(val[0]); 
-            }
-        })
-        .catch(err => console.error("Failed to fetch expiry list", err));
-     }
-  }, [isAuthenticated, token, selectedExpiry]);
-
-  const fetchHistoryData = useCallback(async (dateObj: Date, silent = false) => {
-    if (!silent) setLoading(true);
-    setError(null);
-    try {
-      if (!BACKEND_API_BASE_URL) throw new Error("Backend URL missing");
-
-      const dateStr = format(dateObj, "yyyy-MM-dd");
-      const url = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
-
-      const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-
-      if (response.status === 401) {
-        toast.error("Session Expired");
-        throw new Error("Unauthorized");
-      }
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const result = await response.json();
-      console.log("HISTORY_API_RESULT:", result); // DEBUG
-      if (!Array.isArray(result)) throw new Error("Invalid Format");
-
-      const dataMap = new Map();
-      result.forEach((item: any) => {
-          if (item?.greeks && item.timestamp) {
-              const dt = new Date(item.timestamp);
-              if (!isNaN(dt.getTime())) {
-                  // Use a robust key for matching
-                  dataMap.set(format(dt, "HH:mm"), item);
-              }
-          }
-      });
-
-      const timeSlots = generateTimeSlots(dateObj);
-      const processedData: GreeksData[] = timeSlots.map((slotTime) => {
-          const timeKey = format(slotTime, "HH:mm");
-          const existingData = dataMap.get(timeKey);
-
-          let greeks = null;
-          if (existingData && existingData.greeks) {
-              const g = existingData.greeks;
-              greeks = {
-                  call_vega: Number(g.call_vega),
-                  put_vega: Number(g.put_vega),
-                  diff_vega: Number(g.put_vega) - Number(g.call_vega),
-                  call_gamma: Number(g.call_gamma),
-                  put_gamma: Number(g.put_gamma),
-                  diff_gamma: Number(g.put_gamma) - Number(g.call_gamma),
-                  call_delta: Number(g.call_delta),
-                  put_delta: Number(g.put_delta),
-                  diff_delta: Number(g.put_delta) - Number(g.call_delta),
-                  call_theta: Number(g.call_theta),
-                  put_theta: Number(g.put_theta),
-                  diff_theta: Number(g.put_theta) - Number(g.call_theta),
-              };
-          }
-
-          return {
-              timestamp: slotTime.toISOString(),
-              greeks: greeks,
-              baseline_diff: existingData?.baseline_diff || null
-          };
-      });
-
-      setData(processedData);
-      setLastUpdated(new Date());
-    } catch (e: any) {
-      console.error(e);
-      if (!silent) setError(e.message);
-    } finally {
-      if (!silent) setLoading(false);
+    if (expiryList.length > 0) {
+        if (!selectedExpiry || !expiryList.includes(selectedExpiry)) {
+            setSelectedExpiry(expiryList[0]);
+        }
     }
-  }, [token, selectedIndex, selectedExpiry, generateTimeSlots]);
+  }, [expiryList, selectedIndex, selectedExpiry]);
 
-  // Polling Logic
-  useEffect(() => {
-    if (selectedDate && isAuthenticated) {
-      fetchHistoryData(selectedDate);
-      if (!isToday(selectedDate)) return;
+  // Fetch History Data via useQuery (Proxy/Cache Pattern)
+  const { data: historyData = [], isFetching: loading } = useQuery({
+    queryKey: ['market-history', format(selectedDate, "yyyy-MM-dd"), selectedIndex, selectedExpiry],
+    queryFn: async () => {
+        const dateStr = format(selectedDate, "yyyy-MM-dd");
+        const url = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
-      const interval = setInterval(() => {
-          fetchHistoryData(selectedDate, true);
-      }, 60000);
+        if (res.status === 401) {
+            toast.error("Session Expired");
+            throw new Error("Unauthorized");
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      return () => clearInterval(interval);
-    }
-  }, [selectedDate, selectedIndex, selectedExpiry, isAuthenticated, fetchHistoryData]);
+        const result = await res.json();
+        if (!Array.isArray(result)) return [];
 
-  // --- Sub-components (Memoized) ---
-  const GreekSection = useMemo(() => {
-    return ({ title, dataKeyCall, dataKeyPut, dataKeyNet, colorCall, colorPut, colorNet, icon: Icon }: any) => {
-        
-        const filteredData = data.filter(d => d.greeks);
-        const tableData = [...data].filter(r => r.greeks !== null).reverse();
-
-        // Symmetric Scaling
-        const { yDomain, yTicks } = (() => {
-            let maxVal = 0;
-            data.forEach((d: any) => {
-                if (d.greeks) {
-                    maxVal = Math.max(maxVal, Math.abs((d.greeks as any)[dataKeyCall] || 0), Math.abs((d.greeks as any)[dataKeyPut] || 0), Math.abs((d.greeks as any)[dataKeyNet] || 0));
+        const dataMap = new Map();
+        result.forEach((item: any) => {
+            if (item?.greeks && item.timestamp) {
+                const dt = new Date(item.timestamp);
+                if (!isNaN(dt.getTime())) {
+                    dataMap.set(format(dt, "HH:mm"), item);
                 }
-            });
-            const limit = maxVal === 0 ? 1 : maxVal * 1.1; 
-            const step = limit / 2;
-            return { yDomain: [-limit, limit] as [number, number], yTicks: [-limit, -step, 0, step, limit] };
-        })();
+            }
+        });
 
-        const getStartRef = () => {
-             const start = new Date(selectedDate);
-             start.setHours(9, 15, 0, 0);
-             return start.toISOString();
-        };
-
-        const getTrend = (g: any) => {
-            if (title !== "Vega") return null;
-            const net = g[dataKeyNet];
-            if (net > 0.5) return { text: "Bearish", color: "text-[#ef4444]", bg: "bg-red-50" };
-            if (net < -0.5) return { text: "Bullish", color: "text-[#10b981]", bg: "bg-green-50" };
-            return { text: "Sideways", color: "text-[#f59e0b]", bg: "bg-orange-50" };
-        };
-
-        return (
-            <div className="grid grid-cols-12 gap-6 h-full mb-10">
-                <Card className="col-span-12 lg:col-span-9 border-slate-200 bg-white shadow-sm ring-1 ring-slate-100 flex flex-col h-[500px] lg:h-[600px] overflow-hidden group relative">
-                    <CardHeader className="py-4 px-6 border-b border-slate-100 flex flex-row items-center justify-between z-10 bg-slate-50/50">
-                        <CardTitle className="flex items-center gap-3 text-sm font-bold text-slate-800 uppercase tracking-widest">
-                            <Icon className={cn("w-5 h-5", colorNet.replace('text-', 'text-'))} /> 
-                            {title} Analysis
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 w-full min-h-0 p-4 overflow-hidden relative z-10">
-                        <div className="w-full h-full overflow-x-auto custom-scrollbar">
-                            <div className="w-full h-full min-w-[800px] lg:min-w-0">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={data} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
-                                        <defs>
-                                            <linearGradient id={`gradient-call-${title}`} x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor={CHART_COLORS.call} stopOpacity={0.1}/>
-                                                <stop offset="95%" stopColor={CHART_COLORS.call} stopOpacity={0}/>
-                                            </linearGradient>
-                                            <linearGradient id={`gradient-put-${title}`} x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor={CHART_COLORS.put} stopOpacity={0.1}/>
-                                                <stop offset="95%" stopColor={CHART_COLORS.put} stopOpacity={0}/>
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
-                                        <XAxis 
-                                            dataKey="timestamp" 
-                                            tickFormatter={formatTime} 
-                                            tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} 
-                                            stroke={CHART_COLORS.grid}
-                                            height={60}
-                                            angle={-45}
-                                            textAnchor="end"
-                                        />
-                                        <YAxis 
-                                            domain={yDomain} 
-                                            ticks={yTicks}
-                                            tickFormatter={(val) => val.toFixed(2)}
-                                            tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}}
-                                            stroke={CHART_COLORS.grid}
-                                            width={55}
-                                        />
-                                        <Tooltip 
-                                            content={<CustomTooltip />} 
-                                            cursor={{ stroke: 'rgba(0,0,0,0.05)', strokeWidth: 1 }} 
-                                        />
-                                        <Legend 
-                                            wrapperStyle={{paddingTop: '20px', fontSize: '11px', fontWeight: 600}} 
-                                            iconType="circle" 
-                                            verticalAlign="bottom"
-                                        />
-                                        <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1} />
-                                        <ReferenceLine 
-                                            x={getStartRef()} 
-                                            stroke="#cbd5e1" 
-                                            strokeDasharray="4 4" 
-                                            label={{ value: '09:15', position: 'insideTopLeft', fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} 
-                                        />
-                                        
-                                        <Line 
-                                            type="monotone" 
-                                            dataKey={`greeks.${dataKeyCall}`} 
-                                            name={`Call ${title}`} 
-                                            stroke={CHART_COLORS.call} 
-                                            strokeWidth={2.5} 
-                                            dot={false} 
-                                            activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.call }}
-                                            animationDuration={1500}
-                                        />
-                                         <Line 
-                                            type="monotone" 
-                                            dataKey={`greeks.${dataKeyPut}`} 
-                                            name={`Put ${title}`} 
-                                            stroke={CHART_COLORS.put} 
-                                            strokeWidth={2.5} 
-                                            dot={false} 
-                                            activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.put }}
-                                            animationDuration={1500}
-                                        />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="col-span-12 lg:col-span-3 border-slate-200 bg-white shadow-sm flex flex-col h-[400px] lg:h-[600px] overflow-hidden">
-                    <CardHeader className="py-4 px-6 border-b border-slate-100 bg-slate-50/50">
-                        <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-tighter">Live {title} Stream</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0 overflow-hidden flex-1">
-                        <div className="overflow-y-auto h-full custom-scrollbar">
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-white border-b border-slate-100 z-10">
-                                    <TableRow className="text-[10px] uppercase border-none hover:bg-transparent">
-                                        <TableHead className="pl-6 h-10">Time</TableHead>
-                                        <TableHead className="text-right text-emerald-600 h-10">Call</TableHead>
-                                        <TableHead className="text-right text-red-600 h-10">Put</TableHead>
-                                        <TableHead className="text-right font-bold text-slate-700 h-10 pr-6">Net</TableHead>
-                                        {title === "Vega" && <TableHead className="text-center text-slate-400 h-10">Trend</TableHead>}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {tableData.map((row, i) => (
-                                        <TableRow key={i} className="text-[11px] border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
-                                            <TableCell className="pl-6 font-mono text-slate-500">{formatTime(row.timestamp)}</TableCell>
-                                            <TableCell className="text-right font-mono text-emerald-600">{fmtNum(row.greeks![dataKeyCall])}</TableCell>
-                                            <TableCell className="text-right font-mono text-red-600">{fmtNum(row.greeks![dataKeyPut])}</TableCell>
-                                            <TableCell className={cn("text-right font-mono font-bold pr-6", colorNet)}>{fmtNum(row.greeks![dataKeyNet])}</TableCell>
-                                            {title === "Vega" && (
-                                                <TableCell className="text-center">
-                                                    <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold", getTrend(row.greeks)?.color, getTrend(row.greeks)?.bg)}>
-                                                        {getTrend(row.greeks)?.text}
-                                                    </span>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    };
-  }, [data, selectedDate]);
-
-  if (error && !data.length) {
-      return (
-        <div className="min-h-screen bg-background text-foreground">
-            <AuthenticatedNavbar />
-            <div className="container mx-auto py-20 text-center">
-                 <h2 className="text-xl text-red-500">Error Loading Data</h2>
-                 <Button onClick={() => selectedDate && fetchHistoryData(selectedDate)} className="mt-4">Retry</Button>
-            </div>
-        </div>
-      );
-  }
+        return timeSlots.map((slotTime) => {
+            const timeKey = format(slotTime, "HH:mm");
+            const existingData = dataMap.get(timeKey);
+            let greeks = null;
+            if (existingData?.greeks) {
+                const g = existingData.greeks;
+                greeks = {
+                    call_vega: Number(g.call_vega),
+                    put_vega: Number(g.put_vega),
+                    diff_vega: Number(g.put_vega) - Number(g.call_vega),
+                    call_gamma: Number(g.call_gamma),
+                    put_gamma: Number(g.put_gamma),
+                    diff_gamma: Number(g.put_gamma) - Number(g.call_gamma),
+                    call_delta: Number(g.call_delta),
+                    put_delta: Number(g.put_delta),
+                    diff_delta: Number(g.put_delta) - Number(g.call_delta),
+                    call_theta: Number(g.call_theta),
+                    put_theta: Number(g.put_theta),
+                    diff_theta: Number(g.put_theta) - Number(g.call_theta),
+                };
+            }
+            return {
+                timestamp: slotTime.toISOString(),
+                greeks,
+                baseline_diff: existingData?.baseline_diff || null
+            } as GreeksData;
+        });
+    },
+    enabled: !!token && isAuthenticated && !!selectedExpiry,
+    refetchInterval: isToday(selectedDate) ? 60000 : false, // Automatic polling for today's data
+    staleTime: 30000
+  });
 
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-inter flex flex-col">
+    <div className="min-h-screen bg-background text-foreground font-inter flex flex-col transition-colors duration-300">
       <SEOHead title={`${selectedIndex} Live Market Intelligence | Vega Market Edge`} />
-      <AuthenticatedNavbar />
-      
+
       <div className="w-full max-w-[1920px] mx-auto py-6 px-4 space-y-6">
-        
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight text-[#00bcd4] flex items-center gap-3">
-              Market Intelligence <span className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded uppercase">{selectedIndex}</span>
+              Market Intelligence <span className="text-[10px] font-bold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded uppercase">{selectedIndex}</span>
             </h1>
-            <p className="text-[11px] text-slate-400 flex items-center gap-2">
-               <Activity className="w-3 h-3 text-slate-300" /> Live Pulse • Updated: {format(lastUpdated, "HH:mm:ss")}
+            <p className="text-[11px] text-muted-foreground flex items-center gap-2">
+               <Activity className={cn("w-3 h-3", loading ? "animate-pulse text-primary" : "text-muted-foreground/40")} />
+               {loading ? "Refreshing Intelligence..." : `Live Pulse • Connected`}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            <select 
+            <select
               value={selectedIndex}
               onChange={(e) => setSelectedIndex(e.target.value)}
-              className="h-9 px-3 bg-background border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[100px]"
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[100px]"
             >
               <option value="NIFTY">NIFTY</option>
               <option value="BANKNIFTY">BANKNIFTY</option>
@@ -446,13 +173,12 @@ const LiveData = () => {
               <option value="MIDCPNIFTY">MIDCPNIFTY</option>
             </select>
 
-             <select 
+             <select
               value={selectedExpiry}
               onChange={(e) => setSelectedExpiry(e.target.value)}
-              className="h-9 px-3 bg-background border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px]"
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px]"
             >
-              <option value="">All Expiries</option>
-              {expiryList.map(exp => <option key={exp} value={exp}>{exp}</option>)}
+              {expiryList.map((exp: string) => <option key={exp} value={exp}>{exp}</option>)}
             </select>
 
             <Popover>
@@ -469,17 +195,19 @@ const LiveData = () => {
           </div>
         </div>
 
-        <GreekSection title="Vega" icon={TrendingUp} dataKeyCall="call_vega" dataKeyPut="put_vega" dataKeyNet="diff_vega" colorCall="#10b981" colorPut="#ef4444" colorNet="text-emerald-500" />
-        <GreekSection title="Gamma" icon={Activity} dataKeyCall="call_gamma" dataKeyPut="put_gamma" dataKeyNet="diff_gamma" colorCall="#10b981" colorPut="#ef4444" colorNet="text-purple-500" />
-        <GreekSection title="Delta" icon={Waves} dataKeyCall="call_delta" dataKeyPut="put_delta" dataKeyNet="diff_delta" colorCall="#10b981" colorPut="#ef4444" colorNet="text-orange-500" />
-        <GreekSection title="Theta" icon={Zap} dataKeyCall="call_theta" dataKeyPut="put_theta" dataKeyNet="diff_theta" colorCall="#10b981" colorPut="#ef4444" colorNet="text-pink-500" />
+        <GreeksAnalysisSection title="Vega" icon={TrendingUp} data={historyData} dataKeyCall="call_vega" dataKeyPut="put_vega" dataKeyNet="diff_vega" colorNet="text-emerald-500" selectedDate={selectedDate} />
+        <GreeksAnalysisSection title="Gamma" icon={Activity} data={historyData} dataKeyCall="call_gamma" dataKeyPut="put_gamma" dataKeyNet="diff_gamma" colorNet="text-purple-500" selectedDate={selectedDate} />
+        <GreeksAnalysisSection title="Delta" icon={Waves} data={historyData} dataKeyCall="call_delta" dataKeyPut="put_delta" dataKeyNet="diff_delta" colorNet="text-orange-500" selectedDate={selectedDate} />
+        <GreeksAnalysisSection title="Theta" icon={Zap} data={historyData} dataKeyCall="call_theta" dataKeyPut="put_theta" dataKeyNet="diff_theta" colorNet="text-pink-500" selectedDate={selectedDate} />
 
-        {/* Detailed Logs Footer */}
         <div className="flex justify-end px-2">
              <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => {
                 if (!validateSession()) return;
-                const validData = data.filter(r => r.greeks !== null);
-                if (!validData.length) return;
+                const validData = historyData.filter(r => r.greeks !== null);
+                if (!validData.length) {
+                    toast.info("No data available for export");
+                    return;
+                }
                 const csvContent = "data:text/csv;charset=utf-8," 
                     + "Time,Call Vega,Put Vega,Net Vega,Call Gamma,Put Gamma,Net Gamma,Call Delta,Put Delta,Net Delta\n"
                     + validData.map(row => {
@@ -491,15 +219,14 @@ const LiveData = () => {
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `market_data_${selectedIndex}_${format(selectedDate || new Date(), "yyyy-MM-dd")}.csv`);
+                link.setAttribute("download", `vega_intelligence_${selectedIndex}_${format(selectedDate, "yyyy-MM-dd")}.csv`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             }}>
-                <TrendingUp className="w-3 h-3 mr-2" /> Download Full CSV
+                <TrendingUp className="w-3 h-3 mr-2" /> Export CSV Intelligence
             </Button>
         </div>
-
       </div>
     </div>
   );
