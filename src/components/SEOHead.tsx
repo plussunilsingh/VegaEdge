@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from "react-helmet-async";
 import { COMPANY_NAME } from "@/config";
 
 interface SEOHeadProps {
@@ -10,19 +10,19 @@ interface SEOHeadProps {
   image?: string;
 }
 
-export const SEOHead = ({ 
+export const SEOHead = ({
   title = `${COMPANY_NAME} - Market Direction Prediction`,
   description = `Predict market direction with the help of VEGA. ${COMPANY_NAME} provides advanced trading analysis, stock market insights, and real-time data for traders.`,
   name = COMPANY_NAME,
   type = "website",
   url = "https://ibzd.com",
-  image = "/img/logo.png"
+  image = "/img/logo.png",
 }: SEOHeadProps) => {
   return (
     <Helmet>
       {/* Standard Metadata tags */}
       <title>{title}</title>
-      <meta name='description' content={description} />
+      <meta name="description" content={description} />
       <link rel="canonical" href={url} />
 
       {/* Facebook tags */}
