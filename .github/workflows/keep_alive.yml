@@ -2,7 +2,7 @@ name: Keep Alive
 
 on:
   schedule:
-    - cron: '*/14 9-17 * * *' # Runs every 14 minutes between 09:00 AM and 06:00 PM IST (09:00–17:59) &  # Does NOT run before 9 AM or after 6 PM
+    - cron: "*/14 9-17 * * *" # Runs every 14 minutes between 09:00 AM and 06:00 PM IST (09:00–17:59) &  # Does NOT run before 9 AM or after 6 PM
   workflow_dispatch: # Allows manual triggering from the Actions tab
 
 jobs:

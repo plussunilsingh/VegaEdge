@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -10,39 +9,45 @@ import { endpoints } from "@/config";
 const Chart = () => {
   const { user, profileImageUrl } = useAuth();
   const [selectedOption, setSelectedOption] = useState("1");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
 
   // Query for Chart Data
   const { data: chartData = "" } = useQuery({
-    queryKey: ['chart-data-legacy', selectedOption, selectedDate],
+    queryKey: ["chart-data-legacy", selectedOption, selectedDate],
     queryFn: async () => {
-        const res = await fetch(endpoints.chart.getChartData(selectedOption, Math.random(), selectedDate));
-        return res.text();
+      const res = await fetch(
+        endpoints.chart.getChartData(selectedOption, Math.random(), selectedDate)
+      );
+      return res.text();
     },
     refetchInterval: 60000,
-    staleTime: 30000
+    staleTime: 30000,
   });
 
   // Query for Table Data
   const { data: tableData = "" } = useQuery({
-    queryKey: ['table-data-legacy', selectedOption, selectedDate],
+    queryKey: ["table-data-legacy", selectedOption, selectedDate],
     queryFn: async () => {
-        const res = await fetch(endpoints.chart.getTableData(selectedOption, Math.random(), selectedDate));
-        return res.text();
+      const res = await fetch(
+        endpoints.chart.getTableData(selectedOption, Math.random(), selectedDate)
+      );
+      return res.text();
     },
     refetchInterval: 60000,
-    staleTime: 30000
+    staleTime: 30000,
   });
 
   // Query for Latest Data Header
   const { data: latestData = "" } = useQuery({
-    queryKey: ['latest-data-legacy', selectedOption, selectedDate],
+    queryKey: ["latest-data-legacy", selectedOption, selectedDate],
     queryFn: async () => {
-        const res = await fetch(endpoints.chart.getLatestData(selectedOption, Math.random(), selectedDate));
-        return res.text();
+      const res = await fetch(
+        endpoints.chart.getLatestData(selectedOption, Math.random(), selectedDate)
+      );
+      return res.text();
     },
     refetchInterval: 60000,
-    staleTime: 30000
+    staleTime: 30000,
   });
 
   return (
@@ -52,18 +57,49 @@ const Chart = () => {
           {/* User Welcome & Strategy Buttons */}
           <div className="grid md:grid-cols-2 gap-4 mb-8">
             <div className="flex flex-wrap gap-2 items-center justify-end">
-              <Link to="/strategies"><Button size="sm" className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-extrabold rounded-full border-none shadow-sm px-5">Event-Driven</Button></Link>
-              <Link to="/strategies"><Button size="sm" variant="outline" className="text-foreground font-extrabold rounded-full shadow-sm px-5">Neutral Market</Button></Link>
-              <Link to="/strategies"><Button size="sm" className="bg-[#10b981] hover:bg-[#059669] text-white font-extrabold rounded-full border-none shadow-sm px-5">Bearish</Button></Link>
-              <Link to="/strategies"><Button size="sm" className="bg-[#e11d48] hover:bg-[#be123c] text-white font-extrabold rounded-full border-none shadow-sm px-5">Bullish</Button></Link>
+              <Link to="/strategies">
+                <Button
+                  size="sm"
+                  className="bg-[#00e5bc] hover:bg-[#00d4ae] text-white font-extrabold rounded-full border-none shadow-sm px-5"
+                >
+                  Event-Driven
+                </Button>
+              </Link>
+              <Link to="/strategies">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-foreground font-extrabold rounded-full shadow-sm px-5"
+                >
+                  Neutral Market
+                </Button>
+              </Link>
+              <Link to="/strategies">
+                <Button
+                  size="sm"
+                  className="bg-[#10b981] hover:bg-[#059669] text-white font-extrabold rounded-full border-none shadow-sm px-5"
+                >
+                  Bearish
+                </Button>
+              </Link>
+              <Link to="/strategies">
+                <Button
+                  size="sm"
+                  className="bg-[#e11d48] hover:bg-[#be123c] text-white font-extrabold rounded-full border-none shadow-sm px-5"
+                >
+                  Bullish
+                </Button>
+              </Link>
             </div>
           </div>
 
           {/* Controls */}
           <div className="flex flex-wrap gap-4 mb-6 items-center bg-card p-4 rounded-2xl border border-border shadow-sm">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">Instrument Selection</label>
-              <select 
+              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">
+                Instrument Selection
+              </label>
+              <select
                 value={selectedOption}
                 onChange={(e) => setSelectedOption(e.target.value)}
                 className="w-full max-w-xs bg-background text-foreground border border-border rounded-xl px-4 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
@@ -77,8 +113,10 @@ const Chart = () => {
             </div>
 
             <div className="ml-auto">
-               <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1 text-right">Reference Date</label>
-              <Input 
+              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1 text-right">
+                Reference Date
+              </label>
+              <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
@@ -92,11 +130,8 @@ const Chart = () => {
             {/* Chart Section */}
             <div className="lg:col-span-2">
               <div className="bg-card rounded-2xl p-6 shadow-sm border border-border ring-1 ring-border">
-                <div 
-                  dangerouslySetInnerHTML={{ __html: latestData }}
-                  className="mb-6"
-                />
-                <div 
+                <div dangerouslySetInnerHTML={{ __html: latestData }} className="mb-6" />
+                <div
                   dangerouslySetInnerHTML={{ __html: chartData }}
                   className="min-h-[600px] overflow-hidden rounded-xl bg-slate-50/30"
                 />
@@ -110,11 +145,21 @@ const Chart = () => {
                   <table className="w-full text-xs">
                     <thead className="sticky top-0 bg-muted/90 backdrop-blur-md text-muted-foreground z-10 border-b border-border">
                       <tr>
-                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter">Time</th>
-                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter">Call Vega</th>
-                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter">Put Vega</th>
-                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter">Diff</th>
-                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter text-center">Trend</th>
+                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter">
+                          Time
+                        </th>
+                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter">
+                          Call Vega
+                        </th>
+                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter">
+                          Put Vega
+                        </th>
+                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter">
+                          Diff
+                        </th>
+                        <th className="px-4 py-4 text-left font-bold uppercase tracking-tighter text-center">
+                          Trend
+                        </th>
                       </tr>
                     </thead>
                     <tbody dangerouslySetInnerHTML={{ __html: tableData }} className="bg-card" />

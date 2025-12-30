@@ -87,7 +87,6 @@ All colors MUST be HSL.
   }
 }
 
-
 /* Custom Scrollbar for a Premium Look */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
@@ -113,7 +112,6 @@ body {
   overflow-x: hidden;
 }
 
-
 /* 3D Premium Utilities */
 .perspective-container {
   perspective: 2000px;
@@ -124,8 +122,13 @@ body {
 }
 
 @keyframes gloss-sweep {
-  0% { transform: translateX(-100%) skewX(-45deg); }
-  50%, 100% { transform: translateX(100%) skewX(-45deg); }
+  0% {
+    transform: translateX(-100%) skewX(-45deg);
+  }
+  50%,
+  100% {
+    transform: translateX(100%) skewX(-45deg);
+  }
 }
 
 .animate-gloss-sweep {
@@ -133,8 +136,13 @@ body {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0) rotateX(5deg) rotateY(5deg); }
-  50% { transform: translateY(-20px) rotateX(5deg) rotateY(5deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotateX(5deg) rotateY(5deg);
+  }
+  50% {
+    transform: translateY(-20px) rotateX(5deg) rotateY(5deg);
+  }
 }
 
 .animate-float {
@@ -142,8 +150,15 @@ body {
 }
 
 @keyframes diamond-glow {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.1); }
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
 }
 
 .animate-diamond-glow {
@@ -151,8 +166,15 @@ body {
 }
 
 @keyframes scan-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
 }
 
 .animate-scan-pulse {
