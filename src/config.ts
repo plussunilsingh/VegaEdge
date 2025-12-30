@@ -13,11 +13,12 @@ export const COMPANY_NAME = "Vega Greeks Calculator";
 export const COMPANY_EMAIL = "contact@vegagreeks.com";
 export const COMPANY_PHONE = "9759315703";
 export const COMPANY_WHATSAPP = "https://whatsapp.com/channel/0029Vb6nCyIA89MrcMkbGL2M";
-export const COMPANY_YOUTUBE_VIDEO = "https://www.youtube.com/watch?v=ZvXN0TcZLfQ";
-export const COMPANY_YOUTUBE_VIDEO_ID = "ZvXN0TcZLfQ";
-export const COMPANY_YOUTUBE_CHANNEL = "https://youtube.com/@vegagreeks";
+export const COMPANY_YOUTUBE_VIDEO = "https://www.youtube.com/watch?v=ZxMNbbVcjfI";
+export const COMPANY_YOUTUBE_VIDEO_ID = "ZxMNbbVcjfI";
+export const COMPANY_YOUTUBE_CHANNEL = "https://youtube.com/@greekstool";
 export const COMPANY_INSTAGRAM = "https://instagram.com/dine_shkumar4852/?igsh=MTNzNGNhN2RqNmJ0";
 export const COMPANY_TELEGRAM = "https://t.me/vegagreeks";
+export const COMPANY_FACEBOOK = "https://www.facebook.com/people/Visualize-Your-Option-Greeks-In-Real-Time/61585757191318/?rdid=FHhdd8Xc9uMeLnWz&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1G1ZRwyrUA%2F";
 
 // Helper to construct URLs
 export const endpoints = {
