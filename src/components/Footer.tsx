@@ -1,14 +1,14 @@
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE } from "@/config";
+import { COMPANY_NAME, COMPANY_EMAIL, COMPANY_PHONE, BACKEND_API_BASE_URL } from "@/config";
 
 const Footer = () => {
   const [apiVersion, setApiVersion] = useState<string>("Loading...");
   const uiVersion = "1.0.7-4"; // Sync with package.json or hardcode for now
 
   useEffect(() => {
-    fetch("http://localhost:8000/system/version")
+    fetch(`${BACKEND_API_BASE_URL}/system/version`)
       .then((res) => res.json())
       .then((data) => setApiVersion(data.version))
       .catch((e) => {
