@@ -34,6 +34,45 @@ const fmtNum = (val: any, digits = 2) => {
   return num.toFixed(digits);
 };
 
+/**
+ * Static Trend Calculation Logic (Pure Function)
+ * Logic derived from user table:
+ * - BULLISH: Call > 0 and Put < 0
+ * - BEARISH: Call < 0 and Put > 0
+ * - SIDEWAYS BEARISH: Put - Call > 0 (when both negative)
+ * - SIDEWAYS BULLISH: Put - Call < 0 (when both negative)
+ */
+const calculateTrend = (callVega: number, putVega: number) => {
+  if (callVega > 0 && putVega < 0) return "Bullish";
+  if (callVega < 0 && putVega > 0) return "Bearish";
+  
+  if (callVega < 0 && putVega < 0) {
+    return (putVega - callVega) > 0 ? "Sideways Bearish" : "Sideways Bullish";
+  }
+  
+  return "Sideways";
+};
+
+/**
+ * Map trend labels to Tailwind classes
+ */
+const getTrendClasses = (label: string) => {
+  switch (label) {
+    case "Bullish":
+      return "text-green-600 bg-green-100";
+    case "Bearish":
+      return "text-red-600 bg-red-100";
+    case "Sideways Bullish":
+      return "text-emerald-500 bg-emerald-50 border border-emerald-100";
+    case "Sideways Bearish":
+      return "text-yellow-600 bg-yellow-100 border border-yellow-200";
+    case "Sideways":
+      return "text-yellow-500 bg-yellow-50";
+    default:
+      return "";
+  }
+};
+
 export const GreeksTable = ({
   title,
   data,
@@ -43,24 +82,6 @@ export const GreeksTable = ({
   colorNet,
 }: GreeksTableProps) => {
   const tableData = [...data].filter((r) => r.greeks !== null).reverse();
-
-  // Map backend trend labels to Tailwind classes (required for JIT compiler)
-  const getTrendClasses = (label: string) => {
-    switch (label) {
-      case "Bullish":
-        return "text-green-600 bg-green-100";
-      case "Bearish":
-        return "text-red-600 bg-red-100";
-      case "Sideways Bullish":
-        return "text-emerald-500 bg-emerald-50";
-      case "Sideways Bearish":
-        return "text-yellow-600 bg-yellow-100";
-      case "Sideways":
-        return "text-yellow-500 bg-yellow-50";
-      default:
-        return "";
-    }
-  };
 
   return (
     <Card className="col-span-12 lg:col-span-3 border-slate-200 bg-white shadow-sm flex flex-col h-[400px] lg:h-[600px] overflow-hidden">
@@ -84,37 +105,43 @@ export const GreeksTable = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tableData.map((row, i) => (
-                <TableRow
-                  key={i}
-                  className="text-[11px] border-b border-slate-50 hover:bg-slate-50/50 transition-colors group"
-                >
-                  <TableCell className="pl-6 font-mono text-slate-500">
-                    {formatTime(row.timestamp)}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-emerald-600">
-                    {fmtNum(row.greeks![dataKeyCall])}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-red-600">
-                    {fmtNum(row.greeks![dataKeyPut])}
-                  </TableCell>
-                  <TableCell className={cn("text-right font-mono font-bold pr-6", colorNet)}>
-                    {fmtNum(row.greeks![dataKeyNet])}
-                  </TableCell>
-                  {title === "Vega" && row.trendDisplay && (
-                    <TableCell className="text-center">
-                      <span
-                        className={cn(
-                          "px-2 py-0.5 rounded text-[10px] font-bold",
-                          getTrendClasses(row.trendDisplay.label)
-                        )}
-                      >
-                        {row.trendDisplay.label}
-                      </span>
+              {tableData.map((row, i) => {
+                const callVal = row.greeks![dataKeyCall];
+                const putVal = row.greeks![dataKeyPut];
+                const trend = title === "Vega" ? calculateTrend(callVal, putVal) : null;
+
+                return (
+                  <TableRow
+                    key={i}
+                    className="text-[11px] border-b border-slate-50 hover:bg-slate-50/50 transition-colors group"
+                  >
+                    <TableCell className="pl-6 font-mono text-slate-500">
+                      {formatTime(row.timestamp)}
                     </TableCell>
-                  )}
-                </TableRow>
-              ))}
+                    <TableCell className="text-right font-mono text-emerald-600">
+                      {fmtNum(callVal)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-red-600">
+                      {fmtNum(putVal)}
+                    </TableCell>
+                    <TableCell className={cn("text-right font-mono font-bold pr-6", colorNet)}>
+                      {fmtNum(row.greeks![dataKeyNet])}
+                    </TableCell>
+                    {trend && (
+                      <TableCell className="text-center">
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded text-[10px] font-bold",
+                            getTrendClasses(trend)
+                          )}
+                        >
+                          {trend}
+                        </span>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

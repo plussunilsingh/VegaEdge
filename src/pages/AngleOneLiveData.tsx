@@ -39,6 +39,7 @@ const AngleOneLiveData = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(getInitialDate());
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [selectedExpiry, setSelectedExpiry] = useState<string>("");
+  const [selectedSource, setSelectedSource] = useState<string>("REST_API");
 
   const timeSlots = useMemo(() => {
     const slots = [];
@@ -93,11 +94,16 @@ const AngleOneLiveData = () => {
       format(selectedDate, "yyyy-MM-dd"),
       selectedIndex,
       selectedExpiry,
+      selectedSource,
     ],
     queryFn: async () => {
       if (!selectedExpiry) return [];
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const url = endpoints.angleone.history(dateStr, selectedIndex, selectedExpiry);
+      
+      // Add source filter to the URL
+      const baseUrl = endpoints.angleone.history(dateStr, selectedIndex, selectedExpiry);
+      const url = `${baseUrl}&source=${selectedSource}`;
+      
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
       if (res.status === 401) {
@@ -196,6 +202,15 @@ const AngleOneLiveData = () => {
                   {exp}
                 </option>
               ))}
+            </select>
+
+            <select
+              value={selectedSource}
+              onChange={(e) => setSelectedSource(e.target.value)}
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px] font-bold"
+            >
+              <option value="REST_API">REST API</option>
+              <option value="WEB_SOCKET">WebSocket</option>
             </select>
 
             <Popover>
