@@ -11,6 +11,7 @@ import { useLocation } from "react-router-dom";
 import { endpoints, SESSION_TIMEOUT, BACKEND_API_BASE_URL } from "@/config";
 import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 import { toast } from "sonner";
+import { logger, ErrorCodes } from "@/lib/logger";
 
 // Define Auth States
 export enum AuthStatus {
@@ -159,7 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const isAllowed = Array.from(PUBLIC_ENDPOINT_WHITELIST).some((p) => url.pathname.includes(p));
 
       if (!isAllowed) {
-        console.warn(`[Session Guard] Blocking API call: ${url.pathname}`);
+        logger.warn(`[Session Guard] Blocking API call: ${url.pathname}`);
         toast.error("Session expired. Action blocked.");
         return new Response(JSON.stringify({ error: "Session Expired" }), {
           status: 401,
@@ -199,7 +200,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProfileImageUrl("/img/default_user.png");
         }
       } catch (e) {
-        console.error("Failed to parse stored user", e);
+        logger.error({
+          message: "Failed to parse stored user",
+          code: ErrorCodes.VEGA_AUTH_003,
+          where: "AuthContext.useEffect:203",
+          action: "Clear localStorage and refresh page",
+          error: e
+        });
       }
     }
 
@@ -222,7 +229,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem("alphaedge_user", JSON.stringify(mappedUser));
       })
       .catch((err) => {
-        console.error("Auth refresh error:", err);
+        logger.error({
+          message: "Auth refresh error",
+          code: ErrorCodes.VEGA_AUTH_002,
+          where: "AuthContext.useEffect:226",
+          action: "Re-login or clear invalid token",
+          error: err
+        });
         if (status === AuthStatus.LOADING) setStatus(AuthStatus.GUEST);
       });
   }, []);
@@ -277,6 +290,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setSessionTimeLeft(SESSION_TIMEOUT);
           setStatus(AuthStatus.AUTHENTICATED);
 
+          logger.userAction("LOGIN_SUCCESS", { email: mappedUser.email });
           return true;
         } else {
           throw new Error("Failed to retrieve user profile");
@@ -284,7 +298,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return false;
     } catch (error: any) {
-      console.error("Login error:", error);
+      logger.error({
+        message: "Login unexpected failure",
+        code: ErrorCodes.VEGA_AUTH_001,
+        where: "AuthContext.login:289",
+        action: "Check email/password or backend status",
+        error
+      });
       throw error; // Propagate error for UI feedback
     }
   }, []);
@@ -301,8 +321,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     } catch (error) {
-      console.error("Logout API call failed:", error);
+      logger.error({
+        message: "Logout API call failed",
+        code: ErrorCodes.VEGA_API_002,
+        where: "AuthContext.logout:306",
+        action: "Verify backend connectivity",
+        error
+      });
     } finally {
+      logger.userAction("LOGOUT_COMPLETE", { email: user?.email });
       setUser(null);
       setProfileImageUrl("/img/default_user.png");
       setToken(null);
