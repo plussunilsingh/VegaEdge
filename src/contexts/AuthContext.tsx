@@ -11,6 +11,7 @@ import { useLocation } from "react-router-dom";
 import { endpoints, SESSION_TIMEOUT, BACKEND_API_BASE_URL } from "@/config";
 import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 // Define Auth States
 export enum AuthStatus {
@@ -159,7 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const isAllowed = Array.from(PUBLIC_ENDPOINT_WHITELIST).some((p) => url.pathname.includes(p));
 
       if (!isAllowed) {
-        console.warn(`[Session Guard] Blocking API call: ${url.pathname}`);
+        logger.warn(`[Session Guard] Blocking API call: ${url.pathname}`);
         toast.error("Session expired. Action blocked.");
         return new Response(JSON.stringify({ error: "Session Expired" }), {
           status: 401,
@@ -199,7 +200,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProfileImageUrl("/img/default_user.png");
         }
       } catch (e) {
-        console.error("Failed to parse stored user", e);
+        logger.error("Failed to parse stored user", e);
       }
     }
 
@@ -222,7 +223,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem("alphaedge_user", JSON.stringify(mappedUser));
       })
       .catch((err) => {
-        console.error("Auth refresh error:", err);
+        logger.error("Auth refresh error:", err);
         if (status === AuthStatus.LOADING) setStatus(AuthStatus.GUEST);
       });
   }, []);
@@ -277,6 +278,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setSessionTimeLeft(SESSION_TIMEOUT);
           setStatus(AuthStatus.AUTHENTICATED);
 
+          logger.userAction("LOGIN_SUCCESS", { email: mappedUser.email });
           return true;
         } else {
           throw new Error("Failed to retrieve user profile");
@@ -284,7 +286,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return false;
     } catch (error: any) {
-      console.error("Login error:", error);
+      logger.error("Login unexpected failure", error, "Check network connection or backend status");
       throw error; // Propagate error for UI feedback
     }
   }, []);
@@ -301,8 +303,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     } catch (error) {
-      console.error("Logout API call failed:", error);
+      logger.error("Logout API call failed", error);
     } finally {
+      logger.userAction("LOGOUT_COMPLETE", { email: user?.email });
       setUser(null);
       setProfileImageUrl("/img/default_user.png");
       setToken(null);

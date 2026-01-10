@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth, AuthStatus } from "@/contexts/AuthContext";
+import { logger } from "@/lib/logger";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (status === AuthStatus.GUEST || status === AuthStatus.EXPIRED || !user) {
+    logger.warn(`Unauthorized access attempt to ${location.pathname}. Redirecting to login.`);
     // Redirect to login but save the attempted location
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
