@@ -20,10 +20,13 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (status === AuthStatus.GUEST || status === AuthStatus.EXPIRED || !user) {
-    logger.warn(`Unauthorized access attempt to ${location.pathname}. Redirecting to login.`);
+    logger.warn(
+      `🔒 UNAUTHORIZED_ACCESS | Where: ProtectedRoute | Path: ${location.pathname} | Action: Redirecting to login`
+    );
     // Redirect to login but save the attempted location
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
+
 
   return <>{children}</>;
 };
