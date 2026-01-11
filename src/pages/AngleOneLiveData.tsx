@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { endpoints } from "@/config";
 import { SEOHead } from "@/components/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
-import { cn } from "@/lib/utils";
+import { cn, getMsToNextMinute } from "@/lib/utils";
 
 interface GreeksData {
   timestamp: string;
@@ -153,7 +153,7 @@ const AngleOneLiveData = () => {
       });
     },
     enabled: !!token && isAuthenticated && !!selectedExpiry,
-    refetchInterval: isToday(selectedDate) ? 60000 : false,
+    refetchInterval: isToday(selectedDate) ? getMsToNextMinute : false,
     staleTime: 30000,
   });
 
