@@ -69,6 +69,9 @@ const LiveData = () => {
       return Array.isArray(list) ? list.filter((exp) => exp >= todayStr) : [];
     },
     enabled: !!token && isAuthenticated,
+    staleTime: Infinity, // Load only once per session
+    gcTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
   // Auto-select closest future expiry
