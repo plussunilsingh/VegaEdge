@@ -8,7 +8,7 @@ import { Calendar as CalendarIcon, Activity, Waves, Zap, TrendingUp } from "luci
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { endpoints } from "@/config";
-import { SEOHead } from "@/components/SEOHead";
+import { SEOHead } from "@/components/features/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
 import { cn, getMsToNextMinute } from "@/lib/utils";
 
@@ -102,11 +102,11 @@ const AngleOneLiveData = () => {
     queryFn: async () => {
       if (!selectedExpiry) return [];
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      
+
       // Add source filter to the URL
       const baseUrl = endpoints.angleone.history(dateStr, selectedIndex, selectedExpiry);
       const url = `${baseUrl}&source=${selectedSource}`;
-      
+
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
       if (res.status === 401) {

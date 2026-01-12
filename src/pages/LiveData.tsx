@@ -8,7 +8,7 @@ import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap } from "luci
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { endpoints } from "@/config";
-import { SEOHead } from "@/components/SEOHead";
+import { SEOHead } from "@/components/features/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
 import { cn, getMsToNextMinute } from "@/lib/utils";
 

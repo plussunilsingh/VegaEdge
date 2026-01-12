@@ -1,9 +1,9 @@
-import Hero from "@/components/Hero";
-import Subscription from "@/components/Subscription";
-import About from "@/components/About";
-import FAQ from "@/components/FAQ";
-import Team from "@/components/Team";
-import Testimonials from "@/components/Testimonials";
+import Hero from "@/components/features/Hero";
+import Subscription from "@/components/features/Subscription";
+import About from "@/components/features/About";
+import FAQ from "@/components/features/FAQ";
+import Team from "@/components/features/Team";
+import Testimonials from "@/components/features/Testimonials";
 
 const Index = () => {
   return (

@@ -1,7 +1,7 @@
 # VegaEdge (UI) - AI/LLM Development Instructions
 
 > **Master Instruction File for AI/LLM Code Assistance on Frontend**
-> 
+>
 > This document serves as the primary context for any AI, LLM, or automated code assistant working on the VegaEdge React application.
 
 ---
@@ -88,7 +88,7 @@ logger.error({
   code: ErrorCodes.VEGA_AUTH_001,
   where: "ComponentName.methodName:lineNumber",
   action: "What user should do next",
-  error: actualError
+  error: actualError,
 });
 ```
 
@@ -99,7 +99,7 @@ logger.error({
 ```typescript
 export const LogEmojis = {
   APP_START: "🚀",
-  APP_STOP: "🛑", 
+  APP_STOP: "🛑",
   SUCCESS: "✅",
   ERROR: "❌",
   WARNING: "⚠️",
@@ -121,11 +121,11 @@ export enum ErrorCodes {
   VEGA_AUTH_001 = "VEGA-AUTH-001", // Login failed
   VEGA_AUTH_002 = "VEGA-AUTH-002", // Session expired
   VEGA_AUTH_003 = "VEGA-AUTH-003", // Invalid stored user
-  
+
   // API errors
-  VEGA_API_001 = "VEGA-API-001",   // API timeout
-  VEGA_API_002 = "VEGA-API-002",   // Connection error
-  
+  VEGA_API_001 = "VEGA-API-001", // API timeout
+  VEGA_API_002 = "VEGA-API-002", // Connection error
+
   // ... (complete list in logger.ts)
 }
 ```
@@ -137,6 +137,7 @@ export enum ErrorCodes {
 ### TypeScript Requirements
 
 1. **Strict Type Safety**
+
    ```typescript
    // ✅ GOOD
    interface User {
@@ -144,11 +145,11 @@ export enum ErrorCodes {
      email: string;
      name: string;
    }
-   
+
    function processUser(user: User): void {
      // ...
    }
-   
+
    // ❌ BAD
    function processUser(user: any) {
      // ...
@@ -162,12 +163,13 @@ export enum ErrorCodes {
 ### React Best Practices
 
 1. **Functional Components Only**
+
    ```typescript
    // ✅ GOOD
    export const MyComponent: React.FC<Props> = ({ prop1 }) => {
      return <div>{prop1}</div>;
    };
-   
+
    // ❌ BAD - No class components
    class MyComponent extends React.Component { }
    ```
@@ -188,7 +190,7 @@ export enum ErrorCodes {
        code: ErrorCodes.VEGA_API_002,
        where: "MyComponent.handleSubmit:45",
        action: "Check  network connection or retry",
-       error
+       error,
      });
    }
    ```
@@ -206,11 +208,11 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export const MyPage = () => {
   const { user, status } = useAuth();
-  
+
   if (status === AuthStatus.LOADING) {
     return <div>Loading...</div>;
   }
-  
+
   return <div>Welcome {user?.name}</div>;
 };
 ```
@@ -243,18 +245,18 @@ export const api = {
         Authorization: `Bearer ${getToken()}`,
       },
     });
-    
+
     if (!response.ok) {
       logger.error({
         message: "API request failed",
         code: ErrorCodes.VEGA_API_002,
         where: `api.get:${url}`,
         action: "Check backend logs or network",
-        error: await response.text()
+        error: await response.text(),
       });
       throw new Error(`API Error: ${response.status}`);
     }
-    
+
     return response.json();
   },
 };
@@ -267,10 +269,11 @@ export const api = {
 ### TailwindCSS Conventions
 
 1. **Use Semantic Class Names**
+
    ```typescript
    // ✅ GOOD
    <button className="btn-primary">Submit</button>
-   
+
    // Define in index.css:
    @layer components {
      .btn-primary {
@@ -360,6 +363,7 @@ VITE_APP_NAME=VegaEdge
 ```
 
 **Access in code**:
+
 ```typescript
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 ```
@@ -370,15 +374,16 @@ const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 ### Matching Patterns
 
-| Backend | Frontend | Purpose |
-|---------|----------|---------|
-| `LogEmojis` | `LogEmojis` | Same emoji taxonomy |
-| `ErrorCodeTaxonomy` | `ErrorCodes` | Same error codes |
-| Structured logging | Structured logging | Same log format |
+| Backend             | Frontend           | Purpose             |
+| ------------------- | ------------------ | ------------------- |
+| `LogEmojis`         | `LogEmojis`        | Same emoji taxonomy |
+| `ErrorCodeTaxonomy` | `ErrorCodes`       | Same error codes    |
+| Structured logging  | Structured logging | Same log format     |
 
 **Example - Auth Error in Both**:
 
 **Backend**:
+
 ```python
 logger.error(
     f"{LogEmojis.AUTH} AUTH_EXPIRED | VEGA-AUTH-002 | "
@@ -387,12 +392,13 @@ logger.error(
 ```
 
 **Frontend**:
+
 ```typescript
 logger.error({
   message: "Login failed",
   code: ErrorCodes.VEGA_AUTH_002,
   where: "AuthContext.login:289",
-  action: "Re-login required"
+  action: "Re-login required",
 });
 ```
 
@@ -405,11 +411,11 @@ logger.error({
 ```typescript
 /**
  * MyComponent - Brief description
- * 
+ *
  * @param {Props} props - Component props
  * @param {string} props.title - The title to display
  * @returns {JSX.Element} Rendered component
- * 
+ *
  * @example
  * <MyComponent title="Hello World" />
  */
@@ -426,12 +432,12 @@ export const MyComponent: React.FC<Props> = ({ title }) => {
 
 ```typescript
 // ❌ BAD
-items.forEach(item => {
+items.forEach((item) => {
   setCount(count + 1); // Only updates once!
 });
 
 // ✅ GOOD
-setCount(prev => prev + items.length);
+setCount((prev) => prev + items.length);
 ```
 
 ### 2. Missing useEffect Dependencies
@@ -456,7 +462,7 @@ useEffect(() => {
   const timer = setInterval(() => {
     // ...
   }, 1000);
-  
+
   return () => clearInterval(timer); // Cleanup!
 }, []);
 ```
@@ -467,12 +473,12 @@ useEffect(() => {
 
 ### When to Use What
 
-| State Type | Solution | Example |
-|------------|----------|---------|
-| Local (one component) | `useState` | Form input |
-| Shared (few components) | Props | Parent → Child |
-| Global (many components) | Context | Auth, Theme |
-| Server data | React Query | API responses |
+| State Type               | Solution    | Example        |
+| ------------------------ | ----------- | -------------- |
+| Local (one component)    | `useState`  | Form input     |
+| Shared (few components)  | Props       | Parent → Child |
+| Global (many components) | Context     | Auth, Theme    |
+| Server data              | React Query | API responses  |
 
 ---
 
@@ -488,6 +494,7 @@ useEffect(() => {
 ## ✅ Pre-Commit Checklist
 
 Before committing:
+
 - [ ] TypeScript compiles (`npm run build`)
 - [ ] No console.errors/warnings
 - [ ] Used structured logging (not `console.log`)
@@ -501,13 +508,13 @@ Before committing:
 
 **Where should this code go?**
 
-| Code Type | Location | Example |
-|-----------|----------|---------|
-| Reusable UI | `components/` | Button, Card, Modal |
-| Page/Route | `pages/` | Dashboard, Login, Settings |
-| Business logic | `lib/` | API client, data processing |
-| Type definitions | `types/` | User, MarketData interfaces |
-| Shared state | `contexts/` | AuthContext, ThemeContext |
+| Code Type        | Location      | Example                     |
+| ---------------- | ------------- | --------------------------- |
+| Reusable UI      | `components/` | Button, Card, Modal         |
+| Page/Route       | `pages/`      | Dashboard, Login, Settings  |
+| Business logic   | `lib/`        | API client, data processing |
+| Type definitions | `types/`      | User, MarketData interfaces |
+| Shared state     | `contexts/`   | AuthContext, ThemeContext   |
 
 ---
 

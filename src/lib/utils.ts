@@ -13,5 +13,5 @@ export const getMsToNextMinute = () => {
   const now = Date.now();
   // Calculate ms till next minute boundary + 2000ms safety buffer
   // to ensure backend has finished aggregating the previous minute.
-  return (60000 - (now % 60000)) + 2000;
+  return 60000 - (now % 60000) + 2000;
 };

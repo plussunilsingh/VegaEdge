@@ -14,7 +14,7 @@ logger.error({
   code: ErrorCodes.VEGA_XXX_NNN,
   where: "Component.method:line",
   action: "What to do next",
-  error: actualError
+  error: actualError,
 });
 ```
 
@@ -22,29 +22,29 @@ logger.error({
 
 ## Emoji Taxonomy (Same as Backend)
 
-| Emoji | Meaning | Usage |
-|-------|---------|-------|
-| 🚀 | App Start | App initialization |
-| 🛑 | App Stop | App shutdown |
-| ✅ | Success | Successful operations |
-| ❌ | Error | General errors |
-| ⚠️ | Warning | Non-critical warnings |
-| 🔐 | Auth | Authentication events |
-| 🔌 | API | API calls |
-| 🌐 | Network | Network requests |
-| 📋 | Validation | Form validation |
-| 👤 | User | User actions |
+| Emoji | Meaning    | Usage                 |
+| ----- | ---------- | --------------------- |
+| 🚀    | App Start  | App initialization    |
+| 🛑    | App Stop   | App shutdown          |
+| ✅    | Success    | Successful operations |
+| ❌    | Error      | General errors        |
+| ⚠️    | Warning    | Non-critical warnings |
+| 🔐    | Auth       | Authentication events |
+| 🔌    | API        | API calls             |
+| 🌐    | Network    | Network requests      |
+| 📋    | Validation | Form validation       |
+| 👤    | User       | User actions          |
 
 ---
 
 ## Error Codes (Matches Backend)
 
 ```typescript
-ErrorCodes.VEGA_AUTH_001  // Login failed
-ErrorCodes.VEGA_AUTH_002  // Session expired
-ErrorCodes.VEGA_API_001   // API timeout
-ErrorCodes.VEGA_API_002   // Connection error
-ErrorCodes.VEGA_VAL_001   // Validation failed
+ErrorCodes.VEGA_AUTH_001; // Login failed
+ErrorCodes.VEGA_AUTH_002; // Session expired
+ErrorCodes.VEGA_API_001; // API timeout
+ErrorCodes.VEGA_API_002; // Connection error
+ErrorCodes.VEGA_VAL_001; // Validation failed
 ```
 
 ---
@@ -52,17 +52,19 @@ ErrorCodes.VEGA_VAL_001   // Validation failed
 ## Examples
 
 ### Authentication Error
+
 ```typescript
 logger.error({
   message: "Login failed",
   code: ErrorCodes.VEGA_AUTH_001,
   where: "AuthContext.login:289",
   action: "Check credentials or backend status",
-  error
+  error,
 });
 ```
 
 **Console Output**:
+
 ```
 ❌ [ERROR] Login failed
 🔢 ERROR_CODE: VEGA-AUTH-001
@@ -114,8 +116,9 @@ if (import.meta.env.DEV) {
 ### External Monitoring
 
 Integrate with services like:
+
 - Sentry (error tracking
-)
+  )
 - LogRocket (session replay)
 - DataDog (APM)
 
@@ -123,12 +126,12 @@ Integrate with services like:
 
 ## Consistency with Backend
 
-| Feature | Backend | Frontend |
-|---------|---------|----------|
-| Emoji list | `LogEmojis` | `LogEmojis` |
-| Error codes | `ErrorCodeTaxonomy` | `ErrorCodes` |
-| Log format | Structured | Structured |
-| Documentation | `log_standards.md` | This file |
+| Feature       | Backend             | Frontend     |
+| ------------- | ------------------- | ------------ |
+| Emoji list    | `LogEmojis`         | `LogEmojis`  |
+| Error codes   | `ErrorCodeTaxonomy` | `ErrorCodes` |
+| Log format    | Structured          | Structured   |
+| Documentation | `log_standards.md`  | This file    |
 
 ---
 

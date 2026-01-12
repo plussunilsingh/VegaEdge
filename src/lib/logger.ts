@@ -32,26 +32,26 @@ export enum ErrorCodes {
   VEGA_DB_001 = "VEGA-DB-001",
   VEGA_DB_002 = "VEGA-DB-002",
   VEGA_DB_003 = "VEGA-DB-003",
-  
+
   // Cache/Redis errors
   VEGA_REDIS_001 = "VEGA-REDIS-001",
   VEGA_REDIS_002 = "VEGA-REDIS-002",
   VEGA_CACHE_001 = "VEGA-CACHE-001",
-  
+
   // API/Network errors
   VEGA_API_001 = "VEGA-API-001",
   VEGA_API_002 = "VEGA-API-002",
   VEGA_API_003 = "VEGA-API-003",
-  
+
   // Authentication errors
   VEGA_AUTH_001 = "VEGA-AUTH-001", // Login failed
   VEGA_AUTH_002 = "VEGA-AUTH-002", // Session expired
   VEGA_AUTH_003 = "VEGA-AUTH-003", // Invalid stored user
-  
+
   // Validation errors
   VEGA_VAL_001 = "VEGA-VAL-001",
   VEGA_VAL_002 = "VEGA-VAL-002",
-  
+
   // General errors
   VEGA_GEN_999 = "VEGA-GEN-999",
 }
@@ -81,13 +81,15 @@ export const logger = {
    * Supports both simple string messages and structured error objects
    */
   error: (
-    messageOrParams: string | {
-      message: string;
-      code?: ErrorCodes;
-      where?: string;
-      action?: string;
-      error?: any;
-    },
+    messageOrParams:
+      | string
+      | {
+          message: string;
+          code?: ErrorCodes;
+          where?: string;
+          action?: string;
+          error?: any;
+        },
     error?: any,
     action?: string
   ) => {
@@ -108,12 +110,9 @@ export const logger = {
     } else {
       // New structured format
       const params = messageOrParams;
-      const errorMsg = params.error instanceof Error 
-        ? params.error.message 
-        : String(params.error || "");
-      const trace = params.error instanceof Error 
-        ? params.error.stack 
-        : "No trace available";
+      const errorMsg =
+        params.error instanceof Error ? params.error.message : String(params.error || "");
+      const trace = params.error instanceof Error ? params.error.stack : "No trace available";
 
       console.group(
         `%c${LogEmojis.ERROR} [ERROR] ${params.message}`,
