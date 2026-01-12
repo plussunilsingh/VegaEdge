@@ -8,7 +8,6 @@ export const CHART_API_BASE_URL =
 // Main Python Backend (Render) for Auth and other features
 export const BACKEND_API_BASE_URL =
   import.meta.env.VITE_BACKEND_API_BASE_URL || "https://api.vegagreeks.com";
-// export const BACKEND_API_BASE_URL =
 //   import.meta.env.VITE_BACKEND_API_BASE_URL || "http://localhost:8000";
 
 export const COMPANY_NAME = "Vega Greeks Calculator";
