@@ -102,11 +102,11 @@ const AngleOneLiveData = () => {
     queryFn: async () => {
       if (!selectedExpiry) return [];
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      
+
       // Add source filter to the URL
       const baseUrl = endpoints.angleone.history(dateStr, selectedIndex, selectedExpiry);
       const url = `${baseUrl}&source=${selectedSource}`;
-      
+
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
       if (res.status === 401) {
