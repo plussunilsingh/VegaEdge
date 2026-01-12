@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useLocation } from "react-router-dom";
 import { endpoints, SESSION_TIMEOUT, BACKEND_API_BASE_URL } from "@/config";
-import { SessionExpiredModal } from "@/components/features/SessionExpiredModal";
+import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 import { toast } from "sonner";
 import { logger, ErrorCodes } from "@/lib/logger";
 

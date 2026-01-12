@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { HelmetProvider } from "react-helmet-async";
-import ProtectedRoute from "@/components/features/ProtectedRoute";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
 // Lazy load pages
@@ -37,9 +37,9 @@ const LoadingFallback = () => (
   </div>
 );
 
-import Footer from "@/components/layout/Footer";
+import Footer from "@/components/Footer";
 
-import MainLayout from "@/components/layout/MainLayout";
+import MainLayout from "@/components/MainLayout";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

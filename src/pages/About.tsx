@@ -1,4 +1,4 @@
-import Team from "@/components/features/Team";
+import Team from "@/components/Team";
 import { COMPANY_NAME } from "@/config";
 
 const About = () => {

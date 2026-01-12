@@ -8,9 +8,11 @@ import { Calendar as CalendarIcon, Activity, Waves, Zap, TrendingUp } from "luci
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { endpoints } from "@/config";
-import { SEOHead } from "@/components/features/SEOHead";
+import { SEOHead } from "@/components/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
 import { cn, getMsToNextMinute } from "@/lib/utils";
+import { formatToIST, formatChartTime } from "@/lib/time";
+import { logger, ErrorCodes } from "@/lib/logger";
 
 interface GreeksData {
   timestamp: string;
@@ -116,20 +118,26 @@ const AngleOneLiveData = () => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const result = await res.json();
-      if (!Array.isArray(result)) return [];
+      if (!Array.isArray(result)) {
+        logger.warn("AngleOne history API returned non-array result", { result });
+        return [];
+      }
+
+      logger.info(`Fetched ${result.length} AngleOne data points for ${selectedIndex} (${selectedSource})`);
 
       const dataMap = new Map();
       result.forEach((item: any) => {
         if (item?.greeks && item.timestamp) {
           const dt = new Date(item.timestamp);
           if (!isNaN(dt.getTime())) {
-            dataMap.set(format(dt, "HH:mm"), item);
+            const istKey = formatChartTime(dt.getTime());
+            dataMap.set(istKey, item);
           }
         }
       });
 
       return timeSlots.map((slotTime) => {
-        const timeKey = format(slotTime, "HH:mm");
+        const timeKey = formatChartTime(slotTime.getTime());
         const existingData = dataMap.get(timeKey);
         let greeks = null;
         if (existingData?.greeks) {
@@ -297,7 +305,12 @@ const AngleOneLiveData = () => {
                 validData
                   .map((row) => {
                     const g = row.greeks!;
-                    const t = format(new Date(row.timestamp), "HH:mm:ss");
+                    const t = formatToIST(row.timestamp, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: false,
+                    });
                     return `${t},${g.call_vega},${g.put_vega},${g.diff_vega},${g.call_gamma},${g.put_gamma},${g.diff_gamma},${g.call_delta},${g.put_delta},${g.diff_delta}`;
                   })
                   .join("\n");
