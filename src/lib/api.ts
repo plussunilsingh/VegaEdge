@@ -1,4 +1,6 @@
 import { BACKEND_API_BASE_URL } from "@/config";
+import { logger } from "./logger";
+import { formatLogTime } from "./time";
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -57,27 +59,47 @@ class ApiClient {
       config.body = JSON.stringify(data);
     }
 
+    const start = Date.now();
     try {
       const response = await fetch(url, config);
+      const duration = Date.now() - start;
+
+      logger.network(method, url, response.status);
 
       if (response.status === 401) {
-        // Dispatch global event for AuthContext to catch
+        logger.error({
+          message: "API Authentication Failure",
+          code: "VEGA-AUTH-001" as any,
+          where: `ApiClient.request(${url})`,
+          action: "Check session token or login again",
+        });
         window.dispatchEvent(new CustomEvent("session-expired"));
         throw new Error("Session Expired");
       }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        logger.error({
+          message: `API Error: ${response.status}`,
+          where: `ApiClient.request(${url})`,
+          error: errorData,
+        });
         throw new Error(errorData.detail || `API Error: ${response.status}`);
       }
 
-      // Handle empty responses
       if (response.status === 204) {
         return {} as T;
       }
 
-      return await response.json();
+      const jsonData = await response.json();
+      logger.debug(`API Success: ${method} ${url} (${duration}ms)`);
+      return jsonData;
     } catch (error) {
+      logger.error({
+        message: "Network or System Error",
+        where: `ApiClient.request(${url})`,
+        error,
+      });
       throw error;
     }
   }
