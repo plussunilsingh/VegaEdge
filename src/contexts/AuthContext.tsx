@@ -205,7 +205,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           code: ErrorCodes.VEGA_AUTH_003,
           where: "AuthContext.useEffect:203",
           action: "Clear localStorage and refresh page",
-          error: e
+          error: e,
         });
       }
     }
@@ -234,7 +234,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           code: ErrorCodes.VEGA_AUTH_002,
           where: "AuthContext.useEffect:226",
           action: "Re-login or clear invalid token",
-          error: err
+          error: err,
         });
         if (status === AuthStatus.LOADING) setStatus(AuthStatus.GUEST);
       });
@@ -303,7 +303,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         code: ErrorCodes.VEGA_AUTH_001,
         where: "AuthContext.login:289",
         action: "Check email/password or backend status",
-        error
+        error,
       });
       throw error; // Propagate error for UI feedback
     }
@@ -326,7 +326,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         code: ErrorCodes.VEGA_API_002,
         where: "AuthContext.logout:306",
         action: "Verify backend connectivity",
-        error
+        error,
       });
     } finally {
       logger.userAction("LOGOUT_COMPLETE", { email: user?.email });

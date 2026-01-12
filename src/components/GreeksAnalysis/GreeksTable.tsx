@@ -45,11 +45,11 @@ const fmtNum = (val: any, digits = 2) => {
 const calculateTrend = (callVega: number, putVega: number) => {
   if (callVega > 0 && putVega < 0) return "Bullish";
   if (callVega < 0 && putVega > 0) return "Bearish";
-  
+
   if (callVega < 0 && putVega < 0) {
-    return (putVega - callVega) > 0 ? "Sideways Bearish" : "Sideways Bullish";
+    return putVega - callVega > 0 ? "Sideways Bearish" : "Sideways Bullish";
   }
-  
+
   return "Sideways";
 };
 
