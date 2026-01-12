@@ -123,7 +123,9 @@ const AngleOneLiveData = () => {
         return [];
       }
 
-      logger.info(`Fetched ${result.length} AngleOne data points for ${selectedIndex} (${selectedSource})`);
+      logger.info(
+        `Fetched ${result.length} AngleOne data points for ${selectedIndex} (${selectedSource})`
+      );
 
       const dataMap = new Map();
       result.forEach((item: any) => {
