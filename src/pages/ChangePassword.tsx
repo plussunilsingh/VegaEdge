@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthenticatedNavbar from "@/components/AuthenticatedNavbar";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +15,7 @@ const ChangePassword = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newPassword !== confirmPassword) {
       toast({
         title: "Error",
@@ -39,23 +38,21 @@ const ChangePassword = () => {
       title: "Password Changed",
       description: "Your password has been updated successfully.",
     });
-    
+
     navigate("/my-account");
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <AuthenticatedNavbar />
-      
       <main className="flex-1 py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto bg-card rounded-2xl p-8 shadow-lg">
             <h1 className="text-3xl font-bold text-center mb-8">Change Password</h1>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="current-password">Current Password</Label>
-                <Input 
+                <Input
                   id="current-password"
                   type="password"
                   value={currentPassword}
@@ -68,7 +65,7 @@ const ChangePassword = () => {
 
               <div>
                 <Label htmlFor="new-password">New Password</Label>
-                <Input 
+                <Input
                   id="new-password"
                   type="password"
                   value={newPassword}
@@ -81,7 +78,7 @@ const ChangePassword = () => {
 
               <div>
                 <Label htmlFor="confirm-password">Confirm New Password</Label>
-                <Input 
+                <Input
                   id="confirm-password"
                   type="password"
                   value={confirmPassword}
@@ -99,8 +96,6 @@ const ChangePassword = () => {
           </div>
         </div>
       </main>
-
-
     </div>
   );
 };

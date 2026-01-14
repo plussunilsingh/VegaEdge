@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Lightbulb, Heart, Phone } from "lucide-react";
+import { COMPANY_PHONE } from "@/config";
 
 const About = () => {
   return (
@@ -12,7 +13,10 @@ const About = () => {
               Meet our company unless miss the opportunity
             </h1>
             <p className="text-muted-foreground mb-8">
-              The data and prices on the website are not necessarily provided by any market or exchange, but may be provided by market makers, and so prices may not be accurate and may differ from the actual price at any given market, meaning prices are indicative and not appropriate for trading purposes.
+              The data and prices on the website are not necessarily provided by any market or
+              exchange, but may be provided by market makers, and so prices may not be accurate and
+              may differ from the actual price at any given market, meaning prices are indicative
+              and not appropriate for trading purposes.
             </p>
 
             <div className="grid sm:grid-cols-2 gap-6 mb-8">
@@ -23,7 +27,8 @@ const About = () => {
                 <div>
                   <h4 className="font-bold mb-2">Business Consulting</h4>
                   <p className="text-sm text-muted-foreground">
-                    Start trading thousands of financial products online from secure trading platforms.
+                    Start trading thousands of financial products online from secure trading
+                    platforms.
                   </p>
                 </div>
               </div>
@@ -49,7 +54,7 @@ const About = () => {
                 <Phone className="w-8 h-8 text-primary" />
                 <div>
                   <h4 className="font-bold">Call Us</h4>
-                  <p className="text-lg tracking-wide">7830175650</p>
+                  <p className="text-lg tracking-wide">{COMPANY_PHONE}</p>
                 </div>
               </div>
             </div>

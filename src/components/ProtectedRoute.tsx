@@ -1,24 +1,28 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, AuthStatus } from "@/contexts/AuthContext";
+import { logger } from "@/lib/logger";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, isLoading, isSessionExpired } = useAuth();
+  const { user, status, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
-      // Optional: Add a better loading spinner
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      );
+    // Optional: Add a better loading spinner
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
-  if (!user || isSessionExpired) {
+  if (status === AuthStatus.GUEST || status === AuthStatus.EXPIRED || !user) {
+    logger.warn(
+      `🔒 UNAUTHORIZED_ACCESS | Where: ProtectedRoute | Path: ${location.pathname} | Action: Redirecting to login`
+    );
     // Redirect to login but save the attempted location
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
