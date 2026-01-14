@@ -43,6 +43,8 @@ const LiveData = () => {
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [selectedExpiry, setSelectedExpiry] = useState<string>("");
 
+  const [selectedSource, setSelectedSource] = useState<string>("REST_API");
+
   // Helper to generate full day time slots (09:15 to 15:30)
   const timeSlots = useMemo(() => {
     const slots = [];
@@ -88,10 +90,16 @@ const LiveData = () => {
 
   // Fetch History Data via useQuery (Proxy/Cache Pattern)
   const { data: historyData = [], isFetching: loading } = useQuery({
-    queryKey: ["market-history", format(selectedDate, "yyyy-MM-dd"), selectedIndex, selectedExpiry],
+    queryKey: ["market-history", format(selectedDate, "yyyy-MM-dd"), selectedIndex, selectedExpiry, selectedSource],
     queryFn: async () => {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const url = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
+      const baseUrl = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
+      
+      // Convert string source (from UI state) to integer (for Backend)
+      // Upstox: REST=1
+      const sourceInt = selectedSource === "WEB_SOCKET" ? DataSource.WEB_SOCKET : DataSource.REST_API;
+      const url = `${baseUrl}&source=${sourceInt}`;
+
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
       if (res.status === 401) {
@@ -193,6 +201,15 @@ const LiveData = () => {
                   {exp}
                 </option>
               ))}
+            </select>
+
+            <select
+              value={selectedSource}
+              onChange={(e) => setSelectedSource(e.target.value)}
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px] font-bold"
+            >
+              <option value="REST_API">REST API</option>
+              <option value="WEB_SOCKET">WebSocket</option>
             </select>
 
             <Popover>

@@ -108,7 +108,9 @@ const AngleOneLiveData = () => {
 
       // Add source filter to the URL
       const baseUrl = endpoints.angleone.history(dateStr, selectedIndex, selectedExpiry);
-      const url = `${baseUrl}&source=${selectedSource}`;
+      // Convert string source (from UI state) to integer (for Backend)
+      const sourceInt = selectedSource === "WEB_SOCKET" ? DataSource.WEB_SOCKET : DataSource.REST_API;
+      const url = `${baseUrl}&source=${sourceInt}`;
 
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
