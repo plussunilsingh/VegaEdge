@@ -21,7 +21,6 @@ const MyAccount = lazy(() => import("./pages/MyAccount"));
 const Chart = lazy(() => import("./pages/Chart"));
 const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const Openchart = lazy(() => import("./pages/Openchart"));
-// const GreeksAnalysis = lazy(() => import("./pages/GreeksAnalysis")); // DELETED
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Strategies = lazy(() => import("./pages/Strategies"));
