@@ -11,6 +11,9 @@ import { endpoints } from "@/config";
 import { SEOHead } from "@/components/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
 import { cn, getMsToNextMinute } from "@/lib/utils";
+import { DataSource, MarketProvider } from "@/types/enums";
+import { formatToIST, formatChartTime } from "@/lib/time";
+import { logger, ErrorCodes } from "@/lib/logger";
 
 interface GreeksData {
   timestamp: string;
@@ -39,7 +42,8 @@ const AngleOneLiveData = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(getInitialDate());
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [selectedExpiry, setSelectedExpiry] = useState<string>("");
-  const [selectedSource, setSelectedSource] = useState<string>("REST_API");
+  const [selectedSource, setSelectedSource] = useState<string>("WEB_SOCKET"); // Default to WS for AngleOne
+  const [selectedProvider, setSelectedProvider] = useState<string>("ANGELONE");
 
   const timeSlots = useMemo(() => {
     const slots = [];
@@ -98,6 +102,7 @@ const AngleOneLiveData = () => {
       selectedIndex,
       selectedExpiry,
       selectedSource,
+      selectedProvider,
     ],
     queryFn: async () => {
       if (!selectedExpiry) return [];
@@ -105,7 +110,10 @@ const AngleOneLiveData = () => {
 
       // Add source filter to the URL
       const baseUrl = endpoints.angleone.history(dateStr, selectedIndex, selectedExpiry);
-      const url = `${baseUrl}&source=${selectedSource}`;
+      // Convert string source (from UI state) to integer (for Backend)
+      const sourceInt = selectedSource === "WEB_SOCKET" ? DataSource.WEB_SOCKET : DataSource.REST_API;
+      const providerInt = selectedProvider === "UPSTOX" ? MarketProvider.UPSTOX : MarketProvider.ANGELONE;
+      const url = `${baseUrl}&source=${sourceInt}&provider=${providerInt}`;
 
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
@@ -185,6 +193,24 @@ const AngleOneLiveData = () => {
 
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <select
+              value={selectedProvider}
+              onChange={(e) => setSelectedProvider(e.target.value)}
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px] font-bold"
+            >
+              <option value="UPSTOX">Upstox</option>
+              <option value="ANGELONE">AngelOne</option>
+            </select>
+
+            <select
+              value={selectedSource}
+              onChange={(e) => setSelectedSource(e.target.value)}
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px] font-bold"
+            >
+              <option value="REST_API">REST API</option>
+              <option value="WEB_SOCKET">WebSocket</option>
+            </select>
+
+            <select
               value={selectedIndex}
               onChange={(e) => setSelectedIndex(e.target.value)}
               className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[100px]"
@@ -205,15 +231,6 @@ const AngleOneLiveData = () => {
                   {exp}
                 </option>
               ))}
-            </select>
-
-            <select
-              value={selectedSource}
-              onChange={(e) => setSelectedSource(e.target.value)}
-              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px] font-bold"
-            >
-              <option value="REST_API">REST API</option>
-              <option value="WEB_SOCKET">WebSocket</option>
             </select>
 
             <Popover>

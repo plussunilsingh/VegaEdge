@@ -11,6 +11,9 @@ import { endpoints } from "@/config";
 import { SEOHead } from "@/components/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
 import { cn, getMsToNextMinute } from "@/lib/utils";
+import { DataSource, MarketProvider } from "@/types/enums";
+import { formatToIST, formatChartTime } from "@/lib/time";
+import { logger, ErrorCodes } from "@/lib/logger";
 
 interface GreeksData {
   timestamp: string;
@@ -39,6 +42,9 @@ const LiveData = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(getInitialDate());
   const [selectedIndex, setSelectedIndex] = useState<string>("NIFTY");
   const [selectedExpiry, setSelectedExpiry] = useState<string>("");
+
+  const [selectedSource, setSelectedSource] = useState<string>("REST_API");
+  const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
 
   // Helper to generate full day time slots (09:15 to 15:30)
   const timeSlots = useMemo(() => {
@@ -85,10 +91,23 @@ const LiveData = () => {
 
   // Fetch History Data via useQuery (Proxy/Cache Pattern)
   const { data: historyData = [], isFetching: loading } = useQuery({
-    queryKey: ["market-history", format(selectedDate, "yyyy-MM-dd"), selectedIndex, selectedExpiry],
+    queryKey: [
+      "market-history",
+      format(selectedDate, "yyyy-MM-dd"),
+      selectedIndex,
+      selectedExpiry,
+      selectedSource,
+      selectedProvider,
+    ],
     queryFn: async () => {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const url = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
+      const baseUrl = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
+
+      // Convert string source (from UI state) to integer (for Backend)
+      const sourceInt = selectedSource === "WEB_SOCKET" ? DataSource.WEB_SOCKET : DataSource.REST_API;
+      const providerInt = selectedProvider === "ANGELONE" ? MarketProvider.ANGELONE : MarketProvider.UPSTOX;
+      const url = `${baseUrl}&source=${sourceInt}&provider=${providerInt}`;
+
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
       if (res.status === 401) {
@@ -169,6 +188,24 @@ const LiveData = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            <select
+              value={selectedProvider}
+              onChange={(e) => setSelectedProvider(e.target.value)}
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px] font-bold"
+            >
+              <option value="UPSTOX">Upstox</option>
+              <option value="ANGELONE">AngelOne</option>
+            </select>
+
+            <select
+              value={selectedSource}
+              onChange={(e) => setSelectedSource(e.target.value)}
+              className="h-9 px-3 bg-background text-foreground border border-border/40 rounded-md text-xs outline-none focus:ring-1 focus:ring-primary flex-1 sm:flex-none sm:min-w-[120px] font-bold"
+            >
+              <option value="REST_API">REST API</option>
+              <option value="WEB_SOCKET">WebSocket</option>
+            </select>
+
             <select
               value={selectedIndex}
               onChange={(e) => setSelectedIndex(e.target.value)}
