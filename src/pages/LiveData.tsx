@@ -104,8 +104,10 @@ const LiveData = () => {
       const baseUrl = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
 
       // Convert string source (from UI state) to integer (for Backend)
-      const sourceInt = selectedSource === "WEB_SOCKET" ? DataSource.WEB_SOCKET : DataSource.REST_API;
-      const providerInt = selectedProvider === "ANGELONE" ? MarketProvider.ANGELONE : MarketProvider.UPSTOX;
+      const sourceInt =
+        selectedSource === "WEB_SOCKET" ? DataSource.WEB_SOCKET : DataSource.REST_API;
+      const providerInt =
+        selectedProvider === "ANGELONE" ? MarketProvider.ANGELONE : MarketProvider.UPSTOX;
       const url = `${baseUrl}&source=${sourceInt}&provider=${providerInt}`;
 
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });

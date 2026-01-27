@@ -25,7 +25,6 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Strategies = lazy(() => import("./pages/Strategies"));
 const LiveData = lazy(() => import("./pages/LiveData"));
-const AngleOneLiveData = lazy(() => import("./pages/AngleOneLiveData"));
 const PricingDetails = lazy(() => import("./pages/PricingDetails"));
 
 const queryClient = new QueryClient();
@@ -109,14 +108,6 @@ const App = () => (
                       element={
                         <ProtectedRoute>
                           <LiveData />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/angleone-live-data"
-                      element={
-                        <ProtectedRoute>
-                          <AngleOneLiveData />
                         </ProtectedRoute>
                       }
                     />

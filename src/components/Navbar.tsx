@@ -140,12 +140,6 @@ const Navbar = () => {
                     onClick={toggleMenu}
                   />
                   <MenuLink
-                    to="/angleone-live-data"
-                    icon={<History size={18} />}
-                    label="angleone-live-data"
-                    onClick={toggleMenu}
-                  />
-                  <MenuLink
                     to="/strategies"
                     icon={<LayoutDashboard size={18} />}
                     label="Strategies"

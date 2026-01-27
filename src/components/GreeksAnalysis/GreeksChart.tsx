@@ -116,22 +116,47 @@ export const GreeksChart = ({
         {/* Dynamic Summary Metrics - Matches Competitor Style */}
         <div className="flex flex-wrap items-center gap-4 mb-4 px-2">
           <div className="flex flex-col">
-             <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">Call {title}</span>
-             <span className={cn("text-lg font-mono font-bold", (data[data.length-1]?.greeks?.[dataKeyCall] ?? 0) < 0 ? "text-red-500" : "text-emerald-600")}>
-               {fmtNum(data[data.length-1]?.greeks?.[dataKeyCall] ?? 0)}
-             </span>
+            <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">
+              Call {title}
+            </span>
+            <span
+              className={cn(
+                "text-lg font-mono font-bold",
+                (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0) < 0
+                  ? "text-red-500"
+                  : "text-emerald-600"
+              )}
+            >
+              {fmtNum(data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)}
+            </span>
           </div>
           <div className="flex flex-col">
-             <span className="text-[10px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">Put {title}</span>
-             <span className={cn("text-lg font-mono font-bold", (data[data.length-1]?.greeks?.[dataKeyPut] ?? 0) < 0 ? "text-red-500" : "text-emerald-600")}>
-               {fmtNum(data[data.length-1]?.greeks?.[dataKeyPut] ?? 0)}
-             </span>
+            <span className="text-[10px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">
+              Put {title}
+            </span>
+            <span
+              className={cn(
+                "text-lg font-mono font-bold",
+                (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) < 0
+                  ? "text-red-500"
+                  : "text-emerald-600"
+              )}
+            >
+              {fmtNum(data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0)}
+            </span>
           </div>
           <div className="flex flex-col">
-             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Difference</span>
-             <span className="text-lg font-mono font-bold text-slate-800">
-               {fmtNum(Math.abs((data[data.length-1]?.greeks?.[dataKeyPut] ?? 0) - (data[data.length-1]?.greeks?.[dataKeyCall] ?? 0)))}
-             </span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">
+              Difference
+            </span>
+            <span className="text-lg font-mono font-bold text-slate-800">
+              {fmtNum(
+                Math.abs(
+                  (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) -
+                    (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)
+                )
+              )}
+            </span>
           </div>
         </div>
 
@@ -161,7 +186,12 @@ export const GreeksChart = ({
                   cursor={{ stroke: "rgba(0,0,0,0.05)", strokeWidth: 1 }}
                 />
                 <Legend
-                  wrapperStyle={{ paddingTop: "10px", fontSize: "10px", fontWeight: 700, textTransform: "uppercase" }}
+                  wrapperStyle={{
+                    paddingTop: "10px",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                  }}
                   iconType="rect"
                   verticalAlign="bottom"
                   align="center"
