@@ -104,8 +104,10 @@ const LiveData = () => {
       const baseUrl = endpoints.market.history(dateStr, selectedIndex, selectedExpiry);
 
       // Convert string source (from UI state) to integer (for Backend)
-      const sourceInt = selectedSource === "WEB_SOCKET" ? DataSource.WEB_SOCKET : DataSource.REST_API;
-      const providerInt = selectedProvider === "ANGELONE" ? MarketProvider.ANGELONE : MarketProvider.UPSTOX;
+      const sourceInt =
+        selectedSource === "WEB_SOCKET" ? DataSource.WEB_SOCKET : DataSource.REST_API;
+      const providerInt =
+        selectedProvider === "ANGELONE" ? MarketProvider.ANGELONE : MarketProvider.UPSTOX;
       const url = `${baseUrl}&source=${sourceInt}&provider=${providerInt}`;
 
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
@@ -129,7 +131,7 @@ const LiveData = () => {
         }
       });
 
-      return timeSlots.map((slotTime) => {
+      const fullData = timeSlots.map((slotTime) => {
         const timeKey = format(slotTime, "HH:mm");
         const existingData = dataMap.get(timeKey);
         let greeks = null;
@@ -155,6 +157,16 @@ const LiveData = () => {
           greeks,
         } as GreeksData;
       });
+
+      // DYNAMIC CHART SCALING:
+      // If today, filter out future minutes so the chart "stretches" to fill available space
+      // and "shrinks" as new data is added (User Request).
+      if (isToday(selectedDate)) {
+        const now = new Date();
+        return fullData.filter((d) => new Date(d.timestamp) <= now);
+      }
+
+      return fullData;
     },
     enabled: !!token && isAuthenticated && !!selectedExpiry,
     refetchInterval: isToday(selectedDate) ? getMsToNextMinute : false, // Clock-synced zero-drift polling
