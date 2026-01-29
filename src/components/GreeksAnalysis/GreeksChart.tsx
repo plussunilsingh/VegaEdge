@@ -112,37 +112,89 @@ export const GreeksChart = ({
           {title} Analysis
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 w-full min-h-0 p-4 overflow-hidden relative z-10">
-        <div className="w-full h-full overflow-x-auto custom-scrollbar">
+      <CardContent className="flex-1 w-full min-h-0 p-3 lg:p-4 overflow-hidden relative z-10 flex flex-col">
+        {/* Dynamic Summary Metrics - Matches Competitor Style */}
+        <div className="flex flex-wrap items-center gap-4 mb-4 px-2">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">
+              Call {title}
+            </span>
+            <span
+              className={cn(
+                "text-lg font-mono font-bold",
+                (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0) < 0
+                  ? "text-red-500"
+                  : "text-emerald-600"
+              )}
+            >
+              {fmtNum(data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">
+              Put {title}
+            </span>
+            <span
+              className={cn(
+                "text-lg font-mono font-bold",
+                (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) < 0
+                  ? "text-red-500"
+                  : "text-emerald-600"
+              )}
+            >
+              {fmtNum(data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0)}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">
+              Difference
+            </span>
+            <span className="text-lg font-mono font-bold text-slate-800">
+              {fmtNum(
+                Math.abs(
+                  (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) -
+                    (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)
+                )
+              )}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex-1 w-full overflow-x-auto custom-scrollbar">
           <div className="w-full h-full min-w-[800px] lg:min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
+              <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
                 <XAxis
                   dataKey="timestamp"
                   tickFormatter={formatTime}
-                  tick={{ fontSize: 11, fill: "#64748b", fontWeight: 500 }}
+                  tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 500 }}
                   stroke={CHART_COLORS.grid}
-                  height={60}
-                  angle={-45}
-                  textAnchor="end"
+                  height={50}
+                  interval="preserveStartEnd"
                 />
                 <YAxis
                   domain={yDomain}
                   ticks={yTicks}
                   tickFormatter={(val) => val.toFixed(2)}
-                  tick={{ fontSize: 11, fill: "#64748b", fontWeight: 500 }}
+                  tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 500 }}
                   stroke={CHART_COLORS.grid}
-                  width={55}
+                  width={45}
                 />
                 <Tooltip
                   content={<CustomTooltip />}
                   cursor={{ stroke: "rgba(0,0,0,0.05)", strokeWidth: 1 }}
                 />
                 <Legend
-                  wrapperStyle={{ paddingTop: "20px", fontSize: "11px", fontWeight: 600 }}
-                  iconType="circle"
+                  wrapperStyle={{
+                    paddingTop: "10px",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                  }}
+                  iconType="rect"
                   verticalAlign="bottom"
+                  align="center"
                 />
                 <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1} />
                 <ReferenceLine
