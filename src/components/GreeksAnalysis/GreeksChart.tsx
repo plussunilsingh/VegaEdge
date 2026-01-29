@@ -67,6 +67,13 @@ interface GreeksChartProps {
   selectedDate: Date;
 }
 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+
+// ... existing imports ...
+
+// ... existing code ...
+
 export const GreeksChart = ({
   title,
   data,
@@ -77,6 +84,8 @@ export const GreeksChart = ({
   icon: Icon,
   selectedDate,
 }: GreeksChartProps) => {
+  const [visibleSeries, setVisibleSeries] = useState<"both" | "call" | "put">("both");
+
   // Symmetric Scaling Logic
   const { yDomain, yTicks } = (() => {
     let maxVal = 0;
@@ -111,53 +120,93 @@ export const GreeksChart = ({
           <Icon className={cn("w-5 h-5", colorNet.replace("text-", "text-"))} />
           {title} Analysis
         </CardTitle>
+        <div className="flex items-center gap-2">
+           <Button
+            variant={visibleSeries === "call" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setVisibleSeries("call")}
+            className={cn(
+              "h-7 text-xs font-bold uppercase tracking-wider",
+              visibleSeries === "call" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+            )}
+          >
+            Call Only
+          </Button>
+          <Button
+             variant={visibleSeries === "put" ? "default" : "outline"}
+             size="sm"
+             onClick={() => setVisibleSeries("put")}
+             className={cn(
+               "h-7 text-xs font-bold uppercase tracking-wider",
+               visibleSeries === "put" ? "bg-red-600 hover:bg-red-700 text-white" : "text-red-600 hover:text-red-700 hover:bg-red-50"
+             )}
+           >
+             Put Only
+           </Button>
+           <Button
+            variant={visibleSeries === "both" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setVisibleSeries("both")}
+            className="h-7 text-xs font-bold uppercase tracking-wider"
+          >
+            VS Match
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="flex-1 w-full min-h-0 p-3 lg:p-4 overflow-hidden relative z-10 flex flex-col">
         {/* Dynamic Summary Metrics - Matches Competitor Style */}
         <div className="flex flex-wrap items-center gap-4 mb-4 px-2">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">
-              Call {title}
-            </span>
-            <span
-              className={cn(
-                "text-lg font-mono font-bold",
-                (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0) < 0
-                  ? "text-red-500"
-                  : "text-emerald-600"
-              )}
-            >
-              {fmtNum(data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">
-              Put {title}
-            </span>
-            <span
-              className={cn(
-                "text-lg font-mono font-bold",
-                (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) < 0
-                  ? "text-red-500"
-                  : "text-emerald-600"
-              )}
-            >
-              {fmtNum(data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0)}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">
-              Difference
-            </span>
-            <span className="text-lg font-mono font-bold text-slate-800">
-              {fmtNum(
-                Math.abs(
-                  (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) -
-                    (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)
-                )
-              )}
-            </span>
-          </div>
+            {(visibleSeries === "both" || visibleSeries === "call") && (
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">
+                  Call {title}
+                </span>
+                <span
+                  className={cn(
+                    "text-lg font-mono font-bold",
+                    (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0) < 0
+                      ? "text-red-500"
+                      : "text-emerald-600"
+                  )}
+                >
+                  {fmtNum(data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)}
+                </span>
+              </div>
+            )}
+            
+            {(visibleSeries === "both" || visibleSeries === "put") && (
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded w-fit mb-1">
+                  Put {title}
+                </span>
+                <span
+                  className={cn(
+                    "text-lg font-mono font-bold",
+                    (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) < 0
+                      ? "text-red-500"
+                      : "text-emerald-600"
+                  )}
+                >
+                  {fmtNum(data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0)}
+                </span>
+              </div>
+            )}
+
+            {visibleSeries === "both" && (
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">
+                  Difference
+                </span>
+                <span className="text-lg font-mono font-bold text-slate-800">
+                  {fmtNum(
+                    Math.abs(
+                      (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) -
+                        (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)
+                    )
+                  )}
+                </span>
+              </div>
+            )}
         </div>
 
         <div className="flex-1 w-full overflow-x-auto custom-scrollbar">
@@ -210,26 +259,31 @@ export const GreeksChart = ({
                   }}
                 />
 
-                <Line
-                  type="monotone"
-                  dataKey={`greeks.${dataKeyCall}`}
-                  name={`Call ${title}`}
-                  stroke={CHART_COLORS.call}
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.call }}
-                  animationDuration={1500}
-                />
-                <Line
-                  type="monotone"
-                  dataKey={`greeks.${dataKeyPut}`}
-                  name={`Put ${title}`}
-                  stroke={CHART_COLORS.put}
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.put }}
-                  animationDuration={1500}
-                />
+                {(visibleSeries === "both" || visibleSeries === "call") && (
+                  <Line
+                    type="monotone"
+                    dataKey={`greeks.${dataKeyCall}`}
+                    name={`Call ${title}`}
+                    stroke={CHART_COLORS.call}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.call }}
+                    animationDuration={1500}
+                  />
+                )}
+                
+                {(visibleSeries === "both" || visibleSeries === "put") && (
+                  <Line
+                    type="monotone"
+                    dataKey={`greeks.${dataKeyPut}`}
+                    name={`Put ${title}`}
+                    stroke={CHART_COLORS.put}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 5, strokeWidth: 0, fill: CHART_COLORS.put }}
+                    animationDuration={1500}
+                  />
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>

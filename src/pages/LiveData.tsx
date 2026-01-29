@@ -30,6 +30,9 @@ interface GreeksData {
     call_theta: number;
     put_theta: number;
     diff_theta: number;
+    call_iv: number;
+    put_iv: number;
+    diff_iv: number;
   } | null;
 }
 
@@ -66,7 +69,8 @@ const LiveData = () => {
   const { data: expiryList = [] } = useQuery({
     queryKey: ["expiry-list", selectedIndex],
     queryFn: async () => {
-      const res = await fetch(endpoints.market.expiryList, {
+      // Pass selectedIndex to filter expiries (e.g. exclude SENSEX)
+      const res = await fetch(`${endpoints.market.expiryList}?index_name=${selectedIndex}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to fetch expiry list");
@@ -150,6 +154,9 @@ const LiveData = () => {
             call_theta: Number(g.call_theta),
             put_theta: Number(g.put_theta),
             diff_theta: Number(g.put_theta) - Number(g.call_theta),
+            call_iv: Number(g.calls_iv),
+            put_iv: Number(g.puts_iv),
+            diff_iv: Number(g.puts_iv) - Number(g.calls_iv),
           };
         }
         return {
@@ -273,6 +280,18 @@ const LiveData = () => {
           colorNet="text-emerald-500"
           selectedDate={selectedDate}
         />
+
+        {/* IV Analysis Section (NEW) */}
+        <GreeksAnalysisSection
+          title="Implied Volatility (IV)"
+          data={historyData}
+          dataKeyCall="call_iv"
+          dataKeyPut="put_iv"
+          dataKeyNet="diff_iv"
+          colorNet="text-purple-600"
+          icon={TrendingUp} // Using TrendingUp for Volatility
+          selectedDate={selectedDate}
+        />
         <GreeksAnalysisSection
           title="Gamma"
           icon={Activity}
@@ -318,12 +337,12 @@ const LiveData = () => {
               }
               const csvContent =
                 "data:text/csv;charset=utf-8," +
-                "Time,Call Vega,Put Vega,Net Vega,Call Gamma,Put Gamma,Net Gamma,Call Delta,Put Delta,Net Delta\n" +
+                "Time,Call Vega,Put Vega,Net Vega,Call Gamma,Put Gamma,Net Gamma,Call Delta,Put Delta,Net Delta,Call IV,Put IV,Net IV\n" +
                 validData
                   .map((row) => {
                     const g = row.greeks!;
                     const t = format(new Date(row.timestamp), "HH:mm:ss");
-                    return `${t},${g.call_vega},${g.put_vega},${g.diff_vega},${g.call_gamma},${g.put_gamma},${g.diff_gamma},${g.call_delta},${g.put_delta},${g.diff_delta}`;
+                    return `${t},${g.call_vega},${g.put_vega},${g.diff_vega},${g.call_gamma},${g.put_gamma},${g.diff_gamma},${g.call_delta},${g.put_delta},${g.diff_delta},${g.call_iv},${g.put_iv},${g.diff_iv}`;
                   })
                   .join("\n");
 
