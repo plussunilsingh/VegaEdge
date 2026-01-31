@@ -3,6 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format, isToday } from "date-fns";
 import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap, Diamond } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,6 +56,7 @@ const LiveData = () => {
   const [selectedSource, setSelectedSource] = useState<string>("REST_API");
   const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
   const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(true);
+  const [baselineTimestamp, setBaselineTimestamp] = useState<string>("");
 
   // Helper to generate full day time slots (09:15 to 15:30)
   const timeSlots = useMemo(() => {
@@ -181,12 +189,38 @@ const LiveData = () => {
     staleTime: 30000,
   });
 
+  // Extract available timestamps for dropdown
+  const availableBaselines = useMemo(() => {
+    return rawHistoryData
+      .filter((d) => d.greeks !== null)
+      .map((d) => ({
+        value: d.timestamp,
+        label: format(new Date(d.timestamp), "HH:mm"),
+      }));
+  }, [rawHistoryData]);
+
+  // Default to first available timestamp if not set
+  useEffect(() => {
+    if ((!baselineTimestamp || !availableBaselines.some(b => b.value === baselineTimestamp)) && availableBaselines.length > 0) {
+      setBaselineTimestamp(availableBaselines[0].value);
+    }
+  }, [availableBaselines, baselineTimestamp]);
+
   // Apply Baseline Logic Memoized
   const processedHistoryData = useMemo(() => {
     if (!isBaselineApplied) return rawHistoryData;
 
-    // Find first record with valid greeks as baseline
-    const baselineRecord = rawHistoryData.find((d) => d.greeks !== null);
+    // Use selected baseline, or fall back to first valid
+    let baselineRecord = undefined;
+    
+    if (baselineTimestamp) {
+        baselineRecord = rawHistoryData.find(d => d.timestamp === baselineTimestamp && d.greeks !== null);
+    }
+    
+    if (!baselineRecord) {
+         baselineRecord = rawHistoryData.find((d) => d.greeks !== null);
+    }
+
     if (!baselineRecord || !baselineRecord.greeks) return rawHistoryData;
 
     const baseline = baselineRecord.greeks;
@@ -223,7 +257,7 @@ const LiveData = () => {
         },
       };
     });
-  }, [rawHistoryData, isBaselineApplied]);
+  }, [rawHistoryData, isBaselineApplied, baselineTimestamp]);
 
 
   if (!isAuthenticated) return null;
@@ -267,6 +301,24 @@ const LiveData = () => {
               <Diamond className={cn("w-3.5 h-3.5 mr-2", isBaselineApplied && "fill-current")} />
               {isBaselineApplied ? "Baseline: ON" : "Baseline: OFF"}
             </Button>
+
+            {isBaselineApplied && (
+              <Select
+                value={baselineTimestamp}
+                onValueChange={(val) => setBaselineTimestamp(val)}
+              >
+                <SelectTrigger className="h-9 w-[110px] text-xs font-bold border-emerald-500/50 bg-background/50 focus:ring-emerald-500">
+                  <SelectValue placeholder="Time" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[200px]" align="start">
+                  {availableBaselines.map((op) => (
+                    <SelectItem key={op.value} value={op.value} className="text-xs">
+                      @ {op.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             <select
               value={selectedProvider}
