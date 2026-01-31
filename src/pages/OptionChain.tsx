@@ -2,14 +2,13 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { endpoints } from "@/config";
 import { OptionChainTable } from "@/components/OptionChainExtensions/OptionChainTable";
-import { Input } from "@/components/ui/input";
 import { SEOHead } from "@/components/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 
 const OptionChain = () => {
   const { isAuthenticated, token } = useAuth();
   const [selectedOption, setSelectedOption] = useState("1");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState("");
 
   // Map option ID to symbol for API
   const getSymbol = (id: string) => {
@@ -34,6 +33,37 @@ const OptionChain = () => {
       }
   };
 
+  // Query for expiry dates
+  const { data: expiryData } = useQuery({
+    queryKey: ["expiry-dates", selectedOption],
+    queryFn: async () => {
+      const symbol = getSymbol(selectedOption);
+      const res = await fetch(endpoints.market.expiries(symbol), {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.status === 401) {
+        throw new Error("Unauthorized");
+      }
+      const json = await res.json();
+      return json.status === "success" ? json.expiries : [];
+    },
+    enabled: isAuthenticated && !!token,
+  });
+
+  // Auto-select first expiry when data loads
+  useQuery({
+    queryKey: ["auto-select-expiry", expiryData],
+    queryFn: () => {
+      if (expiryData && expiryData.length > 0 && !selectedDate) {
+        setSelectedDate(expiryData[0].value);
+      }
+      return null;
+    },
+    enabled: !!expiryData && expiryData.length > 0,
+  });
+
   // Query for Option Chain Greeks
   const { data: optionChainData, isLoading: isLoadingChain } = useQuery({
     queryKey: ["option-chain-greeks", selectedOption, selectedDate],
@@ -51,7 +81,7 @@ const OptionChain = () => {
        const json = await res.json();
        return json.status === "success" ? json.data : null;
     },
-    enabled: isAuthenticated && !!token,
+    enabled: isAuthenticated && !!token && !!selectedDate,
     refetchInterval: 2000, 
   });
 
@@ -74,7 +104,10 @@ const OptionChain = () => {
               </label>
               <select
                 value={selectedOption}
-                onChange={(e) => setSelectedOption(e.target.value)}
+                onChange={(e) => {
+                  setSelectedOption(e.target.value);
+                  setSelectedDate(""); // Reset date when changing instrument
+                }}
                 className="w-full max-w-xs bg-background text-foreground border border-border rounded-xl px-4 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               >
                 <option value="1">Nifty 50</option>
@@ -87,14 +120,24 @@ const OptionChain = () => {
 
             <div className="ml-auto">
               <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1 text-right">
-                Expiry / Date
+                Expiry Date
               </label>
-              <Input
-                type="date"
+              <select
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-muted border-border rounded-xl font-semibold"
-              />
+                className="bg-background text-foreground border border-border rounded-xl px-4 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all min-w-[180px]"
+                disabled={!expiryData || expiryData.length === 0}
+              >
+                {!expiryData || expiryData.length === 0 ? (
+                  <option value="">Loading expiries...</option>
+                ) : (
+                  expiryData.map((expiry: { value: string; label: string }) => (
+                    <option key={expiry.value} value={expiry.value}>
+                      {expiry.label}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
           </div>
 
