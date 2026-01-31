@@ -121,8 +121,35 @@ export const GreeksChart = ({
   // Calculate explicit ticks for X-Axis
   const xAxisTicks = (() => {
     if (!data || data.length === 0) return [];
-    // User Request: Show ALL ticks as dense as the selected interval
-    return data.map((d) => d.timestamp);
+    
+    // For sparse intervals (>= 5m), show every point (User Request)
+    // 5m = ~75 labels (Tilted fits okay)
+    // 10m = ~37 labels
+    // 30m = ~13 labels
+    if (interval >= 5) {
+      return data.map((d) => d.timestamp);
+    }
+
+    // For dense intervals (1m, 3m), showing every point (375 labels) is too messy/overlapping.
+    // Solution: Show ticks every 15 minutes instead.
+    const ticks: string[] = [];
+    
+    // Find the first clean 15-min mark or use start
+    // We filter raw timestamps to find those landing on :00, :15, :30, :45 minutes
+    data.forEach((d) => {
+       const dt = new Date(d.timestamp);
+       const minutes = dt.getMinutes();
+       if (minutes % 15 === 0) {
+         ticks.push(d.timestamp);
+       }
+    });
+
+    // Ensure start/end context if missing (optional, but good for range visibility)
+    if (ticks.length === 0 || ticks[0] !== data[0].timestamp) {
+        // Only force add start if it's significant, otherwise 15m grid is clean enough
+    }
+    
+    return ticks;
   })();
 
   return (
