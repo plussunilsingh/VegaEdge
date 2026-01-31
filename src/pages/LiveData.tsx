@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, isToday } from "date-fns";
-import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap } from "lucide-react";
+import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap, Diamond } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { endpoints } from "@/config";
@@ -48,7 +48,7 @@ const LiveData = () => {
 
   const [selectedSource, setSelectedSource] = useState<string>("REST_API");
   const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
-  const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(false);
+  const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(true);
 
   // Helper to generate full day time slots (09:15 to 15:30)
   const timeSlots = useMemo(() => {
@@ -258,11 +258,14 @@ const LiveData = () => {
               size="sm"
               onClick={() => setIsBaselineApplied(!isBaselineApplied)}
               className={cn(
-                "h-9 text-xs font-bold transition-all",
-                isBaselineApplied ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                "h-9 text-xs font-bold transition-all border",
+                isBaselineApplied 
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
+                  : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
               )}
             >
-              {isBaselineApplied ? "Baseline Applied" : "Apply Baseline"}
+              <Diamond className={cn("w-3.5 h-3.5 mr-2", isBaselineApplied && "fill-current")} />
+              {isBaselineApplied ? "Baseline: ON" : "Baseline: OFF"}
             </Button>
 
             <select
