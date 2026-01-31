@@ -57,6 +57,7 @@ const LiveData = () => {
   const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
   const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(true);
   const [baselineTimestamp, setBaselineTimestamp] = useState<string>("");
+  const [selectedInterval, setSelectedInterval] = useState<string>("1");
 
   // Helper to generate full day time slots (09:15 to 15:30)
   const timeSlots = useMemo(() => {
@@ -225,7 +226,20 @@ const LiveData = () => {
 
     const baseline = baselineRecord.greeks;
 
-    return rawHistoryData.map((row) => {
+    // Filter data to only show from the baseline time onwards
+    let filteredData = rawHistoryData.filter((d) => d.timestamp >= baselineRecord.timestamp);
+
+    // Apply Interval Filter (Downsampling)
+    const interval = parseInt(selectedInterval);
+    if (interval > 1) {
+       const baseTime = new Date(baselineRecord.timestamp).getTime();
+       filteredData = filteredData.filter(d => {
+           const diffMinutes = Math.floor((new Date(d.timestamp).getTime() - baseTime) / 60000);
+           return diffMinutes % interval === 0;
+       });
+    }
+
+    return filteredData.map((row) => {
       if (!row.greeks) return row;
 
       const g = row.greeks;
@@ -257,7 +271,7 @@ const LiveData = () => {
         },
       };
     });
-  }, [rawHistoryData, isBaselineApplied, baselineTimestamp]);
+  }, [rawHistoryData, isBaselineApplied, baselineTimestamp, selectedInterval]);
 
 
   if (!isAuthenticated) return null;
@@ -319,6 +333,22 @@ const LiveData = () => {
                 </SelectContent>
               </Select>
             )}
+
+             <Select
+              value={selectedInterval}
+              onValueChange={(val) => setSelectedInterval(val)}
+            >
+              <SelectTrigger className="h-9 w-[80px] text-xs font-bold border-border/40">
+                 <SelectValue placeholder="1m" />
+              </SelectTrigger>
+              <SelectContent>
+                 <SelectItem value="1">1m</SelectItem>
+                 <SelectItem value="3">3m</SelectItem>
+                 <SelectItem value="5">5m</SelectItem>
+                 <SelectItem value="10">10m</SelectItem>
+                 <SelectItem value="30">30m</SelectItem>
+              </SelectContent>
+            </Select>
 
             <select
               value={selectedProvider}
@@ -392,6 +422,8 @@ const LiveData = () => {
           dataKeyNet="diff_vega"
           colorNet="text-emerald-500"
           selectedDate={selectedDate}
+          interval={parseInt(selectedInterval)}
+          baselineTime={baselineTimestamp}
         />
 
         {/* IV Analysis Section (NEW) */}
@@ -404,6 +436,8 @@ const LiveData = () => {
           colorNet="text-purple-600"
           icon={TrendingUp} // Using TrendingUp for Volatility
           selectedDate={selectedDate}
+          interval={parseInt(selectedInterval)}
+          baselineTime={baselineTimestamp}
         />
         <GreeksAnalysisSection
           title="Gamma"
@@ -414,6 +448,8 @@ const LiveData = () => {
           dataKeyNet="diff_gamma"
           colorNet="text-purple-500"
           selectedDate={selectedDate}
+          interval={parseInt(selectedInterval)}
+          baselineTime={baselineTimestamp}
         />
         <GreeksAnalysisSection
           title="Delta"

@@ -65,6 +65,8 @@ interface GreeksChartProps {
   colorNet: string;
   icon: any;
   selectedDate: Date;
+  interval?: number;
+  baselineTime?: string;
 }
 
 import { useState } from "react";
@@ -83,6 +85,8 @@ export const GreeksChart = ({
   colorNet,
   icon: Icon,
   selectedDate,
+  interval = 1,
+  baselineTime,
 }: GreeksChartProps) => {
   const [visibleSeries, setVisibleSeries] = useState<"both" | "call" | "put">("both");
 
@@ -108,6 +112,7 @@ export const GreeksChart = ({
   })();
 
   const getStartRef = () => {
+    if (baselineTime) return baselineTime;
     const start = new Date(selectedDate);
     start.setHours(9, 15, 0, 0);
     return start.toISOString();
@@ -220,7 +225,7 @@ export const GreeksChart = ({
                   tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 500 }}
                   stroke={CHART_COLORS.grid}
                   height={50}
-                  interval="preserveStartEnd"
+                  interval={interval >= 5 ? 0 : "preserveStartEnd"}
                 />
                 <YAxis
                   domain={yDomain}
@@ -251,7 +256,7 @@ export const GreeksChart = ({
                   stroke="#cbd5e1"
                   strokeDasharray="4 4"
                   label={{
-                    value: "09:15",
+                    value: baselineTime ? formatTime(baselineTime) : "09:15",
                     position: "insideTopLeft",
                     fill: "#94a3b8",
                     fontSize: 10,
