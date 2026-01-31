@@ -118,6 +118,13 @@ export const GreeksChart = ({
     return start.toISOString();
   };
 
+  // Calculate explicit ticks for X-Axis
+  const xAxisTicks = (() => {
+    if (!data || data.length === 0) return [];
+    // User Request: Show ALL ticks as dense as the selected interval
+    return data.map((d) => d.timestamp);
+  })();
+
   return (
     <Card className="col-span-12 lg:col-span-9 border-slate-200 bg-white shadow-sm ring-1 ring-slate-100 flex flex-col h-[500px] lg:h-[600px] overflow-hidden group relative">
       <CardHeader className="py-4 px-6 border-b border-slate-100 flex flex-row items-center justify-between z-10 bg-slate-50/50">
@@ -221,11 +228,14 @@ export const GreeksChart = ({
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} vertical={false} />
                 <XAxis
                   dataKey="timestamp"
+                  ticks={xAxisTicks}
                   tickFormatter={formatTime}
                   tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 500 }}
+                  angle={-45}
+                  textAnchor="end"
                   stroke={CHART_COLORS.grid}
-                  height={50}
-                  interval={interval >= 5 ? 0 : "preserveStartEnd"}
+                  height={60}
+                  interval={0} // Force show all provided ticks
                 />
                 <YAxis
                   domain={yDomain}
