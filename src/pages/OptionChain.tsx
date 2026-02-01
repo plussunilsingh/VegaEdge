@@ -11,6 +11,7 @@ const OptionChain = () => {
   const [selectedDate, setSelectedDate] = useState("");
   
   // Delta filter state - default to "sweet spot" range
+  // STRICT REQUIREMENT: Start point 0.05 must be INCLUDED (inclusive range)
   const [minDelta, setMinDelta] = useState<number>(0.05);
   const [maxDelta, setMaxDelta] = useState<number>(0.6);
 
