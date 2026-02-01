@@ -87,12 +87,17 @@ export const OptionChainTable = ({ data, isLoading, deltaRange = { min: 0.05, ma
       const ce = row.CE as GreekData;
       const pe = row.PE as GreekData;
       
-      const ceDelta = ce?.delta !== undefined ? Math.abs(ce.delta) : null;
-      const peDelta = pe?.delta !== undefined ? Math.abs(pe.delta) : null;
+      // Call delta is positive (0.05 to 0.6)
+      // Put delta is negative (-0.05 to -0.6)
+      // We need to check the actual delta value with its sign
+      // Normalize delta values to numbers (handle strings/nulls safely)
+      const ceDelta = ce?.delta !== undefined && ce?.delta !== null ? Number(ce.delta) : null;
+      const peDelta = pe?.delta !== undefined && pe?.delta !== null ? Number(pe.delta) : null;
       
-      // Show row if either CE or PE delta is within range
-      const ceInRange = ceDelta !== null && ceDelta >= deltaRange.min && ceDelta <= deltaRange.max;
-      const peInRange = peDelta !== null && peDelta >= deltaRange.min && peDelta <= deltaRange.max;
+      // Use absolute value for range check to treat positive (Call) and negative (Put) deltas symmetrically
+      // We want magnitude between min and max (e.g. 0.05 to 0.6)
+      const ceInRange = ceDelta !== null && Math.abs(ceDelta) >= deltaRange.min && Math.abs(ceDelta) <= deltaRange.max;
+      const peInRange = peDelta !== null && Math.abs(peDelta) >= deltaRange.min && Math.abs(peDelta) <= deltaRange.max;
       
       return ceInRange || peInRange;
     });
