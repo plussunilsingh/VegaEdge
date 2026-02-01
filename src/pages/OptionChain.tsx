@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { endpoints } from "@/config";
 import { OptionChainTable } from "@/components/OptionChainExtensions/OptionChainTable";
 import { SEOHead } from "@/components/SEOHead";
@@ -88,6 +88,7 @@ const OptionChain = () => {
     },
     enabled: isAuthenticated && !!token && !!selectedDate,
     refetchInterval: 2000, 
+    placeholderData: keepPreviousData,
   });
 
   if (!isAuthenticated) return null;

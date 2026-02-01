@@ -70,7 +70,9 @@ const DataCell = ({
 
 export const OptionChainTable = ({ data, isLoading, deltaRange = { min: 0.05, max: 0.6 } }: OptionChainTableProps) => {
   
-  if (isLoading || !data) {
+  // Only show full page loader on INITIAL load (status === pending)
+  // If we have data (even stale), we show it.
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground bg-slate-50/50 rounded-xl border border-dashed border-slate-300">
         <Activity className="w-8 h-8 mb-2 animate-pulse text-indigo-400" />
@@ -79,7 +81,9 @@ export const OptionChainTable = ({ data, isLoading, deltaRange = { min: 0.05, ma
     );
   }
 
-  const { rows, meta } = data;
+  // Safe defaults if data is missing/null (e.g. API error)
+  const rows = data?.rows || [];
+  const meta = data?.meta || { index: "-", expiry: "-", spot: 0, atm: 0, timestamp: "" };
 
   // Filter rows based on delta range
   const filteredRows = useMemo(() => {
@@ -124,7 +128,7 @@ export const OptionChainTable = ({ data, isLoading, deltaRange = { min: 0.05, ma
                 <span className="text-xs font-medium text-slate-600">SPOT</span>
               </div>
               <span className="text-xl font-black text-emerald-600 font-mono">
-                {meta.spot.toFixed(2)}
+                {(meta.spot || 0).toFixed(2)}
               </span>
             </div>
             
