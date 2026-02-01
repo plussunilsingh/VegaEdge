@@ -46,16 +46,19 @@ const DataCell = ({
   value, 
   type = "text", 
   className,
-  prevValue 
+  prevValue,
+  precision = 4
 }: { 
   value: number | string | undefined; 
-  type?: "text" | "number" | "currency"; 
+  type?: "text" | "number" | "currency" | "greek"; 
   className?: string;
   prevValue?: number;
+  precision?: number;
 }) => {
   const displayVal = value === undefined || value === null ? "-" : 
     type === "currency" ? Number(value).toFixed(2) : 
-    type === "number" ? Number(value).toFixed(2) : value;
+    type === "greek" ? Number(value).toFixed(4) :
+    type === "number" ? Number(value).toFixed(precision) : value;
 
   return (
     <td className={cn("px-2 py-1.5 text-xs font-mono border-r border-slate-100 last:border-r-0", className)}>
@@ -80,16 +83,28 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       {/* Meta Header */}
-      <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-black text-slate-700">{meta.index}</span>
-          <span className="text-xs font-medium text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
-            {meta.expiry}
-          </span>
-        </div>
-        <div className="text-sm font-mono">
-          <span className="text-slate-500 mr-2">Spot:</span>
-          <span className="font-bold text-slate-900">{meta.spot.toFixed(2)}</span>
+      <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 border-b border-slate-200">
+        <div className="flex justify-between items-center">
+          {/* Left: Index & Expiry */}
+          <div className="flex items-center gap-4">
+            <span className="text-lg font-black text-slate-800">{meta.index}</span>
+            <span className="text-xs font-semibold text-slate-600 bg-white px-3 py-1 rounded-md border border-slate-300 shadow-sm">
+              Expiry: {meta.expiry}
+            </span>
+          </div>
+          
+          {/* Right: Spot Price with Green Indicator */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border-2 border-emerald-500 shadow-md">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-slate-600">SPOT</span>
+              </div>
+              <span className="text-xl font-black text-emerald-600 font-mono">
+                {meta.spot.toFixed(2)}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -127,19 +142,22 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
           <tbody>
             {rows.map((row) => {
               const isATM = row.strike === meta.atm;
+              const isNearSpot = Math.abs(row.strike - meta.spot) < 50; // Within 50 points of spot
               const bgClass = isATM ? "bg-yellow-50" : "hover:bg-slate-50/50";
+              // Green line for ATM strike (exact match)
+              const borderClass = isATM ? "border-l-[6px] border-l-emerald-600 shadow-sm" : "";
               const ce = row.CE as GreekData;
               const pe = row.PE as GreekData;
               
               return (
-                <tr key={row.strike} className={cn("border-b border-slate-100 transition-colors", bgClass)}>
+                <tr key={row.strike} className={cn("border-b border-slate-100 transition-colors", bgClass, borderClass)}>
                   {/* CALLS */}
-                  <DataCell value={ce?.oi} type="number" className="text-slate-500" />
-                  <DataCell value={ce?.delta} type="number" className="text-orange-600" />
-                  <DataCell value={ce?.gamma} type="number" className="text-purple-600" />
-                  <DataCell value={ce?.theta} type="number" className="text-pink-600" />
-                  <DataCell value={ce?.vega} type="number" className="text-blue-600 font-medium" />
-                  <DataCell value={ce?.iv} type="number" className="text-slate-600" />
+                  <DataCell value={ce?.oi} type="number" precision={0} className="text-slate-500" />
+                  <DataCell value={ce?.delta} type="greek" className="text-orange-600" />
+                  <DataCell value={ce?.gamma} type="greek" className="text-purple-600" />
+                  <DataCell value={ce?.theta} type="greek" className="text-pink-600" />
+                  <DataCell value={ce?.vega} type="greek" className="text-blue-600 font-medium" />
+                  <DataCell value={ce?.iv} type="greek" className="text-slate-600" />
                   <DataCell value={ce?.ltp} type="currency" className="text-emerald-700 font-bold text-right" />
                   
                   {/* STRIKE */}
@@ -153,12 +171,12 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
                   
                   {/* PUTS */}
                   <DataCell value={pe?.ltp} type="currency" className="text-red-700 font-bold text-right" />
-                  <DataCell value={pe?.iv} type="number" className="text-slate-600" />
-                  <DataCell value={pe?.vega} type="number" className="text-blue-600 font-medium" />
-                  <DataCell value={pe?.theta} type="number" className="text-pink-600" />
-                  <DataCell value={pe?.gamma} type="number" className="text-purple-600" />
-                  <DataCell value={pe?.delta} type="number" className="text-orange-600" />
-                  <DataCell value={pe?.oi} type="number" className="text-slate-500" />
+                  <DataCell value={pe?.iv} type="greek" className="text-slate-600" />
+                  <DataCell value={pe?.vega} type="greek" className="text-blue-600 font-medium" />
+                  <DataCell value={pe?.theta} type="greek" className="text-pink-600" />
+                  <DataCell value={pe?.gamma} type="greek" className="text-purple-600" />
+                  <DataCell value={pe?.delta} type="greek" className="text-orange-600" />
+                  <DataCell value={pe?.oi} type="number" precision={0} className="text-slate-500" />
                 </tr>
               );
             })}
