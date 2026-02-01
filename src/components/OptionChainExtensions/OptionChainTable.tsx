@@ -34,6 +34,7 @@ interface OptionChainData {
 interface OptionChainTableProps {
   data: OptionChainData | null;
   isLoading: boolean;
+  deltaRange?: { min: number; max: number };
 }
 
 const HeaderCell = ({ children, className }: { children: React.ReactNode; className?: string }) => (
@@ -67,7 +68,7 @@ const DataCell = ({
   );
 };
 
-export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => {
+export const OptionChainTable = ({ data, isLoading, deltaRange = { min: 0.05, max: 0.6 } }: OptionChainTableProps) => {
   
   if (isLoading || !data) {
     return (
@@ -79,6 +80,23 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
   }
 
   const { rows, meta } = data;
+
+  // Filter rows based on delta range
+  const filteredRows = useMemo(() => {
+    return rows.filter((row) => {
+      const ce = row.CE as GreekData;
+      const pe = row.PE as GreekData;
+      
+      const ceDelta = ce?.delta !== undefined ? Math.abs(ce.delta) : null;
+      const peDelta = pe?.delta !== undefined ? Math.abs(pe.delta) : null;
+      
+      // Show row if either CE or PE delta is within range
+      const ceInRange = ceDelta !== null && ceDelta >= deltaRange.min && ceDelta <= deltaRange.max;
+      const peInRange = peDelta !== null && peDelta >= deltaRange.min && peDelta <= deltaRange.max;
+      
+      return ceInRange || peInRange;
+    });
+  }, [rows, deltaRange]);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -102,6 +120,14 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
               </div>
               <span className="text-xl font-black text-emerald-600 font-mono">
                 {meta.spot.toFixed(2)}
+              </span>
+            </div>
+            
+            {/* Visible Strikes Counter */}
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-300 shadow-sm">
+              <span className="text-xs font-medium text-slate-600">Strikes:</span>
+              <span className="text-sm font-black text-slate-800">
+                {filteredRows.length} / {rows.length}
               </span>
             </div>
           </div>
@@ -140,7 +166,7 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
+            {filteredRows.map((row) => {
               const isATM = row.strike === meta.atm;
               const ce = row.CE as GreekData;
               const pe = row.PE as GreekData;

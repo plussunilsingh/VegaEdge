@@ -9,6 +9,10 @@ const OptionChain = () => {
   const { isAuthenticated, token } = useAuth();
   const [selectedOption, setSelectedOption] = useState("1");
   const [selectedDate, setSelectedDate] = useState("");
+  
+  // Delta filter state - default to "sweet spot" range
+  const [minDelta, setMinDelta] = useState<number>(0.05);
+  const [maxDelta, setMaxDelta] = useState<number>(0.6);
 
   // Map option ID to symbol for API
   const getSymbol = (id: string) => {
@@ -141,9 +145,65 @@ const OptionChain = () => {
             </div>
           </div>
 
+          {/* Delta Filter */}
+          <div className="mb-6 bg-card p-4 rounded-2xl border border-border shadow-sm">
+            <div className="flex items-center gap-4 flex-wrap">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                Delta Range Filter
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={minDelta}
+                  onChange={(e) => setMinDelta(parseFloat(e.target.value) || 0)}
+                  className="w-24 bg-background text-foreground border border-border rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  placeholder="Min"
+                />
+                <span className="text-muted-foreground font-bold">to</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={maxDelta}
+                  onChange={(e) => setMaxDelta(parseFloat(e.target.value) || 1)}
+                  className="w-24 bg-background text-foreground border border-border rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  placeholder="Max"
+                />
+                <button
+                  onClick={() => {
+                    setMinDelta(0.05);
+                    setMaxDelta(0.6);
+                  }}
+                  className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-semibold transition-colors"
+                  title="Reset to sweet spot (0.05-0.6)"
+                >
+                  Sweet Spot
+                </button>
+                <button
+                  onClick={() => {
+                    setMinDelta(0.0);
+                    setMaxDelta(1.0);
+                  }}
+                  className="px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-lg text-sm font-semibold transition-colors"
+                  title="Show all strikes (0.0-1.0)"
+                >
+                  Show All
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Option Chain Table */}
           <div className="w-full">
-               <OptionChainTable data={optionChainData} isLoading={isLoadingChain} />
+               <OptionChainTable 
+                 data={optionChainData} 
+                 isLoading={isLoadingChain}
+                 deltaRange={{ min: minDelta, max: maxDelta }}
+               />
           </div>
 
         </div>
