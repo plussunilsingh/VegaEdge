@@ -37,7 +37,7 @@ interface OptionChainTableProps {
 }
 
 const HeaderCell = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <th className={cn("px-2 py-2 text-xs font-bold uppercase tracking-tighter text-slate-500", className)}>
+  <th className={cn("px-2 py-2 text-xs font-semibold uppercase tracking-tight", "text-[#6A7582]", className)}>
     {children}
   </th>
 );
@@ -111,12 +111,12 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-indigo-50/50 border-b border-indigo-100">
-              <th colSpan={8} className="text-center py-1 text-xs font-bold text-emerald-600 border-r border-indigo-100">CALLS</th>
-              <th className="py-1"></th>
-              <th colSpan={8} className="text-center py-1 text-xs font-bold text-red-600">PUTS</th>
+            <tr className="bg-[#F9FBFE] border-b border-slate-200">
+              <th colSpan={7} className="text-center py-2 text-xs font-bold text-emerald-600 border-r border-slate-200">CALLS</th>
+              <th className="py-2 bg-[#E8ECFC]"></th>
+              <th colSpan={7} className="text-center py-2 text-xs font-bold text-red-600">PUTS</th>
             </tr>
-            <tr className="bg-slate-50 border-b border-slate-200">
+            <tr className="bg-[#F9FBFE] border-b border-slate-200">
               {/* CALLS */}
               <HeaderCell>OI</HeaderCell>
               <HeaderCell>Delta</HeaderCell>
@@ -127,7 +127,7 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
               <HeaderCell className="text-right">LTP</HeaderCell>
               
               {/* STRIKE */}
-              <HeaderCell className="text-center bg-indigo-50/30 text-indigo-700 min-w-[80px]">Strike</HeaderCell>
+              <HeaderCell className="text-center bg-[#E8ECFC] text-[#212121] font-bold min-w-[80px]">Strike</HeaderCell>
               
               {/* PUTS */}
               <HeaderCell className="text-right">LTP</HeaderCell>
@@ -142,41 +142,45 @@ export const OptionChainTable = ({ data, isLoading }: OptionChainTableProps) => 
           <tbody>
             {rows.map((row) => {
               const isATM = row.strike === meta.atm;
-              const isNearSpot = Math.abs(row.strike - meta.spot) < 50; // Within 50 points of spot
-              const bgClass = isATM ? "bg-yellow-50" : "hover:bg-slate-50/50";
-              // Green line for ATM strike (exact match)
-              const borderClass = isATM ? "border-l-[6px] border-l-emerald-600 shadow-sm" : "";
               const ce = row.CE as GreekData;
               const pe = row.PE as GreekData;
               
+              // AngelOne ITM logic: Call ITM when strike < spot, Put ITM when strike > spot
+              const isCallITM = row.strike < meta.spot;
+              const isPutITM = row.strike > meta.spot;
+              
+              // AngelOne colors: ITM = #FDF7EC (cream), OTM = white
+              const callBg = isCallITM ? "bg-[#FDF7EC]" : "bg-white";
+              const putBg = isPutITM ? "bg-[#FDF7EC]" : "bg-white";
+              
+              // Green line for ATM strike (exact match)
+              const borderClass = isATM ? "border-l-[6px] border-l-emerald-600 shadow-sm" : "";
+              
               return (
-                <tr key={row.strike} className={cn("border-b border-slate-100 transition-colors", bgClass, borderClass)}>
+                <tr key={row.strike} className={cn("border-b border-slate-100 transition-colors hover:bg-slate-50/30", borderClass)}>
                   {/* CALLS */}
-                  <DataCell value={ce?.oi} type="number" precision={0} className="text-slate-500" />
-                  <DataCell value={ce?.delta} type="greek" className="text-orange-600" />
-                  <DataCell value={ce?.gamma} type="greek" className="text-purple-600" />
-                  <DataCell value={ce?.theta} type="greek" className="text-pink-600" />
-                  <DataCell value={ce?.vega} type="greek" className="text-blue-600 font-medium" />
-                  <DataCell value={ce?.iv} type="greek" className="text-slate-600" />
-                  <DataCell value={ce?.ltp} type="currency" className="text-emerald-700 font-bold text-right" />
+                  <DataCell value={ce?.oi} type="number" precision={0} className={cn("text-[#008D57]", callBg)} />
+                  <DataCell value={ce?.delta} type="greek" className={cn("text-[#212121]", callBg)} />
+                  <DataCell value={ce?.gamma} type="greek" className={cn("text-[#212121]", callBg)} />
+                  <DataCell value={ce?.theta} type="greek" className={cn("text-[#212121]", callBg)} />
+                  <DataCell value={ce?.vega} type="greek" className={cn("text-[#212121]", callBg)} />
+                  <DataCell value={ce?.iv} type="greek" className={cn("text-[#212121]", callBg)} />
+                  <DataCell value={ce?.ltp} type="currency" className={cn("text-[#3F5BD9] font-semibold text-right", callBg)} />
                   
                   {/* STRIKE */}
                   <DataCell 
                     value={row.strike} 
-                    className={cn(
-                      "text-center font-bold bg-slate-50/50 text-slate-800",
-                      isATM && "bg-yellow-100/50 text-yellow-900 border-x border-yellow-200"
-                    )} 
+                    className="text-center font-bold bg-[#E8ECFC] text-[#212121]"
                   />
                   
                   {/* PUTS */}
-                  <DataCell value={pe?.ltp} type="currency" className="text-red-700 font-bold text-right" />
-                  <DataCell value={pe?.iv} type="greek" className="text-slate-600" />
-                  <DataCell value={pe?.vega} type="greek" className="text-blue-600 font-medium" />
-                  <DataCell value={pe?.theta} type="greek" className="text-pink-600" />
-                  <DataCell value={pe?.gamma} type="greek" className="text-purple-600" />
-                  <DataCell value={pe?.delta} type="greek" className="text-orange-600" />
-                  <DataCell value={pe?.oi} type="number" precision={0} className="text-slate-500" />
+                  <DataCell value={pe?.ltp} type="currency" className={cn("text-[#3F5BD9] font-semibold text-right", putBg)} />
+                  <DataCell value={pe?.iv} type="greek" className={cn("text-[#212121]", putBg)} />
+                  <DataCell value={pe?.vega} type="greek" className={cn("text-[#212121]", putBg)} />
+                  <DataCell value={pe?.theta} type="greek" className={cn("text-[#212121]", putBg)} />
+                  <DataCell value={pe?.gamma} type="greek" className={cn("text-[#212121]", putBg)} />
+                  <DataCell value={pe?.delta} type="greek" className={cn("text-[#212121]", putBg)} />
+                  <DataCell value={pe?.oi} type="number" precision={0} className={cn("text-[#008D57]", putBg)} />
                 </tr>
               );
             })}
