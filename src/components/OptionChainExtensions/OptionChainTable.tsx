@@ -209,7 +209,7 @@ export const OptionChainTable = ({ data, isLoading, deltaRange = { min: 0.05, ma
               return (
                 <tr key={row.strike} className={cn("border-b border-slate-100 transition-colors hover:bg-slate-50/30", borderClass)}>
                   {/* CALLS - Apply dimming if out of delta range */}
-                  <DataCell value={ce?.oi} type="number" precision={0} className={cn("text-[#008D57]", callBg, ceOpacity)} />
+                  <DataCell value={ce?.oi} type="number" precision={4} className={cn("text-[#008D57]", callBg, ceOpacity)} />
                   <DataCell value={ce?.delta} type="greek" className={cn("text-[#212121]", callBg, ceOpacity)} />
                   <DataCell value={ce?.gamma} type="greek" className={cn("text-[#212121]", callBg, ceOpacity)} />
                   <DataCell value={ce?.theta} type="greek" className={cn("text-[#212121]", callBg, ceOpacity)} />
@@ -230,7 +230,7 @@ export const OptionChainTable = ({ data, isLoading, deltaRange = { min: 0.05, ma
                   <DataCell value={pe?.theta} type="greek" className={cn("text-[#212121]", putBg, peOpacity)} />
                   <DataCell value={pe?.gamma} type="greek" className={cn("text-[#212121]", putBg, peOpacity)} />
                   <DataCell value={pe?.delta} type="greek" className={cn("text-[#212121]", putBg, peOpacity)} />
-                  <DataCell value={pe?.oi} type="number" precision={0} className={cn("text-[#008D57]", putBg, peOpacity)} />
+                  <DataCell value={pe?.oi} type="number" precision={4} className={cn("text-[#008D57]", putBg, peOpacity)} />
                 </tr>
               );
             })}
