@@ -10,6 +10,8 @@ interface GreeksAnalysisSectionProps {
   colorNet: string;
   icon: any;
   selectedDate: Date;
+  interval?: number;
+  baselineTime?: string;
 }
 
 export const GreeksAnalysisSection = ({
@@ -21,6 +23,8 @@ export const GreeksAnalysisSection = ({
   colorNet,
   icon,
   selectedDate,
+  interval,
+  baselineTime,
 }: GreeksAnalysisSectionProps) => {
   return (
     <div className="grid grid-cols-12 gap-6 h-full mb-10">
@@ -33,6 +37,8 @@ export const GreeksAnalysisSection = ({
         colorNet={colorNet}
         icon={icon}
         selectedDate={selectedDate}
+        interval={interval}
+        baselineTime={baselineTime}
       />
       <GreeksTable
         title={title}

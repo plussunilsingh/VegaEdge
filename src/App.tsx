@@ -26,6 +26,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Strategies = lazy(() => import("./pages/Strategies"));
 const LiveData = lazy(() => import("./pages/LiveData"));
 const PricingDetails = lazy(() => import("./pages/PricingDetails"));
+const OptionChain = lazy(() => import("./pages/OptionChain"));
 
 const queryClient = new QueryClient();
 
@@ -108,6 +109,14 @@ const App = () => (
                       element={
                         <ProtectedRoute>
                           <LiveData />
+                        </ProtectedRoute>
+                      }
+                    />
+                     <Route
+                      path="/option-chain"
+                      element={
+                        <ProtectedRoute>
+                          <OptionChain />
                         </ProtectedRoute>
                       }
                     />
