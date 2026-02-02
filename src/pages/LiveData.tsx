@@ -3,8 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format, isToday } from "date-fns";
-import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap } from "lucide-react";
+import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap, Diamond } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { endpoints } from "@/config";
@@ -30,6 +37,9 @@ interface GreeksData {
     call_theta: number;
     put_theta: number;
     diff_theta: number;
+    call_iv: number;
+    put_iv: number;
+    diff_iv: number;
   } | null;
 }
 
@@ -45,6 +55,9 @@ const LiveData = () => {
 
   const [selectedSource, setSelectedSource] = useState<string>("REST_API");
   const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
+  const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(true);
+  const [baselineTimestamp, setBaselineTimestamp] = useState<string>("");
+  const [selectedInterval, setSelectedInterval] = useState<string>("1");
 
   // Helper to generate full day time slots (09:15 to 15:30)
   const timeSlots = useMemo(() => {
@@ -66,7 +79,8 @@ const LiveData = () => {
   const { data: expiryList = [] } = useQuery({
     queryKey: ["expiry-list", selectedIndex],
     queryFn: async () => {
-      const res = await fetch(endpoints.market.expiryList, {
+      // Pass selectedIndex to filter expiries (e.g. exclude SENSEX)
+      const res = await fetch(`${endpoints.market.expiryList}?index_name=${selectedIndex}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to fetch expiry list");
@@ -90,7 +104,7 @@ const LiveData = () => {
   }, [expiryList, selectedIndex, selectedExpiry]);
 
   // Fetch History Data via useQuery (Proxy/Cache Pattern)
-  const { data: historyData = [], isFetching: loading } = useQuery({
+  const { data: rawHistoryData = [], isFetching: loading } = useQuery({
     queryKey: [
       "market-history",
       format(selectedDate, "yyyy-MM-dd"),
@@ -150,6 +164,9 @@ const LiveData = () => {
             call_theta: Number(g.call_theta),
             put_theta: Number(g.put_theta),
             diff_theta: Number(g.put_theta) - Number(g.call_theta),
+            call_iv: Number(g.calls_iv),
+            put_iv: Number(g.puts_iv),
+            diff_iv: Number(g.puts_iv) - Number(g.calls_iv),
           };
         }
         return {
@@ -172,6 +189,90 @@ const LiveData = () => {
     refetchInterval: isToday(selectedDate) ? getMsToNextMinute : false, // Clock-synced zero-drift polling
     staleTime: 30000,
   });
+
+  // Extract available timestamps for dropdown
+  const availableBaselines = useMemo(() => {
+    return rawHistoryData
+      .filter((d) => d.greeks !== null)
+      .map((d) => ({
+        value: d.timestamp,
+        label: format(new Date(d.timestamp), "HH:mm"),
+      }));
+  }, [rawHistoryData]);
+
+  // Default to first available timestamp if not set
+  useEffect(() => {
+    if ((!baselineTimestamp || !availableBaselines.some(b => b.value === baselineTimestamp)) && availableBaselines.length > 0) {
+      setBaselineTimestamp(availableBaselines[0].value);
+    }
+  }, [availableBaselines, baselineTimestamp]);
+
+  // Apply Baseline Logic Memoized
+  const processedHistoryData = useMemo(() => {
+    if (!isBaselineApplied) return rawHistoryData;
+
+    // Use selected baseline, or fall back to first valid
+    let baselineRecord = undefined;
+    
+    if (baselineTimestamp) {
+        baselineRecord = rawHistoryData.find(d => d.timestamp === baselineTimestamp && d.greeks !== null);
+    }
+    
+    if (!baselineRecord) {
+         baselineRecord = rawHistoryData.find((d) => d.greeks !== null);
+    }
+
+    if (!baselineRecord || !baselineRecord.greeks) return rawHistoryData;
+
+    const baseline = baselineRecord.greeks;
+
+    // Filter data to only show from the baseline time onwards
+    let filteredData = rawHistoryData.filter((d) => d.timestamp >= baselineRecord.timestamp);
+
+    // Apply Interval Filter (Downsampling)
+    const interval = parseInt(selectedInterval);
+    if (interval > 1) {
+       const baseTime = new Date(baselineRecord.timestamp).getTime();
+       filteredData = filteredData.filter(d => {
+           const diffMinutes = Math.floor((new Date(d.timestamp).getTime() - baseTime) / 60000);
+           return diffMinutes % interval === 0;
+       });
+    }
+
+    return filteredData.map((row) => {
+      if (!row.greeks) return row;
+
+      const g = row.greeks;
+      const sub = (val: number, base: number) => Number((val - base).toFixed(2));
+
+      return {
+        ...row,
+        greeks: {
+          ...g,
+          call_vega: sub(g.call_vega, baseline.call_vega),
+          put_vega: sub(g.put_vega, baseline.put_vega),
+          diff_vega: sub(g.diff_vega, baseline.diff_vega),
+          
+          call_delta: sub(g.call_delta, baseline.call_delta),
+          put_delta: sub(g.put_delta, baseline.put_delta),
+          diff_delta: sub(g.diff_delta, baseline.diff_delta),
+          
+          call_gamma: sub(g.call_gamma, baseline.call_gamma),
+          put_gamma: sub(g.put_gamma, baseline.put_gamma),
+          diff_gamma: sub(g.diff_gamma, baseline.diff_gamma),
+          
+          call_theta: sub(g.call_theta, baseline.call_theta),
+          put_theta: sub(g.put_theta, baseline.put_theta),
+          diff_theta: sub(g.diff_theta, baseline.diff_theta),
+          
+          call_iv: sub(g.call_iv, baseline.call_iv),
+          put_iv: sub(g.put_iv, baseline.put_iv),
+          diff_iv: sub(g.diff_iv, baseline.diff_iv),
+        },
+      };
+    });
+  }, [rawHistoryData, isBaselineApplied, baselineTimestamp, selectedInterval]);
+
 
   if (!isAuthenticated) return null;
 
@@ -200,6 +301,55 @@ const LiveData = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+             <Button
+              variant={isBaselineApplied ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsBaselineApplied(!isBaselineApplied)}
+              className={cn(
+                "h-9 text-xs font-bold transition-all border",
+                isBaselineApplied 
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
+                  : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Diamond className={cn("w-3.5 h-3.5 mr-2", isBaselineApplied && "fill-current")} />
+              {isBaselineApplied ? "Baseline: ON" : "Baseline: OFF"}
+            </Button>
+
+            {isBaselineApplied && (
+              <Select
+                value={baselineTimestamp}
+                onValueChange={(val) => setBaselineTimestamp(val)}
+              >
+                <SelectTrigger className="h-9 w-[110px] text-xs font-bold border-emerald-500/50 bg-background/50 focus:ring-emerald-500">
+                  <SelectValue placeholder="Time" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[200px]" align="start">
+                  {availableBaselines.map((op) => (
+                    <SelectItem key={op.value} value={op.value} className="text-xs">
+                      @ {op.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+             <Select
+              value={selectedInterval}
+              onValueChange={(val) => setSelectedInterval(val)}
+            >
+              <SelectTrigger className="h-9 w-[80px] text-xs font-bold border-border/40">
+                 <SelectValue placeholder="1m" />
+              </SelectTrigger>
+              <SelectContent>
+                 <SelectItem value="1">1m</SelectItem>
+                 <SelectItem value="3">3m</SelectItem>
+                 <SelectItem value="5">5m</SelectItem>
+                 <SelectItem value="10">10m</SelectItem>
+                 <SelectItem value="30">30m</SelectItem>
+              </SelectContent>
+            </Select>
+
             <select
               value={selectedProvider}
               onChange={(e) => setSelectedProvider(e.target.value)}
@@ -266,27 +416,45 @@ const LiveData = () => {
         <GreeksAnalysisSection
           title="Vega"
           icon={TrendingUp}
-          data={historyData}
+          data={processedHistoryData}
           dataKeyCall="call_vega"
           dataKeyPut="put_vega"
           dataKeyNet="diff_vega"
           colorNet="text-emerald-500"
           selectedDate={selectedDate}
+          interval={parseInt(selectedInterval)}
+          baselineTime={baselineTimestamp}
+        />
+
+        {/* IV Analysis Section (NEW) */}
+        <GreeksAnalysisSection
+          title="Implied Volatility (IV)"
+          data={processedHistoryData}
+          dataKeyCall="call_iv"
+          dataKeyPut="put_iv"
+          dataKeyNet="diff_iv"
+          colorNet="text-purple-600"
+          icon={TrendingUp} // Using TrendingUp for Volatility
+          selectedDate={selectedDate}
+          interval={parseInt(selectedInterval)}
+          baselineTime={baselineTimestamp}
         />
         <GreeksAnalysisSection
           title="Gamma"
           icon={Activity}
-          data={historyData}
+          data={processedHistoryData}
           dataKeyCall="call_gamma"
           dataKeyPut="put_gamma"
           dataKeyNet="diff_gamma"
           colorNet="text-purple-500"
           selectedDate={selectedDate}
+          interval={parseInt(selectedInterval)}
+          baselineTime={baselineTimestamp}
         />
         <GreeksAnalysisSection
           title="Delta"
           icon={Waves}
-          data={historyData}
+          data={processedHistoryData}
           dataKeyCall="call_delta"
           dataKeyPut="put_delta"
           dataKeyNet="diff_delta"
@@ -296,7 +464,7 @@ const LiveData = () => {
         <GreeksAnalysisSection
           title="Theta"
           icon={Zap}
-          data={historyData}
+          data={processedHistoryData}
           dataKeyCall="call_theta"
           dataKeyPut="put_theta"
           dataKeyNet="diff_theta"
@@ -311,19 +479,19 @@ const LiveData = () => {
             className="text-xs h-7"
             onClick={() => {
               if (!validateSession()) return;
-              const validData = historyData.filter((r) => r.greeks !== null);
+              const validData = processedHistoryData.filter((r) => r.greeks !== null);
               if (!validData.length) {
                 toast.info("No data available for export");
                 return;
               }
               const csvContent =
                 "data:text/csv;charset=utf-8," +
-                "Time,Call Vega,Put Vega,Net Vega,Call Gamma,Put Gamma,Net Gamma,Call Delta,Put Delta,Net Delta\n" +
+                "Time,Call Vega,Put Vega,Net Vega,Call Gamma,Put Gamma,Net Gamma,Call Delta,Put Delta,Net Delta,Call IV,Put IV,Net IV\n" +
                 validData
                   .map((row) => {
                     const g = row.greeks!;
                     const t = format(new Date(row.timestamp), "HH:mm:ss");
-                    return `${t},${g.call_vega},${g.put_vega},${g.diff_vega},${g.call_gamma},${g.put_gamma},${g.diff_gamma},${g.call_delta},${g.put_delta},${g.diff_delta}`;
+                    return `${t},${g.call_vega},${g.put_vega},${g.diff_vega},${g.call_gamma},${g.put_gamma},${g.diff_gamma},${g.call_delta},${g.put_delta},${g.diff_delta},${g.call_iv},${g.put_iv},${g.diff_iv}`;
                   })
                   .join("\n");
 

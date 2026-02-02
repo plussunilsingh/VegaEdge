@@ -140,6 +140,12 @@ const Navbar = () => {
                     onClick={toggleMenu}
                   />
                   <MenuLink
+                    to="/option-chain"
+                    icon={<LayoutDashboard size={18} />}
+                    label="Option Chain"
+                    onClick={toggleMenu}
+                  />
+                  <MenuLink
                     to="/strategies"
                     icon={<LayoutDashboard size={18} />}
                     label="Strategies"
@@ -316,6 +322,14 @@ const Navbar = () => {
                   className="text-white/80 hover:text-white transition-colors font-semibold text-sm"
                 >
                   Dashboard
+                </Link>
+              )}
+              {showAuthLinks && (
+                <Link
+                  to="/option-chain"
+                  className="text-white/80 hover:text-white transition-colors font-semibold text-sm"
+                >
+                  Option Chain
                 </Link>
               )}
               <a

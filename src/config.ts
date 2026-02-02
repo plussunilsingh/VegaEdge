@@ -55,6 +55,10 @@ export const endpoints = {
     expiryList: `${BACKEND_API_BASE_URL}/market/expiry-list`,
     refreshCache: `${BACKEND_API_BASE_URL}/market/cache-refresh`,
     syncExpiries: `${BACKEND_API_BASE_URL}/market/sync-expiries`,
+    expiries: (indexName: string) =>
+      `${BACKEND_API_BASE_URL}/market/expiries/${indexName}`,
+    optionChain: (instrumentKey: string, expiryDate: string) =>
+      `${BACKEND_API_BASE_URL}/market/option-chain?instrument_key=${instrumentKey}&expiry_date=${expiryDate}`,
   },
   admin: {
     users: `${BACKEND_API_BASE_URL}/admin/users`,

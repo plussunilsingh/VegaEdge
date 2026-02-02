@@ -13,8 +13,8 @@ We are building "Vega Market Edge," a high-performance analytics platform tracki
 
 ### A. Data Filtration Strategy
 
-- **Target Selection**: We perform analysis ONLY on option contracts (Calls & Puts) where the **Delta is between 0.05 and 0.6**.
-- **Noise Reduction**: Contracts outside this delta range are considered "noise" and must be excluded from aggregation calculations.
+- **Target Selection**: We perform analysis on ALL option contracts (Calls & Puts) regardless of delta value.
+- **Comprehensive Coverage**: All strikes are included to provide complete market visibility.
 
 ### B. Aggregation Logic
 
@@ -67,7 +67,7 @@ We are building "Vega Market Edge," a high-performance analytics platform tracki
 - **Cron Job**: Runs every 1 minute (aligned to clock).
 - **Task**:
   1.  Fetch Option Chain.
-  2.  Apply "Sweet Spot" Filter (Delta 0.05-0.6).
+  2.  Process all strikes (no delta filtering).
   3.  Compute Aggregates.
   4.  Save to DB.
   5.  Hot-swap the Cache.

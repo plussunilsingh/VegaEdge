@@ -8,6 +8,13 @@ export default {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
+  safelist: [
+    // ATM/ITM/OTM color scheme for option chain
+    'bg-[#FDF7EC]', // ITM cream background
+    'bg-white', // OTM white background
+    'border-l-[6px]', // ATM border width
+    'border-l-emerald-600', // ATM border color
+  ],
   prefix: "",
   theme: {
     container: {
