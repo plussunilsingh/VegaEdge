@@ -54,7 +54,7 @@ const LiveData = () => {
   const [selectedExpiry, setSelectedExpiry] = useState<string>("");
 
   const [selectedSource, setSelectedSource] = useState<string>("REST_API");
-  const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
+  const [selectedProvider, setSelectedProvider] = useState<string>("ANGELONE");
   const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(true);
   const [baselineTimestamp, setBaselineTimestamp] = useState<string>("");
   const [selectedInterval, setSelectedInterval] = useState<string>("1");
