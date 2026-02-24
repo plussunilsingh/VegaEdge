@@ -54,7 +54,7 @@ const LiveData = () => {
   const [selectedExpiry, setSelectedExpiry] = useState<string>("");
 
   const [selectedSource, setSelectedSource] = useState<string>("REST_API");
-  const [selectedProvider, setSelectedProvider] = useState<string>("ANGELONE");
+  const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
   const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(true);
   const [baselineTimestamp, setBaselineTimestamp] = useState<string>("");
   const [selectedInterval, setSelectedInterval] = useState<string>("1");
@@ -152,21 +152,26 @@ const LiveData = () => {
         if (existingData?.greeks) {
           const g = existingData.greeks;
           greeks = {
-            call_vega: Number(g.call_vega),
-            put_vega: Number(g.put_vega),
-            diff_vega: Number(g.put_vega) - Number(g.call_vega),
+            call_vega:  Number(g.call_vega),
+            put_vega:   Number(g.put_vega),
+            // vega_diff from backend: put-call, negative=BULLISH (Greeks.exe logic)
+            diff_vega:  Number(g.vega_diff),
+
             call_gamma: Number(g.call_gamma),
-            put_gamma: Number(g.put_gamma),
-            diff_gamma: Number(g.put_gamma) - Number(g.call_gamma),
-            call_delta: Number(g.call_delta),
-            put_delta: Number(g.put_delta),
-            diff_delta: Number(g.put_delta) - Number(g.call_delta),
+            put_gamma:  Number(g.put_gamma),
+            diff_gamma: Number(g.gamma_diff),
+
             call_theta: Number(g.call_theta),
-            put_theta: Number(g.put_theta),
-            diff_theta: Number(g.put_theta) - Number(g.call_theta),
+            put_theta:  Number(g.put_theta),
+            diff_theta: Number(g.theta_diff),
+
+            call_delta: Number(g.call_delta),
+            put_delta:  Number(g.put_delta),
+            diff_delta: Number(g.delta_diff),
+
             call_iv: Number(g.calls_iv),
-            put_iv: Number(g.puts_iv),
-            diff_iv: Number(g.puts_iv) - Number(g.calls_iv),
+            put_iv:  Number(g.puts_iv),
+            diff_iv: Number(g.iv_diff),
           };
         }
         return {
@@ -273,6 +278,23 @@ const LiveData = () => {
     });
   }, [rawHistoryData, isBaselineApplied, baselineTimestamp, selectedInterval]);
 
+  // Compute latest trend based on Greeks.exe logic
+  const latestTrend = useMemo(() => {
+    if (!processedHistoryData || processedHistoryData.length === 0) return { label: "NEUTRAL", color: "bg-gray-500/10 text-gray-500 border-gray-500/20" };
+    const latest = processedHistoryData[processedHistoryData.length - 1];
+    if (!latest.greeks) return { label: "NEUTRAL", color: "bg-gray-500/10 text-gray-500 border-gray-500/20" };
+
+    const cv = latest.greeks.call_vega;
+    const pv = latest.greeks.put_vega;
+    const diff = latest.greeks.diff_vega;
+
+    if (cv > 0 && pv < 0 && diff < 0) return { label: "BULLISH", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" };
+    if (cv < 0 && pv < 0 && diff < 0) return { label: "SIDEWAYS BULLISH", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" };
+    if (cv < 0 && pv > 0 && diff > 0) return { label: "BEARISH", color: "bg-red-500/10 text-red-500 border-red-500/20" };
+    if (cv < 0 && pv < 0 && diff > 0) return { label: "SIDEWAYS BEARISH", color: "bg-red-500/10 text-red-500 border-red-500/20" };
+    
+    return { label: "NEUTRAL", color: "bg-gray-500/10 text-gray-500 border-gray-500/20" };
+  }, [processedHistoryData]);
 
   if (!isAuthenticated) return null;
 
@@ -287,6 +309,9 @@ const LiveData = () => {
               Market Intelligence{" "}
               <span className="text-[10px] font-bold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded uppercase">
                 {selectedIndex}
+              </span>
+              <span className={cn("text-[10px] font-bold border px-2 py-0.5 rounded uppercase", latestTrend.color)}>
+                {latestTrend.label}
               </span>
             </h1>
             <p className="text-[11px] text-muted-foreground flex items-center gap-2">

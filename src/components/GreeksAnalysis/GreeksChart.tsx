@@ -236,13 +236,15 @@ export const GreeksChart = ({
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">
                   Difference
                 </span>
-                <span className="text-lg font-mono font-bold text-slate-800">
-                  {fmtNum(
-                    Math.abs(
-                      (data[data.length - 1]?.greeks?.[dataKeyPut] ?? 0) -
-                        (data[data.length - 1]?.greeks?.[dataKeyCall] ?? 0)
-                    )
+                <span
+                  className={cn(
+                    "text-lg font-mono font-bold",
+                    (data[data.length - 1]?.greeks?.[dataKeyNet] ?? 0) < 0
+                      ? "text-emerald-600"   // negative diff = call > put = BULLISH
+                      : "text-red-500"        // positive diff = put > call = BEARISH
                   )}
+                >
+                  {fmtNum(data[data.length - 1]?.greeks?.[dataKeyNet] ?? 0)}
                 </span>
               </div>
             )}
