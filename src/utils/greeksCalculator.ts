@@ -1,8 +1,8 @@
 /**
  * Greeks.exe Client-Side Mathematics Engine
  *
- * This utility isolates all subjective and display-oriented math from the backend.
- * It perfectly replicates the decompiled logic of Greeks.exe's `Util_decompiled.py`.
+ * This utility computes the raw mathematical differences dynamically.
+ * Trend logic correctly evaluates the *change* from the Day Open baseline.
  */
 
 export interface RawGreeks {
@@ -35,64 +35,47 @@ export interface CalculatedGreeks extends RawGreeks {
 }
 
 /**
- * Greeks.exe explicitly inverts Put Vega so it reads as negative visually.
- * Since Black-Scholes inherently calculates positive Vega for puts, we apply this `-1`
- * multiplier at the UI layer to match the exact `getVegaTrend` function decompiled baseline.
+ * Replicates the decompiled Greeks.exe `getVegaTrend` logic.
+ * CRITICAL FIX: The values parsed here MUST be the baseline-adjusted changes
+ * (current - dayOpen), NOT the raw values.
  */
-export const calculateDisplayPuts = (putVal: number): number => {
-  // Example: if Raw Put Vega = 10 (positive), display becomes -10
-  return putVal > 0 ? -putVal : putVal;
-};
-
-/**
- * Replicates the decompiled Greeks.exe `getVegaTrend` mathematical exactness.
- * Note: It evaluates against the artificially inverted Put Vega.
- */
-export const calculateTrend = (cv: number, displayPv: number, diff: number): string => {
+export const calculateTrend = (
+  cv_net_change: number,
+  pv_net_change: number,
+  diff_net_change: number
+): string => {
   // if callvega > 0 and putvega < 0 and vegadiff < 0: 'BULLISH'
-  if (cv > 0 && displayPv < 0 && diff < 0) return "BULLISH";
+  if (cv_net_change > 0 && pv_net_change < 0 && diff_net_change < 0) return "BULLISH";
 
   // if callvega < 0 and putvega < 0 and vegadiff < 0: 'SIDEWAYS BULLISH'
-  if (cv < 0 && displayPv < 0 && diff < 0) return "SIDEWAYS BULLISH";
+  if (cv_net_change < 0 && pv_net_change < 0 && diff_net_change < 0) return "SIDEWAYS BULLISH";
 
   // if callvega < 0 and putvega > 0 and vegadiff > 0: 'BEARISH'
-  if (cv < 0 && displayPv > 0 && diff > 0) return "BEARISH";
+  if (cv_net_change < 0 && pv_net_change > 0 && diff_net_change > 0) return "BEARISH";
 
   // if callvega < 0 and putvega < 0 and vegadiff > 0: 'SIDEWAYS BEARISH'
-  if (cv < 0 && displayPv < 0 && diff > 0) return "SIDEWAYS BEARISH";
+  if (cv_net_change < 0 && pv_net_change < 0 && diff_net_change > 0) return "SIDEWAYS BEARISH";
 
   return "NEUTRAL"; // Fallback state
 };
 
-/**
- * Transforms raw Unopinionated Backend Data into Formatted Greeks.exe Data
- */
 export const processRawGreeks = (raw: RawGreeks): CalculatedGreeks => {
-  // 1. Invert the Put Vega
-  const displayPutVega = calculateDisplayPuts(raw.put_vega);
-
-  // 2. Calculate Strict Mathematical Differences (Display Put - Call)
-  // Greeks.exe formula = put_vega - call_vega
-  const diffVega = Number((displayPutVega - raw.call_vega).toFixed(2));
-
-  // Other diffs remain standard (Put - Call) without artificial inversion
+  const diffVega = Number((raw.put_vega - raw.call_vega).toFixed(2));
   const diffDelta = Number((raw.put_delta - raw.call_delta).toFixed(2));
   const diffGamma = Number((raw.put_gamma - raw.call_gamma).toFixed(2));
   const diffTheta = Number((raw.put_theta - raw.call_theta).toFixed(2));
   const diffIv = Number((raw.put_iv - raw.call_iv).toFixed(2));
 
-  // 3. Compute Trend based on the INVERTED put vega
-  const trend = calculateTrend(raw.call_vega, displayPutVega, diffVega);
-
+  // Trend evaluates to "NEUTRAL" for the raw stream as it requires baseline data
+  // The actual trend is calculated inside LiveData.tsx during the baseline mapping phase
   return {
     ...raw,
-    put_vega: displayPutVega, // OVERRIDE the raw put_vega with the inverted display version
-    display_put_vega: displayPutVega,
+    display_put_vega: raw.put_vega,
     diff_vega: diffVega,
     diff_delta: diffDelta,
     diff_gamma: diffGamma,
     diff_theta: diffTheta,
     diff_iv: diffIv,
-    trend: trend,
+    trend: "NEUTRAL",
   };
 };

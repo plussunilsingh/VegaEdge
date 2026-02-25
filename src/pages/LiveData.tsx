@@ -14,7 +14,7 @@ import { format, isToday } from "date-fns";
 import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap, Diamond } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { processRawGreeks, CalculatedGreeks } from "@/utils/greeksCalculator";
+import { processRawGreeks, CalculatedGreeks, calculateTrend } from "@/utils/greeksCalculator";
 import { endpoints } from "@/config";
 import { SEOHead } from "@/components/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
@@ -228,16 +228,21 @@ const LiveData = () => {
     return filteredData.map((row) => {
       if (!row.greeks) return row;
 
-      const g = row.greeks;
+      const g = row.greeks as CalculatedGreeks;
       const sub = (val: number, base: number) => Number((val - base).toFixed(2));
+
+      // Calculate baseline changes (momentum)
+      const cv_change = sub(g.call_vega, baseline.call_vega);
+      const pv_change = sub(g.put_vega, baseline.put_vega);
+      const diff_change = sub(g.diff_vega, baseline.diff_vega);
 
       return {
         ...row,
         greeks: {
           ...g,
-          call_vega: sub(g.call_vega, baseline.call_vega),
-          put_vega: sub(g.put_vega, baseline.put_vega),
-          diff_vega: sub(g.diff_vega, baseline.diff_vega),
+          call_vega: cv_change,
+          put_vega: pv_change,
+          diff_vega: diff_change,
 
           call_delta: sub(g.call_delta, baseline.call_delta),
           put_delta: sub(g.put_delta, baseline.put_delta),
@@ -254,6 +259,8 @@ const LiveData = () => {
           call_iv: sub(g.call_iv, baseline.call_iv),
           put_iv: sub(g.put_iv, baseline.put_iv),
           diff_iv: sub(g.diff_iv, baseline.diff_iv),
+
+          trend: calculateTrend(cv_change, pv_change, diff_change),
         },
       };
     });
