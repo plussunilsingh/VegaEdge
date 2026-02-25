@@ -9,7 +9,7 @@ const OptionChain = () => {
   const { isAuthenticated, token } = useAuth();
   const [selectedOption, setSelectedOption] = useState("1");
   const [selectedDate, setSelectedDate] = useState("");
-  
+
   // Delta filter state - default to "sweet spot" range
   // STRICT REQUIREMENT: Start point 0.05 must be INCLUDED (inclusive range)
   const [minDelta, setMinDelta] = useState<number>(0.05);
@@ -17,25 +17,37 @@ const OptionChain = () => {
 
   // Map option ID to symbol for API
   const getSymbol = (id: string) => {
-    switch(id) {
-        case "1": return "NIFTY";
-        case "2": return "BANKNIFTY";
-        case "3": return "SENSEX";
-        case "4": return "FINNIFTY";
-        case "5": return "MIDCPNIFTY";
-        default: return "NIFTY";
+    switch (id) {
+      case "1":
+        return "NIFTY";
+      case "2":
+        return "BANKNIFTY";
+      case "3":
+        return "SENSEX";
+      case "4":
+        return "FINNIFTY";
+      case "5":
+        return "MIDCPNIFTY";
+      default:
+        return "NIFTY";
     }
   };
 
   const getDisplayName = (id: string) => {
-      switch(id) {
-          case "1": return "NIFTY 50";
-          case "2": return "BANKNIFTY";
-          case "3": return "SENSEX";
-          case "4": return "FINNIFTY";
-          case "5": return "MIDCPNIFTY";
-          default: return "NIFTY";
-      }
+    switch (id) {
+      case "1":
+        return "NIFTY 50";
+      case "2":
+        return "BANKNIFTY";
+      case "3":
+        return "SENSEX";
+      case "4":
+        return "FINNIFTY";
+      case "5":
+        return "MIDCPNIFTY";
+      default:
+        return "NIFTY";
+    }
   };
 
   // Query for expiry dates
@@ -45,8 +57,8 @@ const OptionChain = () => {
       const symbol = getSymbol(selectedOption);
       const res = await fetch(endpoints.market.expiries(symbol), {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (res.status === 401) {
         throw new Error("Unauthorized");
@@ -73,21 +85,21 @@ const OptionChain = () => {
   const { data: optionChainData, isLoading: isLoadingChain } = useQuery({
     queryKey: ["option-chain-greeks", selectedOption, selectedDate],
     queryFn: async () => {
-       const symbol = getSymbol(selectedOption);
-       const res = await fetch(endpoints.market.optionChain(symbol, selectedDate), {
-         headers: {
-           Authorization: `Bearer ${token}`
-         }
-       });
-       if (res.status === 401) {
-          // Handle unauthorized potentially
-          throw new Error("Unauthorized");
-       }
-       const json = await res.json();
-       return json.status === "success" ? json.data : null;
+      const symbol = getSymbol(selectedOption);
+      const res = await fetch(endpoints.market.optionChain(symbol, selectedDate), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.status === 401) {
+        // Handle unauthorized potentially
+        throw new Error("Unauthorized");
+      }
+      const json = await res.json();
+      return json.status === "success" ? json.data : null;
     },
     enabled: isAuthenticated && !!token && !!selectedDate,
-    refetchInterval: 2000, 
+    refetchInterval: 2000,
     placeholderData: keepPreviousData,
   });
 
@@ -96,10 +108,9 @@ const OptionChain = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-300">
       <SEOHead title={`${getDisplayName(selectedOption)} Option Chain | Vega Market Edge`} />
-      
+
       <main className="flex-1 py-8">
         <div className="container mx-full px-4">
-            
           <h1 className="text-2xl font-bold mb-6 text-foreground">Option Chain Analytics</h1>
 
           {/* Controls */}
@@ -201,13 +212,12 @@ const OptionChain = () => {
 
           {/* Option Chain Table */}
           <div className="w-full">
-               <OptionChainTable 
-                 data={optionChainData} 
-                 isLoading={isLoadingChain}
-                 deltaRange={{ min: minDelta, max: maxDelta }}
-               />
+            <OptionChainTable
+              data={optionChainData}
+              isLoading={isLoadingChain}
+              deltaRange={{ min: minDelta, max: maxDelta }}
+            />
           </div>
-
         </div>
       </main>
     </div>

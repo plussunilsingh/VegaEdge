@@ -14,6 +14,7 @@ import { format, isToday } from "date-fns";
 import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap, Diamond } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { processRawGreeks, CalculatedGreeks, calculateTrend } from "@/utils/greeksCalculator";
 import { endpoints } from "@/config";
 import { SEOHead } from "@/components/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
@@ -24,23 +25,8 @@ import { logger, ErrorCodes } from "@/lib/logger";
 
 interface GreeksData {
   timestamp: string;
-  greeks: {
-    call_vega: number;
-    put_vega: number;
-    diff_vega: number;
-    call_delta: number;
-    put_delta: number;
-    diff_delta: number;
-    call_gamma: number;
-    put_gamma: number;
-    diff_gamma: number;
-    call_theta: number;
-    put_theta: number;
-    diff_theta: number;
-    call_iv: number;
-    put_iv: number;
-    diff_iv: number;
-  } | null;
+  greeks: CalculatedGreeks | null;
+  provider?: string; // Add provider to the interface
 }
 
 const getInitialDate = () => {
@@ -54,10 +40,12 @@ const LiveData = () => {
   const [selectedExpiry, setSelectedExpiry] = useState<string>("");
 
   const [selectedSource, setSelectedSource] = useState<string>("REST_API");
-  const [selectedProvider, setSelectedProvider] = useState<string>("ANGELONE");
+  const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
   const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(true);
   const [baselineTimestamp, setBaselineTimestamp] = useState<string>("");
   const [selectedInterval, setSelectedInterval] = useState<string>("1");
+
+  const [rawHistoryData, setRawHistoryData] = useState<GreeksData[]>([]);
 
   // Helper to generate full day time slots (09:15 to 15:30)
   const timeSlots = useMemo(() => {
@@ -104,7 +92,7 @@ const LiveData = () => {
   }, [expiryList, selectedIndex, selectedExpiry]);
 
   // Fetch History Data via useQuery (Proxy/Cache Pattern)
-  const { data: rawHistoryData = [], isFetching: loading } = useQuery({
+  const { data: rawData = [], isFetching: loading } = useQuery({
     queryKey: [
       "market-history",
       format(selectedDate, "yyyy-MM-dd"),
@@ -135,55 +123,7 @@ const LiveData = () => {
       const result = await res.json();
       if (!Array.isArray(result)) return [];
 
-      const dataMap = new Map();
-      result.forEach((item: any) => {
-        if (item?.greeks && item.timestamp) {
-          const dt = new Date(item.timestamp);
-          if (!isNaN(dt.getTime())) {
-            dataMap.set(format(dt, "HH:mm"), item);
-          }
-        }
-      });
-
-      const fullData = timeSlots.map((slotTime) => {
-        const timeKey = format(slotTime, "HH:mm");
-        const existingData = dataMap.get(timeKey);
-        let greeks = null;
-        if (existingData?.greeks) {
-          const g = existingData.greeks;
-          greeks = {
-            call_vega: Number(g.call_vega),
-            put_vega: Number(g.put_vega),
-            diff_vega: Number(g.put_vega) - Number(g.call_vega),
-            call_gamma: Number(g.call_gamma),
-            put_gamma: Number(g.put_gamma),
-            diff_gamma: Number(g.put_gamma) - Number(g.call_gamma),
-            call_delta: Number(g.call_delta),
-            put_delta: Number(g.put_delta),
-            diff_delta: Number(g.put_delta) - Number(g.call_delta),
-            call_theta: Number(g.call_theta),
-            put_theta: Number(g.put_theta),
-            diff_theta: Number(g.put_theta) - Number(g.call_theta),
-            call_iv: Number(g.calls_iv),
-            put_iv: Number(g.puts_iv),
-            diff_iv: Number(g.puts_iv) - Number(g.calls_iv),
-          };
-        }
-        return {
-          timestamp: slotTime.toISOString(),
-          greeks,
-        } as GreeksData;
-      });
-
-      // DYNAMIC CHART SCALING:
-      // If today, filter out future minutes so the chart "stretches" to fill available space
-      // and "shrinks" as new data is added (User Request).
-      if (isToday(selectedDate)) {
-        const now = new Date();
-        return fullData.filter((d) => new Date(d.timestamp) <= now);
-      }
-
-      return fullData;
+      return result;
     },
     enabled: !!token && isAuthenticated && !!selectedExpiry,
     refetchInterval: isToday(selectedDate) ? getMsToNextMinute : false, // Clock-synced zero-drift polling
@@ -200,9 +140,53 @@ const LiveData = () => {
       }));
   }, [rawHistoryData]);
 
+  // Update activeData exactly when data is fetched or interval/provider changes
+  useEffect(() => {
+    const dataMap = new Map();
+    rawData.forEach((item: any) => {
+      if (item?.greeks && item.timestamp) {
+        const dt = new Date(item.timestamp);
+        if (!isNaN(dt.getTime())) {
+          dataMap.set(format(dt, "HH:mm"), item);
+        }
+      }
+    });
+
+    const fullData = timeSlots.map((slotTime) => {
+      const timeKey = format(slotTime, "HH:mm");
+      const existingData = dataMap.get(timeKey);
+      let greeks = null;
+      if (existingData?.greeks) {
+        greeks = processRawGreeks(existingData.greeks);
+      }
+      return {
+        timestamp: slotTime.toISOString(),
+        greeks,
+        provider: existingData?.provider || selectedProvider, // Store provider for filtering
+      } as GreeksData;
+    });
+
+    // DYNAMIC CHART SCALING:
+    // If today, filter out future minutes so the chart "stretches" to fill available space
+    // and "shrinks" as new data is added (User Request).
+    let processedList = fullData;
+    if (isToday(selectedDate)) {
+      const now = new Date();
+      processedList = fullData.filter((d) => new Date(d.timestamp) <= now);
+    }
+
+    setRawHistoryData(processedList);
+    if (!baselineTimestamp && processedList.length > 0) {
+      setBaselineTimestamp(processedList[0].timestamp);
+    }
+  }, [rawData, selectedProvider, selectedDate, timeSlots]);
+
   // Default to first available timestamp if not set
   useEffect(() => {
-    if ((!baselineTimestamp || !availableBaselines.some(b => b.value === baselineTimestamp)) && availableBaselines.length > 0) {
+    if (
+      (!baselineTimestamp || !availableBaselines.some((b) => b.value === baselineTimestamp)) &&
+      availableBaselines.length > 0
+    ) {
       setBaselineTimestamp(availableBaselines[0].value);
     }
   }, [availableBaselines, baselineTimestamp]);
@@ -213,13 +197,15 @@ const LiveData = () => {
 
     // Use selected baseline, or fall back to first valid
     let baselineRecord = undefined;
-    
+
     if (baselineTimestamp) {
-        baselineRecord = rawHistoryData.find(d => d.timestamp === baselineTimestamp && d.greeks !== null);
+      baselineRecord = rawHistoryData.find(
+        (d) => d.timestamp === baselineTimestamp && d.greeks !== null
+      );
     }
-    
+
     if (!baselineRecord) {
-         baselineRecord = rawHistoryData.find((d) => d.greeks !== null);
+      baselineRecord = rawHistoryData.find((d) => d.greeks !== null);
     }
 
     if (!baselineRecord || !baselineRecord.greeks) return rawHistoryData;
@@ -232,47 +218,81 @@ const LiveData = () => {
     // Apply Interval Filter (Downsampling)
     const interval = parseInt(selectedInterval);
     if (interval > 1) {
-       const baseTime = new Date(baselineRecord.timestamp).getTime();
-       filteredData = filteredData.filter(d => {
-           const diffMinutes = Math.floor((new Date(d.timestamp).getTime() - baseTime) / 60000);
-           return diffMinutes % interval === 0;
-       });
+      const baseTime = new Date(baselineRecord.timestamp).getTime();
+      filteredData = filteredData.filter((d) => {
+        const diffMinutes = Math.floor((new Date(d.timestamp).getTime() - baseTime) / 60000);
+        return diffMinutes % interval === 0;
+      });
     }
 
     return filteredData.map((row) => {
       if (!row.greeks) return row;
 
-      const g = row.greeks;
+      const g = row.greeks as CalculatedGreeks;
       const sub = (val: number, base: number) => Number((val - base).toFixed(2));
+
+      // Calculate baseline changes (momentum)
+      const cv_change = sub(g.call_vega, baseline.call_vega);
+      const pv_change = sub(g.put_vega, baseline.put_vega);
+      const diff_change = sub(g.diff_vega, baseline.diff_vega);
 
       return {
         ...row,
         greeks: {
           ...g,
-          call_vega: sub(g.call_vega, baseline.call_vega),
-          put_vega: sub(g.put_vega, baseline.put_vega),
-          diff_vega: sub(g.diff_vega, baseline.diff_vega),
-          
+          call_vega: cv_change,
+          put_vega: pv_change,
+          diff_vega: diff_change,
+
           call_delta: sub(g.call_delta, baseline.call_delta),
           put_delta: sub(g.put_delta, baseline.put_delta),
           diff_delta: sub(g.diff_delta, baseline.diff_delta),
-          
+
           call_gamma: sub(g.call_gamma, baseline.call_gamma),
           put_gamma: sub(g.put_gamma, baseline.put_gamma),
           diff_gamma: sub(g.diff_gamma, baseline.diff_gamma),
-          
+
           call_theta: sub(g.call_theta, baseline.call_theta),
           put_theta: sub(g.put_theta, baseline.put_theta),
           diff_theta: sub(g.diff_theta, baseline.diff_theta),
-          
+
           call_iv: sub(g.call_iv, baseline.call_iv),
           put_iv: sub(g.put_iv, baseline.put_iv),
           diff_iv: sub(g.diff_iv, baseline.diff_iv),
+
+          trend: calculateTrend(cv_change, pv_change, diff_change),
         },
       };
     });
   }, [rawHistoryData, isBaselineApplied, baselineTimestamp, selectedInterval]);
 
+  // Read latest trend directly from the pre-processed calculator output
+  const latestTrend = useMemo(() => {
+    const defaultState = {
+      label: "NEUTRAL",
+      color: "bg-gray-500/10 text-gray-500 border-gray-500/20",
+    };
+
+    if (!processedHistoryData || processedHistoryData.length === 0) return defaultState;
+    const latest = processedHistoryData[processedHistoryData.length - 1];
+
+    // Safety check type alignment
+    if (!latest.greeks || !("trend" in latest.greeks)) {
+      return defaultState;
+    }
+
+    const trendLabel = (latest.greeks as CalculatedGreeks).trend || "NEUTRAL";
+
+    // Map trend to colors
+    let color = defaultState.color;
+    if (trendLabel === "BULLISH" || trendLabel === "SIDEWAYS BULLISH") {
+      color = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    } else if (trendLabel === "BEARISH" || trendLabel === "SIDEWAYS BEARISH") {
+      color = "bg-red-500/10 text-red-500 border-red-500/20";
+    }
+
+    return { label: trendLabel, color };
+  }, [processedHistoryData]);
 
   if (!isAuthenticated) return null;
 
@@ -288,6 +308,14 @@ const LiveData = () => {
               <span className="text-[10px] font-bold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded uppercase">
                 {selectedIndex}
               </span>
+              <span
+                className={cn(
+                  "text-[10px] font-bold border px-2 py-0.5 rounded uppercase",
+                  latestTrend.color
+                )}
+              >
+                {latestTrend.label}
+              </span>
             </h1>
             <p className="text-[11px] text-muted-foreground flex items-center gap-2">
               <Activity
@@ -301,14 +329,14 @@ const LiveData = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-             <Button
+            <Button
               variant={isBaselineApplied ? "default" : "outline"}
               size="sm"
               onClick={() => setIsBaselineApplied(!isBaselineApplied)}
               className={cn(
                 "h-9 text-xs font-bold transition-all border",
-                isBaselineApplied 
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
+                isBaselineApplied
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
                   : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
               )}
             >
@@ -317,10 +345,7 @@ const LiveData = () => {
             </Button>
 
             {isBaselineApplied && (
-              <Select
-                value={baselineTimestamp}
-                onValueChange={(val) => setBaselineTimestamp(val)}
-              >
+              <Select value={baselineTimestamp} onValueChange={(val) => setBaselineTimestamp(val)}>
                 <SelectTrigger className="h-9 w-[110px] text-xs font-bold border-emerald-500/50 bg-background/50 focus:ring-emerald-500">
                   <SelectValue placeholder="Time" />
                 </SelectTrigger>
@@ -334,19 +359,16 @@ const LiveData = () => {
               </Select>
             )}
 
-             <Select
-              value={selectedInterval}
-              onValueChange={(val) => setSelectedInterval(val)}
-            >
+            <Select value={selectedInterval} onValueChange={(val) => setSelectedInterval(val)}>
               <SelectTrigger className="h-9 w-[80px] text-xs font-bold border-border/40">
-                 <SelectValue placeholder="1m" />
+                <SelectValue placeholder="1m" />
               </SelectTrigger>
               <SelectContent>
-                 <SelectItem value="1">1m</SelectItem>
-                 <SelectItem value="3">3m</SelectItem>
-                 <SelectItem value="5">5m</SelectItem>
-                 <SelectItem value="10">10m</SelectItem>
-                 <SelectItem value="30">30m</SelectItem>
+                <SelectItem value="1">1m</SelectItem>
+                <SelectItem value="3">3m</SelectItem>
+                <SelectItem value="5">5m</SelectItem>
+                <SelectItem value="10">10m</SelectItem>
+                <SelectItem value="30">30m</SelectItem>
               </SelectContent>
             </Select>
 
