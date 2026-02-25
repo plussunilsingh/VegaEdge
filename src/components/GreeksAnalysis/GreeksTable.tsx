@@ -34,42 +34,23 @@ const fmtNum = (val: any, digits = 2) => {
   return num.toFixed(digits);
 };
 
-/**
- * Static Trend Calculation Logic (Pure Function)
- * Logic derived from user table:
- * - BULLISH: Call > 0 and Put < 0
- * - BEARISH: Call < 0 and Put > 0
- * - SIDEWAYS BEARISH: Put - Call > 0 (when both negative)
- * - SIDEWAYS BULLISH: Put - Call < 0 (when both negative)
- */
-const calculateTrend = (callVega: number, putVega: number) => {
-  if (callVega > 0 && putVega < 0) return "Bullish";
-  if (callVega < 0 && putVega > 0) return "Bearish";
-
-  if (callVega < 0 && putVega < 0) {
-    return putVega - callVega > 0 ? "Sideways Bearish" : "Sideways Bullish";
-  }
-
-  return "Sideways";
-};
+// calculateTrend removed - Trend is now sourced strictly from greeksCalculator output
 
 /**
  * Map trend labels to Tailwind classes
  */
 const getTrendClasses = (label: string) => {
-  switch (label) {
-    case "Bullish":
+  switch (label.toUpperCase()) {
+    case "BULLISH":
       return "text-green-600 bg-green-100";
-    case "Bearish":
+    case "BEARISH":
       return "text-red-600 bg-red-100";
-    case "Sideways Bullish":
+    case "SIDEWAYS BULLISH":
       return "text-emerald-500 bg-emerald-50 border border-emerald-100";
-    case "Sideways Bearish":
+    case "SIDEWAYS BEARISH":
       return "text-yellow-600 bg-yellow-100 border border-yellow-200";
-    case "Sideways":
-      return "text-yellow-500 bg-yellow-50";
     default:
-      return "";
+      return "text-yellow-500 bg-yellow-50";
   }
 };
 
@@ -108,7 +89,7 @@ export const GreeksTable = ({
               {tableData.map((row, i) => {
                 const callVal = row.greeks![dataKeyCall];
                 const putVal = row.greeks![dataKeyPut];
-                const trend = title === "Vega" ? calculateTrend(callVal, putVal) : null;
+                const trend = title === "Vega" ? row.greeks.trend : null;
 
                 return (
                   <TableRow

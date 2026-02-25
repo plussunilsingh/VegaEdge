@@ -112,7 +112,7 @@ const App = () => (
                         </ProtectedRoute>
                       }
                     />
-                     <Route
+                    <Route
                       path="/option-chain"
                       element={
                         <ProtectedRoute>
