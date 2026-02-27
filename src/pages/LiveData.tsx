@@ -157,7 +157,7 @@ const LiveData = () => {
       const existingData = dataMap.get(timeKey);
       let greeks = null;
       if (existingData?.greeks) {
-        greeks = processRawGreeks(existingData.greeks);
+        greeks = processRawGreeks(existingData.greeks, selectedIndex);
       }
       return {
         timestamp: slotTime.toISOString(),
