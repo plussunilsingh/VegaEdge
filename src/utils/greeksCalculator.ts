@@ -84,11 +84,16 @@ export const calculateTrend = (
  * Applies lot size multiplication and computes diffs.
  * Replicates Greeks.exe: getSlicedOcFor (lot multiply) → getCumulativeValues (sum) → diff = PUT - CALL.
  *
- * @param raw       Raw Greeks from DB (backend stores un-multiplied values)
- * @param indexName Index name for lot size lookup (e.g. "NIFTY")
+ * @param raw              Raw Greeks from DB (backend stores un-multiplied values)
+ * @param indexName        Index name for lot size lookup (e.g. "NIFTY")
+ * @param applyLotMultiply When true (Greeks.exe default), multiply by lot size. When false, show raw values.
  */
-export const processRawGreeks = (raw: RawGreeks, indexName: string = "NIFTY"): CalculatedGreeks => {
-  const lot = getLotSize(indexName);
+export const processRawGreeks = (
+  raw: RawGreeks,
+  indexName: string = "NIFTY",
+  applyLotMultiply: boolean = true
+): CalculatedGreeks => {
+  const lot = applyLotMultiply ? getLotSize(indexName) : 1;
 
   // Apply lot size multiplication (Greeks.exe: getSlicedOcFor col *= AD.LOT_SIZE[index])
   // IV is intentionally NOT lot-multiplied (confirmed from Greeks.exe bytecode)
@@ -112,7 +117,7 @@ export const processRawGreeks = (raw: RawGreeks, indexName: string = "NIFTY"): C
   // The actual trend is calculated inside LiveData.tsx during the baseline mapping phase
   return {
     ...raw,
-    // Overwrite with lot-multiplied values so the rest of the UI sees scaled numbers
+    // Overwrite with lot-multiplied (or raw) values so the rest of the UI sees correct numbers
     call_vega,
     put_vega,
     call_gamma,

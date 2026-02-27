@@ -14,7 +14,7 @@ import { format, isToday } from "date-fns";
 import { Calendar as CalendarIcon, Activity, TrendingUp, Waves, Zap, Diamond } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { processRawGreeks, CalculatedGreeks, calculateTrend } from "@/utils/greeksCalculator";
+import { processRawGreeks, CalculatedGreeks, calculateTrend, getLotSize } from "@/utils/greeksCalculator";
 import { endpoints } from "@/config";
 import { SEOHead } from "@/components/SEOHead";
 import { GreeksAnalysisSection } from "@/components/GreeksAnalysis";
@@ -42,6 +42,7 @@ const LiveData = () => {
   const [selectedSource, setSelectedSource] = useState<string>("REST_API");
   const [selectedProvider, setSelectedProvider] = useState<string>("UPSTOX");
   const [isBaselineApplied, setIsBaselineApplied] = useState<boolean>(true);
+  const [isLotMultiply, setIsLotMultiply] = useState<boolean>(true); // Display Per Lot Value (Greeks.exe default: Yes)
   const [baselineTimestamp, setBaselineTimestamp] = useState<string>("");
   const [selectedInterval, setSelectedInterval] = useState<string>("1");
 
@@ -157,7 +158,7 @@ const LiveData = () => {
       const existingData = dataMap.get(timeKey);
       let greeks = null;
       if (existingData?.greeks) {
-        greeks = processRawGreeks(existingData.greeks, selectedIndex);
+        greeks = processRawGreeks(existingData.greeks, selectedIndex, isLotMultiply);
       }
       return {
         timestamp: slotTime.toISOString(),
@@ -264,7 +265,7 @@ const LiveData = () => {
         },
       };
     });
-  }, [rawHistoryData, isBaselineApplied, baselineTimestamp, selectedInterval]);
+  }, [rawHistoryData, isBaselineApplied, baselineTimestamp, selectedInterval, isLotMultiply]);
 
   // Read latest trend directly from the pre-processed calculator output
   const latestTrend = useMemo(() => {
@@ -342,6 +343,22 @@ const LiveData = () => {
             >
               <Diamond className={cn("w-3.5 h-3.5 mr-2", isBaselineApplied && "fill-current")} />
               {isBaselineApplied ? "Baseline: ON" : "Baseline: OFF"}
+            </Button>
+
+            {/* Lot Size Multiply Toggle — replicates Greeks.exe displayPerLotValue='Yes' */}
+            <Button
+              variant={isLotMultiply ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsLotMultiply(!isLotMultiply)}
+              className={cn(
+                "h-9 text-xs font-bold transition-all border",
+                isLotMultiply
+                  ? "bg-violet-600 hover:bg-violet-700 text-white border-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
+                  : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Zap className={cn("w-3.5 h-3.5 mr-2", isLotMultiply && "fill-current")} />
+              {isLotMultiply ? `Lot ×${getLotSize(selectedIndex)}: ON` : "Lot ×1: OFF"}
             </Button>
 
             {isBaselineApplied && (
